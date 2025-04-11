@@ -1,0 +1,53 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+    id 'com.google.gms.google-services'
+}
+
+android {
+    namespace = "com.example.areg_app"
+    compileSdkVersion 35
+    ndkVersion  "29.0.13113456"
+
+    defaultConfig {
+        applicationId "com.example.areg_app"
+        minSdkVersion 23  // ✅ Ensure this is correctly set
+        targetSdkVersion 35
+        versionCode 1
+        versionName "1.0"
+    }
+    ndkVersion  "29.0.13113456"
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true // Enable desugaring
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    buildTypes {
+        release {
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig = signingConfigs.debug
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}
+
+dependencies {
+    implementation platform('com.google.firebase:firebase-bom:33.10.0')
+    implementation 'androidx.annotation:annotation:1.9.1'
+    implementation "com.google.firebase:firebase-auth"
+    implementation 'com.google.firebase:firebase-firestore'
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
+    implementation 'com.google.firebase:firebase-messaging:23.3.1'
+}

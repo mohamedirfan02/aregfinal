@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "897194172400",
+    "project_id": "areg-a6be8",
+    "storage_bucket": "areg-a6be8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:897194172400:android:2e8fefd9d84929a219c735",
+        "android_client_info": {
+          "package_name": "com.example.areg_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "897194172400-mpif35cfj9mpffkr6skahia31t7mrve7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.areg_app",
+            "certificate_hash": "85cd3c789bcd9640c6aafff0da74ef97751ef3f4"
+          }
+        },
+        {
+          "client_id": "897194172400-j90f9vb18pv9gmgkkurrhuc3sb94aeeu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGlUNbQdA4LWmz2_C--0QbiOWW4NrhSag"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "897194172400-j90f9vb18pv9gmgkkurrhuc3sb94aeeu.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "897194172400-id0ltsm7qiqn633tishq3fu0ik7b6343.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.aregApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
