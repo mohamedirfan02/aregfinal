@@ -1,14 +1,14 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../config/api_config.dart';
+
 class AgentAcknowledgmentService {
-  static const String baseUrl = "https://enzopik.thikse.in/api";
-  /// ✅ Fetch Acknowledgment Details
-  /// ✅ Fetch Acknowledgment Details (Dynamic Token & ID)
   Future<List<Map<String, dynamic>>?> fetchAcknowledgmentDetails(
       String token, int userId) async {
-    const String apiUrl = "$baseUrl/get-order-details";
+    const String apiUrl = ApiConfig.getOrderDetails;
 
     try {
       final response = await http.post(
@@ -50,7 +50,7 @@ class AgentAcknowledgmentService {
 
   /// ✅ Acknowledge Order
   Future<bool> acknowledgeOrder(int orderId) async {
-    const String postUrl = "$baseUrl/add-voucher";
+    const String postUrl = ApiConfig.addVoucher;
 
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -79,7 +79,7 @@ class AgentAcknowledgmentService {
         print("📩 Acknowledgment Response: $responseData");
         return responseData["status"] == "success";
       } else {
-        print("❌ Acknowledge API Request Failed");
+        print("❌ Acknowledge API Request Failed: $e");
         return false;
       }
     } catch (e) {

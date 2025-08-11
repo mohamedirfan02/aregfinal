@@ -1,14 +1,13 @@
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
+import '../../config/api_config.dart';
 import '../../models/restaurant_model.dart';
 
 Future<List<Fbo>> fetchFboRequests() async {
-  final url = Uri.parse('https://enzopik.thikse.in/api/get-new-fbo');
+  final url = Uri.parse(ApiConfig.getNewFbo);
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? token = prefs.getString('token');
 
@@ -35,11 +34,29 @@ Future<List<Fbo>> fetchFboRequests() async {
     throw Exception('Failed to load FBO requests: ${response.body}');
   }
 }
+
 // ✅ Function to Approve or Reject FBO Request
-Future<void> updateFboStatus(BuildContext context, int fboId, String status) async {
-  final url = "https://enzopik.thikse.in/api/fbo-approval/$fboId";
+Future<void> updateFboStatus(
+    BuildContext context,
+    int fboId,
+    String status, {
+      required String agent,
+      required String amount,
+      String? reason,
+    }) async {
+  final url = ApiConfig.fboApproval(fboId);
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? token = prefs.getString('token');
+
+  final Map<String, dynamic> payload = {
+    "status": status,
+    "assigned_agent": agent,
+    "agreed_price": amount,
+    if (reason != null) "reason": reason,
+  };
+
+  print("📤 API Request: $url");
+  print("📤 Sending Data: ${jsonEncode(payload)}");
 
   try {
     final response = await http.post(
@@ -48,10 +65,9 @@ Future<void> updateFboStatus(BuildContext context, int fboId, String status) asy
         "Content-Type": "application/json",
         "Authorization": "Bearer $token",
       },
-      body: jsonEncode({"status": status}),
+      body: jsonEncode(payload),
     );
-    // 🔥 **Debugging: Print Response Status & Body**
-    print("📩 API Request: $url");
+
     print("📩 Status Code: ${response.statusCode}");
     print("📩 Response Body: ${response.body}");
 
@@ -61,12 +77,13 @@ Future<void> updateFboStatus(BuildContext context, int fboId, String status) asy
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("❌ Failed to $status FBO: ${response.body}")),
+        SnackBar(content: Text("❗ Your Action is completed but failed on backend")),
       );
     }
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("❌ Error: $e")),
+      SnackBar(content: Text("❌ Error: internal server error but action completed")),
     );
+    print("❌ Exception: $e");
   }
 }

@@ -38,12 +38,8 @@ class _IntroScreenState extends State<IntroScreen> {
         _currentIndex++;
       });
     } else {
-      _goToLogin();
+      context.go('/start');
     }
-  }
-
-  void _goToLogin() {
-    context.go('/start');
   }
 
   @override
@@ -51,142 +47,171 @@ class _IntroScreenState extends State<IntroScreen> {
     final slide = _slides[_currentIndex];
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+    final isTablet = screenWidth > 600;
+
+    final fontTitle = screenWidth * (isTablet ? 0.045 : 0.05);
+    final fontDesc = screenWidth * (isTablet ? 0.032 : 0.037);
+    final fontButton = screenWidth * (isTablet ? 0.035 : 0.04);
+    //final buttonHeight = screenHeight * 0.06;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: screenHeight),
-            child: IntrinsicHeight(
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          top: -screenHeight * 0.18,
-                          left: -screenWidth * 0.18,
-                          child: Container(
-                            width: screenWidth * 1.3,
-                            height: screenWidth * 1.3,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      // 🟢 Top Section
+                      Stack(
+                        children: [
+                          Container(
+                            height: constraints.maxHeight * 0.45,
+                            width: double.infinity,
                             decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
                               gradient: LinearGradient(
+                                colors: [Colors.white, Colors.white],
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
-                                colors: [
-                                  Color(0xFF6FA006),
-                                  Color.fromRGBO(161, 192, 93, 0.5),
-                                ],
-                                stops: [0.2116, 0.9588],
                               ),
                             ),
                           ),
-                        ),
-                        Center(
-                          child: Padding(
-                            padding: EdgeInsets.only(top: screenHeight * 0.1),
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
                             child: Image.asset(
-                              slide["image"]!,
-                              width: screenWidth * 0.6,
-                              height: screenWidth * 0.6,
+                              'assets/image/cuve.png',
+                              width: constraints.maxWidth,
+                              fit: BoxFit.cover,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                  Text(
-                    slide["titleTop"]!,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.05,
-                      color: const Color(0xFF006D04),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  Text(
-                    slide["titleBottom"]!,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.05,
-                      color: const Color(0xFF006D04),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.02),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
-                    child: Text(
-                      slide["description"]!,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.04,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                          Positioned.fill(
+                            child: Center(
+                              child: Image.asset(
+                                slide["image"]!,
+                                width: constraints.maxWidth * 0.6,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      _slides.length,
-                          (index) => Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _currentIndex == index
-                              ? const Color(0xFF6FA006)
-                              : Colors.grey.shade300,
+
+                      const SizedBox(height: 16),
+
+                      // 🔤 Titles & Description
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 28.0),
+                        child: Column(
+                          children: [
+                            Text(
+                              slide["titleTop"]!,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: fontTitle,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF006D04),
+                              ),
+                            ),
+                            Text(
+                              slide["titleBottom"]!,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: fontTitle,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF006D04),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              slide["description"]!,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: fontDesc,
+                                color: Colors.black87,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.04),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
-                    child: ElevatedButton(
-                      onPressed: _onNext,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6FA006),
-                        minimumSize: Size.fromHeight(screenHeight * 0.06),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+
+                      const Spacer(),
+
+                      // 🔘 Pagination + Buttons
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 28.0),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(
+                                _slides.length,
+                                    (index) => Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _currentIndex == index
+                                        ? const Color(0xFF6FA006)
+                                        : Colors.grey.shade300,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            ElevatedButton(
+                              onPressed: _onNext,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF6FA006),
+                                minimumSize:
+                                Size(double.infinity, screenHeight * 0.06),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: Text(
+                                _currentIndex == _slides.length - 1
+                                    ? "Finish"
+                                    : "Continue",
+                                style: TextStyle(
+                                  fontSize: fontButton,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => context.go('/start'),
+                              child: Text(
+                                "Skip",
+                                style: TextStyle(
+                                  fontSize: fontButton,
+                                  color: Colors.black87,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      child: Text(
-                        _currentIndex == _slides.length - 1 ? "Finish" : "Continue",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: screenWidth * 0.04,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
+
+                      const SizedBox(height: 16),
+                    ],
                   ),
-                  TextButton(
-                    onPressed: _goToLogin,
-                    child: Text(
-                      "Skip",
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.04,
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.02),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
+
     );
   }
 }

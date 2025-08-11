@@ -6,14 +6,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:android_intent_plus/flag.dart';
 
+import '../config/api_config.dart';
+
 class VoucherService {
-  final String baseUrl = "https://enzopik.thikse.in/api";
 
   /// ✅ Fetch acknowledged vouchers for dynamic roles (user, vendor, agent)
   Future<List<Map<String, dynamic>>> fetchVouchers() async {
     await checkStoredData(); // ✅ Debug stored values
 
-    const String apiUrl = "https://enzopik.thikse.in/api/get-order-details";
+    const String apiUrl = ApiConfig.getOrderDetails;
 
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -34,6 +35,14 @@ class VoucherService {
         throw Exception("❌ Invalid User ID format. Expected an integer.");
       }
 
+      final requestData = {
+        "role": role,
+        "id": userId,
+        "status": "acknowledged",
+      };
+
+      print("📤 Sending request to $apiUrl with data: $requestData");
+
       final response = await Dio().post(
         apiUrl,
         options: Options(
@@ -43,12 +52,9 @@ class VoucherService {
             "Authorization": "Bearer $token",
           },
         ),
-        data: {
-          "role": role, // ✅ Dynamic role
-          "id": userId, // ✅ Now correctly an int
-          "status": "acknowledged", // ✅ Added status
-        },
+        data: requestData,
       );
+
 
       print("🔹 Response Status Code: ${response.statusCode}");
       print("🔹 Raw Response Body: ${response.data}");
@@ -104,61 +110,59 @@ class VoucherService {
   }
 
 
-  /// ✅ Download voucher (supports both PDF & Excel formats)
-  Future<String> downloadVoucher(int orderId, {required String format}) async {
-    const String apiUrl = "https://enzopik.thikse.in/api/download-acknowledged-voucher";
+  Future<String> downloadVoucher(
+      int orderId, {
+        required String format,
+        DateTime? fromDate,
+        DateTime? toDate,
+      }) async {
+    const String apiUrl = ApiConfig.DownloadAcknowledgedVoucher;
 
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('token');
-      String? role = prefs.getString('role'); // Get dynamic role
-      String? userId = prefs.getString('user_id'); // Get dynamic ID
+      String? role = prefs.getString('role');
+      String? userId = prefs.getString('user_id');
 
       if (token == null || role == null || userId == null) {
         throw Exception("❌ Authentication token, role, or user ID is missing.");
       }
 
-      // ✅ Allow Excel downloads ONLY for agents
       if (format == "excel" && role != "agent") {
         throw Exception("❌ Only agents can download vouchers in Excel format.");
       }
 
+      final requestData = {
+        "role": role,
+        "id": int.parse(userId),
+        "order_id": orderId,
+        "format": format,
+        if (fromDate != null) "from_date": fromDate.toIso8601String().split('T').first,
+        if (toDate != null) "to_date": toDate.toIso8601String().split('T').first,
+      };
+
+      print("📤 Sending download request to $apiUrl with data: $requestData");
+
       final response = await Dio().post(
         apiUrl,
         options: Options(
-          responseType: ResponseType.bytes, // ✅ Get file as bytes
+          responseType: ResponseType.bytes,
           headers: {
             "Content-Type": "application/json",
-            "Accept": format == "pdf" ? "application/pdf" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "Accept": format == "pdf"
+                ? "application/pdf"
+                : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             "Authorization": "Bearer $token",
           },
         ),
-        data: {
-          "role": role, // ✅ Dynamic role
-          "id": int.parse(userId), // ✅ Dynamic ID
-          "order_id": orderId,
-          "format": format, // ✅ Specify format (pdf or excel)
-        },
+        data: requestData,
       );
 
+
       if (response.statusCode == 200) {
-        String filePath;
         String fileExtension = format == "pdf" ? "pdf" : "xlsx";
-
-        // ✅ Save in `/storage/emulated/0/Download` (Android 10 and below)
-        if (Platform.version.contains("10") || Platform.version.contains("9")) {
-          Directory downloadsDir = Directory("/storage/emulated/0/Download");
-          if (!downloadsDir.existsSync()) {
-            downloadsDir.createSync(recursive: true);
-          }
-          filePath = "${downloadsDir.path}/voucher_$orderId.$fileExtension";
-        }
-        // ✅ Android 11+ → Use Scoped Storage
-        else {
-          Directory? dir = await getExternalStorageDirectory();
-          filePath = "${dir?.path}/voucher_$orderId.$fileExtension";
-        }
-
+        Directory? dir = await getExternalStorageDirectory();
+        String filePath = "${dir?.path}/voucher_$orderId.$fileExtension";
         final File file = File(filePath);
         await file.writeAsBytes(response.data);
 
@@ -172,6 +176,7 @@ class VoucherService {
       throw Exception("❌ Error downloading voucher: $e");
     }
   }
+
 
   /// ✅ Open the downloaded file
   void openFile(String filePath) {
@@ -191,15 +196,4 @@ class VoucherService {
     );
     intent.launch();
   }
-
-  // Future<void> checkStoredData() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   String? token = prefs.getString('token');
-  //   String? role = prefs.getString('role');
-  //   String? userId = prefs.getString('user_id');
-  //
-  //   print("✅ Stored Token: $token");
-  //   print("✅ Stored Role: $role");
-  //   print("✅ Stored User ID: $userId");
-  // }
 }

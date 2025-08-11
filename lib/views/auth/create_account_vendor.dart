@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:lottie/lottie.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../common/custom_back_button.dart';
 import '../../common/custom_button.dart';
 import '../../common/custom_paratext_widget.dart';
-import '../../common/custom_scaffold.dart';
 import '../../fbo_services/user_repository.dart';
 
 class VendorCreation extends StatefulWidget {
@@ -18,6 +22,7 @@ class VendorCreation extends StatefulWidget {
 
 class _VendorCreationState extends State<VendorCreation> {
   final _formKey = GlobalKey<FormState>();
+  bool _agreedToPrivacy = false;
 
   // Controllers
   final TextEditingController nameController = TextEditingController();
@@ -29,7 +34,20 @@ class _VendorCreationState extends State<VendorCreation> {
   final TextEditingController pinCodeController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController restaurantNameController = TextEditingController();
+  //final TextEditingController restaurantNameController = TextEditingController();
+
+  File? _selectedImage;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
 
   String? selectedGender;
   bool _isSubmitting = false;
@@ -71,6 +89,10 @@ class _VendorCreationState extends State<VendorCreation> {
   }
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      if (!_agreedToPrivacy) {
+        _showError("❌ You must agree to the Privacy Policy to continue.");
+        return;
+      }
       setState(() {
         _isSubmitting = true;
       });
@@ -95,7 +117,6 @@ class _VendorCreationState extends State<VendorCreation> {
         "gender": selectedGender ?? "Male",
         "country_code": _selectedPhoneNumber.isoCode ?? "",
         "contact_number": _selectedPhoneNumber.parseNumber(),
-        "restaurant_name": restaurantNameController.text,
         "license_number": licenseController.text,
         "address": addressController.text,
         "pincode": pinCodeController.text,
@@ -104,7 +125,7 @@ class _VendorCreationState extends State<VendorCreation> {
 
       print("User Data: $userData");
 
-      var response = await UserRegistration.registerVendor(userData);
+      var response = await UserRegistration.registerVendor(userData, _selectedImage);
       print("🚀 API Response: $response");
 
       if (response.containsKey("error")) {
@@ -171,8 +192,8 @@ class _VendorCreationState extends State<VendorCreation> {
               children: [
                 Center(
                   child: SizedBox(
-                    width: 250,
-                    height: 250,
+                    width: 150,
+                    height: 150,
                     child: Lottie.asset(
                       'assets/animations/start.json',
                       fit: BoxFit.contain,
@@ -183,23 +204,73 @@ class _VendorCreationState extends State<VendorCreation> {
                   boldText: 'Agent Registration',
                   subtext: 'Create your new account',
                   text: '',
+                ),    const SizedBox(height: 10),
+                Center(
+                  child: GestureDetector(
+                    onTap: _pickImage,
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundImage:
+                      _selectedImage != null ? FileImage(_selectedImage!) : null,
+                      child: _selectedImage == null
+                          ? Icon(Icons.camera_alt, size: 40)
+                          : null,
+                    ),
+                  ),
                 ),
+
+
                 const SizedBox(height: 20),
                 Form(
                   key: _formKey,
                   child: Column(
                     children: [
-                      _buildTextField(nameController, "Full Name", Icons.person),
-                      _buildTextField(emailController, "Email", Icons.email, isEmail: true),
-                      _buildDateField(context, dobController, "Date of Birth"),
+                      _buildTextField(nameController, "Full Name",null, iconImagePath: 'assets/icon/profile.png'),
+                      _buildTextField(emailController, "Email", Icons.email, isEmail: true, iconImagePath: 'assets/icon/mail.png'),
+                      _buildDateField(context, dobController, "Date of Birth", iconImagePath: 'assets/icon/cal.png'),
                       _buildTextField(ageController, "Age", Icons.cake, readOnly: true),
                      // _buildGenderSelection(),
                       _buildPhoneNumberField(),
-                      _buildTextField(licenseController, "License Number", Icons.assignment),
-                      _buildTextField(pinCodeController, "Pin Code", Icons.pin_drop, isPinCode: true),
+                      _buildTextField(licenseController, "License Number", Icons.assignment, iconImagePath: 'assets/icon/lic.png'),
+                      _buildTextField(pinCodeController, "Pin Code", Icons.pin_drop, isPinCode: true, iconImagePath: 'assets/icon/location.png'),
                       _buildTextField(addressController, "Address", Icons.location_city),
-                      _buildTextField(passwordController, "Password", Icons.lock, obscureText: true, isPassword: true),
-                      const SizedBox(height: 30),
+                      _buildTextField(passwordController, "Password", Icons.lock, obscureText: true, isPassword: true, iconImagePath: 'assets/icon/password.png'),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _agreedToPrivacy,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                _agreedToPrivacy = value ?? false;
+                              });
+                            },
+                          ),
+                          Expanded(
+                            child: Text.rich(
+                              TextSpan(
+                                text: 'I agree to the ',
+                                style: TextStyle(color: Colors.black),
+                                children: [
+                                  TextSpan(
+                                    text: 'Privacy Policy',
+                                    style: TextStyle(
+                                      decoration: TextDecoration.underline,
+                                      color: Colors.blue,
+                                    ),
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = () async {
+                                        final url = Uri.parse('https://ai.thikse.in/privacy-policy');
+                                        if (await canLaunchUrl(url)) {
+                                          await launchUrl(url, mode: LaunchMode.externalApplication);
+                                        }
+                                      },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
                       Center(
                         child: _isSubmitting
                             ? const CircularProgressIndicator()
@@ -219,24 +290,63 @@ class _VendorCreationState extends State<VendorCreation> {
   }
 
 
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon,
-      {bool obscureText = false, bool isPinCode = false, bool isPassword = false, bool isEmail = false,bool readOnly = false}) {
+  Widget _buildTextField(
+      TextEditingController controller,
+      String label,
+      IconData? icon, {
+        bool obscureText = false,
+        bool isPinCode = false,
+        bool isPassword = false,
+        bool isEmail = false,
+        bool readOnly = false,
+        String? iconImagePath,
+      }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: TextFormField(
         controller: controller,
         obscureText: obscureText,
-        keyboardType: isEmail ? TextInputType.emailAddress : (isPinCode ? TextInputType.number : TextInputType.text),
+        readOnly: readOnly,
+        keyboardType: isEmail
+            ? TextInputType.emailAddress
+            : (isPinCode ? TextInputType.number : TextInputType.text),
         decoration: InputDecoration(
           labelText: label,
-          prefixIcon: Icon(icon),
+          prefixIcon: iconImagePath != null
+              ? Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Image.asset(
+              iconImagePath,
+              width: 24,
+              height: 24,
+            ),
+          )
+              : Icon(icon),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.grey.shade400),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Color(0xFF7FBF08), width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.red),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.red, width: 2),
+          ),
         ),
         validator: (value) {
           if (value == null || value.isEmpty) {
             return "Please enter $label";
           }
-          if (isEmail && !RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value)) {
+          if (isEmail &&
+              !RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+                  .hasMatch(value)) {
             return "Enter a valid email";
           }
           return null;
@@ -244,6 +354,8 @@ class _VendorCreationState extends State<VendorCreation> {
       ),
     );
   }
+
+
   Widget _buildPhoneNumberField() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
@@ -279,34 +391,12 @@ class _VendorCreationState extends State<VendorCreation> {
     );
   }
 
-  // Widget _buildGenderSelection() {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       const Text(
-  //         "Gender",
-  //         style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
-  //       ),
-  //       const SizedBox(height: 8),
-  //       Column(
-  //         children: ["Male", "Female", "Other"].map((gender) {
-  //           return RadioListTile<String>(
-  //             title: Text(gender),
-  //             value: gender,
-  //             groupValue: selectedGender,
-  //             onChanged: (value) {
-  //               setState(() {
-  //                 selectedGender = value;
-  //               });
-  //             },
-  //             controlAffinity: ListTileControlAffinity.leading, // Align radio button to the left
-  //           );
-  //         }).toList(),
-  //       ),
-  //     ],
-  //   );
-  // }
-  Widget _buildDateField(BuildContext context, TextEditingController controller, String label) {
+  Widget _buildDateField(
+      BuildContext context,
+      TextEditingController controller,
+      String label, {
+        String? iconImagePath,
+      }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: TextFormField(
@@ -315,11 +405,38 @@ class _VendorCreationState extends State<VendorCreation> {
         onTap: () => _selectDate(context),
         decoration: InputDecoration(
           labelText: label,
-          prefixIcon: const Icon(Icons.calendar_today),
+          prefixIcon: iconImagePath != null
+              ? Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Image.asset(
+              iconImagePath,
+              width: 24,
+              height: 24,
+            ),
+          )
+              : const Icon(Icons.calendar_today),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.grey.shade400),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Color(0xFF7FBF08), width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.red),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.red, width: 2),
+          ),
         ),
-        validator: (value) => value == null || value.isEmpty ? "$label is required" : null,
+        validator: (value) =>
+        value == null || value.isEmpty ? "$label is required" : null,
       ),
     );
   }
+
 }

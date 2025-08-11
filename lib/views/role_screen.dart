@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
-
-import '../common/app_colors.dart';
 import '../common/custom_back_button.dart';
 import '../common/custom_login_button.dart';
 
@@ -74,17 +72,17 @@ class _RoleScreenState extends State<RoleScreen> {
                     const SizedBox(height: 30),
                     CustomLoginButton(
                       buttonText: 'FBO',
-                      onPressed: () => _navigateTo('/UserCreation', extra: {'role': 'user'}),
+                      onPressed: () => context.push('/UserCreation', extra: {'role': 'user'}),
                     ),
                     const SizedBox(height: 40),
                     CustomLoginButton(
                       buttonText: 'Agent',
-                      onPressed: () => _navigateTo('/VendorCreation', extra: {'role': 'vendor'}),
+                      onPressed: () => context.push('/VendorCreation', extra: {'role': 'vendor'}),
                     ),
                     const SizedBox(height: 40),
                     CustomLoginButton(
                       buttonText: 'Collection Point',
-                      onPressed: () => _navigateTo('/login'),
+                      onPressed: () => context.push('/login'),
                     ),
                     const SizedBox(height: 20),
                   ],

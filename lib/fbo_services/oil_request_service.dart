@@ -2,15 +2,20 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../config/api_config.dart';
+
 class OilRequestService {
-  static const String _baseUrl = "https://enzopik.thikse.in/api/users";
 
   /// ✅ Submit oil request
   static Future<Map<String, dynamic>?> submitOilRequest({
     required String type,
     required String quantity,
     required String paymentMethod,
-    String? reason, String? dateRange, String? address,String? counter_unit_price
+    String? reason,
+    String? dateRange,
+    String? address,
+    String? counter_unit_price,
+    String? remarks,
   }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -38,12 +43,13 @@ class OilRequestService {
         "total_price": totalPrice.toString(),
         "dateRange": dateRange.toString(),//
         "address": address.toString(),
+        "remarks": remarks,
       };
 
       print("🔹 Sending Oil Request: $requestData");
 
       final response = await http.post(
-        Uri.parse("$_baseUrl/request-oil"),
+        Uri.parse(ApiConfig.RequestOil),
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",

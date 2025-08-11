@@ -3,9 +3,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../config/api_config.dart';
+
 class AssignedApi {
-  static const String baseUrl =
-      "https://enzopik.thikse.in/api/get-order-details";
+  static const String baseUrl =ApiConfig.getOrderDetails;
 
   /// Fetch Orders by status (e.g., 'assigned', 'completed')
   Future<List<dynamic>> fetchOrdersByStatus(String status) async {

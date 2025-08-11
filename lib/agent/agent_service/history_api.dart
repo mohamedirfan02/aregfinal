@@ -3,9 +3,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../config/api_config.dart';
+
 class OrderApi {
-  static const String baseUrl =
-      "https://enzopik.thikse.in/api/get-order-details";
+  static const String baseUrl = ApiConfig.getOrderDetails;
 
   /// Fetch Orders with dynamic role, ID, and token from SharedPreferences
   Future<List<dynamic>> fetchOrders() async {
@@ -27,7 +28,7 @@ class OrderApi {
       debugPrint("🔹 User ID: $id");
       debugPrint("🔹 Token: $token");
 
-      final Uri url = Uri.parse(baseUrl);
+      final Uri url = Uri.parse(ApiConfig.getOrderDetails);
 
       final response = await http.post(
         url,

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
@@ -5,7 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:loading_indicator/loading_indicator.dart'; // ✅ Import loading indicator package
 import '../../common/custom_back_button.dart';
 import '../../common/custom_button.dart';
-import '../../common/custom_scaffold.dart';
 import '../../common/custom_textformfield.dart';
 import '../../common/forgotPassword_text_button.dart';
 import '../../fbo_services/UserAuthentication.dart';
@@ -23,6 +24,60 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false; // ✅ Track loading state
 
+  void _showTopSnackbar(
+      String message, {
+        Color backgroundColor = Colors.black87,
+        Color textColor = Colors.white,
+        Widget? icon,
+      }) {
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).viewPadding.top + 16,
+        left: 20,
+        right: 20,
+        child: Material(
+          color: Colors.transparent,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                decoration: BoxDecoration(
+                  color: backgroundColor.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    if (icon != null) ...[
+                      icon,
+                      SizedBox(width: 10),
+                    ],
+                    Expanded( // THIS is the fix
+                      child: Text(
+                        message,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+    Future.delayed(const Duration(seconds: 2)).then((_) => overlayEntry.remove());
+  }
 
   Future<void> _storeLoginData(String token, String email, String userId, String role) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -79,18 +134,39 @@ class _LoginPageState extends State<LoginPage> {
           if (role == 'vendor') {
             context.go('/VendorPage', extra: userDetails);
           } else if (role == 'user') {
-            context.go('/UserHome', extra: userDetails);
+            context.go('/UserHome', extra: {
+              "role": user['role'],           // e.g., "agent"
+              "details": user['details'],     // full map
+            });
           } else if (role == 'agent') {
-            context.go('/AgentPage', extra: userDetails);
+            context.go('/AgentPage', extra: {
+              "role": user['role'],           // e.g., "agent"
+              "details": user['details'],     // full map
+            });
+
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Invalid role associated with your account')),
+            _showTopSnackbar(
+              "Invalid role associated with your account",
+              backgroundColor: Colors.white60,
+              textColor: Colors.black,
+              icon: Image.asset(
+                'assets/icon/error.png',
+                height: 24,
+                width: 24,
+              ),
             );
           }
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid email or password')),
+        _showTopSnackbar(
+          "Invalid email or password",
+          backgroundColor: Colors.white60,
+          textColor: Colors.black,
+          icon: Image.asset(
+            'assets/icon/error.png',
+            height: 24,
+            width: 24,
+          ),
         );
       }
     }
@@ -125,7 +201,7 @@ class _LoginPageState extends State<LoginPage> {
                               width: 250,
                               height: 250,
                               child: Lottie.asset(
-                                'assets/animations/login.json',
+                                'assets/animations/zz.json',
                                 fit: BoxFit.contain,
                               ),
                             ),
@@ -179,7 +255,9 @@ class _LoginPageState extends State<LoginPage> {
                               }
                               return null;
                             },
+                            isPassword: true,
                           ),
+
                           const SizedBox(height: 8),
                           Align(
                             alignment: Alignment.centerRight,

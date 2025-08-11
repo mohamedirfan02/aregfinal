@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:areg_app/config/api_config.dart'; // ✅ Import API Config
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -16,12 +17,12 @@ class UserAuthentication {
     String osVersion = "Unknown";
 
     try {
-      if (await deviceInfoPlugin.androidInfo != null) {
+      if (Platform.isAndroid) {
         final androidInfo = await deviceInfoPlugin.androidInfo;
         deviceName = androidInfo.model;
         os = "Android";
         osVersion = androidInfo.version.release;
-      } else if (await deviceInfoPlugin.iosInfo != null) {
+      } else if (Platform.isIOS) {
         final iosInfo = await deviceInfoPlugin.iosInfo;
         deviceName = iosInfo.utsname.machine;
         os = "iOS";
@@ -35,9 +36,10 @@ class UserAuthentication {
       "device_name": deviceName,
       "os": os,
       "os_version": osVersion,
-      "app_version": packageInfo.version
+      "app_version": packageInfo.version,
     };
   }
+
 
   // ✅ Get FCM Token
   static Future<String?> _getFCMToken() async {

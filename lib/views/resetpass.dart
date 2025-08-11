@@ -6,8 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import '../common/custom_back_button.dart';
 import '../common/custom_button.dart';
-import '../common/custom_scaffold.dart';
 import '../common/custom_textformfield.dart';
+import '../config/api_config.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -42,12 +42,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     String input = _inputController.text.trim();
     String? email;
     String? phoneNumber;
-    String? verificationId;
+    //String? verificationId;
     try {
       if (_isEmail(input)) {
         // ✅ Send Email OTP via Laravel API
         final response = await http.post(
-          Uri.parse("https://enzopik.thikse.in/api/send-otp"),
+          Uri.parse(ApiConfig.sendOtp),
           headers: {
             "Content-Type": "application/json",
             "Accept": "application/json",

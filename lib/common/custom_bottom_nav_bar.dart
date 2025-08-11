@@ -12,41 +12,61 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: onTap,
-      selectedItemColor: Colors.green, // ✅ Selected icon and label color
-      unselectedItemColor: Colors.grey, // ✅ Unselected icon and label color
-      type: BottomNavigationBarType.fixed, // ✅ Ensures labels are always visible
+      backgroundColor: isDarkMode ? Colors.black : Colors.white,
+      selectedItemColor: isDarkMode ? Colors.white : const Color(0xFF006D04),
+      unselectedItemColor: isDarkMode ? Colors.white60 : Colors.grey,
+      type: BottomNavigationBarType.fixed,
       items: [
         BottomNavigationBarItem(
-          icon: _buildIcon("assets/icon/ai.png", 0),
+          icon: _buildIconWithIndicator(context, "assets/icon/chat.png", 0),
           label: "AI Chat",
         ),
         BottomNavigationBarItem(
-          icon: _buildIcon("assets/icon/home.png", 1),
+          icon: _buildIconWithIndicator(context, "assets/icon/home.png", 1),
           label: "Home",
         ),
         BottomNavigationBarItem(
-          icon: _buildIcon("assets/icon/profile.png", 2),
+          icon: _buildIconWithIndicator(context, "assets/icon/profile.png", 2),
           label: "Profile",
         ),
         BottomNavigationBarItem(
-          icon: _buildIcon("assets/icon/setting.png", 3),
+          icon: _buildIconWithIndicator(context, "assets/icon/setting.png", 3),
           label: "Settings",
         ),
       ],
     );
   }
 
-  /// ✅ Function to change icon color on tap
-  Widget _buildIcon(String assetPath, int index) {
-    return ColorFiltered(
-      colorFilter: ColorFilter.mode(
-        index == currentIndex ? Colors.green : Colors.grey, // Change color based on selection
-        BlendMode.srcIn,
-      ),
-      child: Image.asset(assetPath, width: 28, height: 28),
+  Widget _buildIconWithIndicator(BuildContext context, String assetPath, int index) {
+    final isSelected = index == currentIndex;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final Color selectedColor = isDarkMode ? Colors.white : const Color(0xFF006D04);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          height: 3,
+          width: 28,
+          decoration: BoxDecoration(
+            color: isSelected ? selectedColor : Colors.transparent,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(height: 4),
+        isSelected
+            ? ColorFiltered(
+          colorFilter: ColorFilter.mode(selectedColor, BlendMode.srcIn),
+          child: Image.asset(assetPath, width: 28, height: 28),
+        )
+            : Image.asset(assetPath, width: 28, height: 28),
+      ],
     );
   }
 }

@@ -2,11 +2,14 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../config/api_config.dart';
+
 class MonthlySaleService {
+
+
+
   static Future fetchMonthlyData(int month) async {
     final prefs = await SharedPreferences.getInstance();
-
-    // Fetch the stored user ID dynamically
     final String? userId = prefs.getString('restaurant_user_id');
     final String? authToken = prefs.getString('token'); // Fetch token
 
@@ -15,7 +18,7 @@ class MonthlySaleService {
       return null;
     }
 
-    final String apiUrl = "https://enzopik.thikse.in/api/get-monthly-oil-sale/$userId/$month";
+    final String apiUrl = ApiConfig.getMonthlyOilSale(userId, month);
 
     print("📡 Requesting API: $apiUrl");
 

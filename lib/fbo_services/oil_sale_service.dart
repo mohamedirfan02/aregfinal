@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class OilSaleService {
-  static const String _baseUrl = "https://enzopik.thikse.in/api";
+import '../config/api_config.dart';
 
+class OilSaleService {
   /// ✅ Fetch oil sale data based on logged-in user
   static Future<Map<String, dynamic>?> fetchOilSaleData() async {
     try {
@@ -18,7 +18,7 @@ class OilSaleService {
       }
 
       final response = await http.get(
-        Uri.parse("$_baseUrl/get-oil-sale/$userId"),
+        Uri.parse(ApiConfig.getOilSale(userId)),
         headers: {
           "Authorization": "Bearer $token",
           "Accept": "application/json",

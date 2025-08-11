@@ -63,6 +63,9 @@ class DefaultFirebaseOptions {
     messagingSenderId: '897194172400',
     projectId: 'areg-a6be8',
     storageBucket: 'areg-a6be8.firebasestorage.app',
+    androidClientId: '897194172400-1jo2h91e8fl2dhm8tgplso4png5lgl15.apps.googleusercontent.com',
+    iosClientId: '897194172400-id0ltsm7qiqn633tishq3fu0ik7b6343.apps.googleusercontent.com',
     iosBundleId: 'com.example.aregApp',
   );
+
 }

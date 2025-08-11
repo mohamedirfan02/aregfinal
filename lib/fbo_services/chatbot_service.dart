@@ -1,42 +1,64 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../config/api_config.dart';
+
 class ChatbotService {
-  static const String apiUrl = "https://87df-103-186-120-91.ngrok-free.app/api/chatbot_reposes";
+  static const String apiUrl = ApiConfig.chatBot;
 
-  /// ✅ Fetch user ID from SharedPreferences
-  static Future<String?> getUserId() async {
+  static Future<String> sendMessage(String userMessage) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('user_id');
-  }
+    String? token = prefs.getString('token');
+    String? id = prefs.getString('userId');
+    String? role = prefs.getString('role');
 
-  /// ✅ Send user message & get AI response
-  static Future<String> sendMessage(String question) async {
-    String? userId = await getUserId();
-    if (userId == null || userId.isEmpty) {
-      return "❌ User ID not found. Please log in.";
+    if (token == null || id == null || role == null) {
+      print("❌ Auth error: Missing token, userId, or role.");
+      return "❌ User not authenticated. Please log in.";
     }
 
     try {
+      print("📤 Sending message to chatbot → $userMessage");
+      print("🧾 Payload: role=$role, id=$id");
+
       final response = await http.post(
         Uri.parse(apiUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"question": question, "user_id": userId}),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({
+          "role": role,
+          "id": int.tryParse(id),
+          "message": userMessage,
+        }),
       );
+
+      print("📥 Response Status: ${response.statusCode}");
+      print("📥 Response Body: ${response.body}");
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        if (jsonData["status"] == "success") {
-          return jsonData["message"];
+        final chatResponse = jsonData["chat_response"];
+
+        if (chatResponse != null && chatResponse["response"] != null) {
+          print("✅ Chatbot Response: ${chatResponse["response"]}");
+          return chatResponse["response"];
         } else {
-          return "❌ Invalid response from server";
+          print("⚠️ Chatbot 'chat_response' or 'response' missing.");
+          return "❌ No response from chatbot.";
         }
+
       } else {
-        return "❌ Failed to fetch response. Status Code: ${response.statusCode}";
+        print("❌ Chatbot API error: ${response.body}");
+        return "❌ Server error: ${response.statusCode} → ${response.body}";
       }
     } catch (e) {
-      return "❌ Error: $e";
+      print("⚠️ Exception during chatbot request: $e");
+      return "❌ Error: Something went wrong while contacting the chatbot.";
     }
   }
 }

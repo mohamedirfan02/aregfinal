@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -12,12 +11,35 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>  with SingleTickerProviderStateMixin {
+
+  late AnimationController _controller;
+  late Animation<double> _opacityAnimation;
+  late Animation<double> _scaleAnimation;
+
  // Timer? _timer;
   String? userId;
   @override
   void initState() {
     super.initState();
+
+    _controller = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    );
+
+    _opacityAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.6,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+
+    _controller.forward();
+
     Timer(const Duration(seconds: 3), () {
       if (!mounted) return; // ✅ prevent use after dispose
       context.go('/intro');
@@ -33,6 +55,11 @@ class _SplashScreenState extends State<SplashScreen> {
     }
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -44,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
   Future<bool> isUserLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('user_id');
+    final userId = prefs.getString('userId');
     final token = prefs.getString('token');
     return userId != null && token != null;
   }
@@ -90,23 +117,31 @@ class _SplashScreenState extends State<SplashScreen> {
     }
   }
 
-  // @override
-  // void dispose() {
-  //   _timer?.cancel();
-  //   super.dispose();
-  // }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: Image.asset(
-          'assets/image/newsplash.png',
-          width: 250.w,
-          height: 250.h,
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Opacity(
+              opacity: _opacityAnimation.value,
+              child: Transform.scale(
+                scale: _scaleAnimation.value,
+                child: child,
+              ),
+            );
+          },
+          child: Image.asset(
+            'assets/image/newsplash.png',
+            width: 250.w,
+            height: 250.h,
+          ),
         ),
       ),
     );
   }
+
 }

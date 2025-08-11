@@ -6,12 +6,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:open_filex/open_filex.dart';
 
+import '../../config/api_config.dart';
+
 class FboDocumentService {
-  static const String _baseUrl = "https://enzopik.thikse.in/api";
 
   /// ✅ Fetch user data from API
   static Future<List<Map<String, dynamic>>> fetchUsers() async {
-    const String apiUrl = "$_baseUrl/users/all";
 
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -23,7 +23,7 @@ class FboDocumentService {
       }
 
       final response = await http.get(
-        Uri.parse(apiUrl),
+        Uri.parse(ApiConfig.fboAll),
         headers: {
           "Authorization": "Bearer $token",
           "Content-Type": "application/json",
@@ -51,8 +51,9 @@ class FboDocumentService {
     required Function(double) onProgress,
     required Function(String?) onComplete,
   }) async {
-    String apiUrl = "$_baseUrl/download$type/$userId";
+    String apiUrl =  ApiConfig.downloadPdf(type, userId);
     String fileName = "${type.toLowerCase()}_$userId.pdf";
+    print("📦 API URL: $apiUrl");
 
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();

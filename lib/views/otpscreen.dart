@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:areg_app/config/api_config.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -7,7 +8,6 @@ import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import '../common/custom_back_button.dart';
 import '../common/custom_button.dart';
-import '../common/custom_scaffold.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String email;
@@ -87,7 +87,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       // ✅ Step 1: Verify Email OTP via Laravel API (if email exists)
       if (widget.email.isNotEmpty) {
         final emailResponse = await http.post(
-          Uri.parse("https://enzopik.thikse.in/api/verify-otp"),
+          Uri.parse(ApiConfig.verifyOtp),
           headers: {"Content-Type": "application/json"},
           body: jsonEncode({"email": widget.email, "otp": otpCode}),
         );
@@ -142,7 +142,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse("https://enzopik.thikse.in/api/send-otp"),
+        Uri.parse(ApiConfig.sendOtp),
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
@@ -179,7 +179,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               child: Column(
                 children: [
                  // const SizedBox(height: 90),
-
                   // Illustration
                   Center(
                     child: SizedBox(

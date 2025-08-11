@@ -4,8 +4,8 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.5.0' // 🔄 Update to latest
-        classpath 'com.google.gms:google-services:4.3.15'
+        classpath 'com.android.tools.build:gradle:8.5.2' // 🔄 Update to latest
+        classpath 'com.google.gms:google-services:4.4.2'
     }
 }
 
@@ -15,6 +15,14 @@ allprojects {
         mavenCentral()
     }
 }
+
+//allprojects {
+//    gradle.projectsEvaluated {
+//        tasks.withType(JavaCompile).configureEach {
+//            options.release = 21
+//        }
+//    }
+//}
 
 rootProject.buildDir = "../build"
 

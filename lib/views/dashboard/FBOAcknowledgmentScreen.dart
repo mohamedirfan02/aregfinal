@@ -1,6 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../../common/custom_GradientContainer.dart';
+import 'package:lottie/lottie.dart';
 import '../../common/custom_appbar.dart';
 import '../../fbo_services/Fbo_Acknowledgment_Service.dart';
 
@@ -16,45 +16,84 @@ class _FboAcknowledgmentScreenState extends State<FboAcknowledgmentScreen> {
   bool isLoading = true;
   bool hasError = false;
   Map<int, bool> paymentReceived = {}; // ✅ Track Payment Checkbox State
+  Set<int> loadingOrders = {}; // Use Set to avoid duplicates
 
   @override
   void initState() {
     super.initState();
     fetchCompletedOrders();
   }
+  void _showTopSnackbar(
+      String message, {
+        Color backgroundColor = Colors.black87,
+        Color textColor = Colors.white,
+        Widget? icon,
+      }) {
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).viewPadding.top + 16,
+        left: 20,
+        right: 20,
+        child: Material(
+          color: Colors.transparent,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                decoration: BoxDecoration(
+                  color: backgroundColor.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    if (icon != null) ...[
+                      icon,
+                      SizedBox(width: 10),
+                    ],
+                    Expanded( // THIS is the fix
+                      child: Text(
+                        message,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+    Future.delayed(const Duration(seconds: 2)).then((_) => overlayEntry.remove());
+  }
+
+
 
   /// ✅ Fetch completed orders
   Future<void> fetchCompletedOrders() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    String? userId = prefs.getString('user_id');
-    String? token = prefs.getString('token');
-
-    if (userId == null || token == null) {
-      print("❌ Error: User ID or token is missing");
-      setState(() {
-        hasError = true;
-        isLoading = false;
-      });
-      return;
-    }
-
-    print("✅ Using User ID: $userId for API request");
-    print("✅ Using Token: $token for API request");
-
     setState(() {
       isLoading = true;
       hasError = false;
     });
 
-    final response = await FboAcknowledgmentService.fetchCompletedOrders(userId, token);
+    final response = await FboAcknowledgmentService.fetchCompletedOrders();
 
     if (response != null) {
       setState(() {
         completedOrders = response;
         isLoading = false;
 
-        // ✅ Initialize checkbox state
         for (var order in completedOrders) {
           paymentReceived[order["order_id"]] = false;
         }
@@ -67,115 +106,194 @@ class _FboAcknowledgmentScreenState extends State<FboAcknowledgmentScreen> {
     }
   }
 
-  /// ✅ Acknowledge an order
+
+  /// Acknowledge an order
   Future<void> acknowledgeOrder(int orderId) async {
-    bool success = await FboAcknowledgmentService.acknowledgeOrder(orderId);
+    // Show loading IMMEDIATELY when button is clicked
+    setState(() {
+      loadingOrders.add(orderId);
+    });
 
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Order #$orderId acknowledged successfully!")),
+    try {
+      // Call the API
+      bool success = await FboAcknowledgmentService.acknowledgeOrder(orderId);
+
+      if (success) {
+        _showTopSnackbar(
+          "Order $orderId acknowledged successfully!",
+          backgroundColor: Colors.white60,
+          textColor: Colors.black,
+          icon: Image.asset(
+            'assets/icon/smile.png',
+            height: 24,
+            width: 24,
+          ),
+        );
+
+        // ✅ Remove the order from the list
+        setState(() {
+          completedOrders.removeWhere((order) => order["order_id"] == orderId);
+        });
+      } else {
+        _showTopSnackbar(
+          "Failed to acknowledge order. Try again!",
+          backgroundColor: Colors.white60,
+          textColor: Colors.red,
+          icon: Image.asset(
+            'assets/icon/error.png',
+            height: 24,
+            width: 24,
+          ),
+        );
+      }
+    } catch (e) {
+      // Handle any exceptions
+      _showTopSnackbar(
+        "An error occurred. Please try again!",
+        backgroundColor: Colors.white60,
+        textColor: Colors.red,
+        icon: Image.asset(
+          'assets/icon/error.png',
+          height: 24,
+          width: 24,
+        ),
       );
-
+    } finally {
+      // ✅ Always remove loading state when done
       setState(() {
-        completedOrders.removeWhere((order) => order["order_id"] == orderId);
+        loadingOrders.remove(orderId);
       });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to acknowledge order. Try again!")),
-      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-
-    return GradientContainer(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: CustomAppBar(),
-        body: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : hasError
-            ? const Center(child: Text("Failed to load completed orders"))
-            : ListView.builder(
-          padding: const EdgeInsets.all(16.0),
+    return Scaffold(
+      appBar: CustomAppBar(),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : hasError
+          ? const Center(child: Text("Failed to load completed orders"))
+          : completedOrders.isEmpty
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Lottie.asset(
+              'assets/animations/empty.json',
+              width: 200,
+              height: 200,
+              repeat: false,
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              "No completed orders yet!",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      )
+          : Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView.builder(
           itemCount: completedOrders.length,
           itemBuilder: (context, index) {
             var order = completedOrders[index];
-            int orderId = order["order_id"];
-
-            return Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(
+                    color: Color(0xFF7FBF08),
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Order ID: $orderId",
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    Center(
+                      child: Text(
+                        "Order ID: ${order["order_id"]}",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Color(0xFF5D6E1E),
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 10),
-                    Text("Type: ${order['type']}"),
-                    Text("Quantity: ${order['quantity']}"),
-                    Text("Status: ${order['status']}"),
-                    Text("Unit Price: ₹${order['unit_price'] ?? 'N/A'}"),
-                    const SizedBox(height: 10),
-                    Text(
-                      "Customer Details:",
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    Text("Name: ${order['user_name']}"),
-                    Text("Contact: ${order['user_contact']}"),
-                    Text("Address: ${order['address']}"),
-                    const SizedBox(height: 10),
-                    Text(
-                      "Date & Time:",
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    Text("Date: ${order['date']}"),
-                    Text("Time: ${order['time']}"),
+                    const SizedBox(height: 12),
+                   _buildVoucherItem("Restaurant Name:", order['restaurant_name']??'N/A'),
+                    _buildVoucherItem("Type:", order['type']),
+                    _buildVoucherItem("payment method:", order['payment_method']??''),
+                    _buildVoucherItem("Quantity:", "${order['quantity']}"),
+                    _buildVoucherItem("Status:", order['status']),
+                    //_buildVoucherItem("Unit Price:", "₹${order['proposed_unit_price'] ?? 'N/A'}"),
+                    _buildVoucherItem("Name:", order['user_name']),
+                    _buildVoucherItem("Oil Quality:", order['oil_quality']),
+                    _buildVoucherItem("Address:", order['registered_address'], multiline: true,),
+                    _buildVoucherItem("Date:", order['date']),
+                    _buildVoucherItem("Time:", order['time']),
                     const SizedBox(height: 15),
 
-                    // ✅ Payment Received Checkbox
+                    // Payment Received Checkbox
                     Row(
                       children: [
                         Checkbox(
-                          value: paymentReceived[orderId] ?? false,
+                          value: paymentReceived[order["order_id"]] ?? false,
                           onChanged: (value) {
                             setState(() {
-                              paymentReceived[orderId] = value!;
+                              paymentReceived[order["order_id"]] = value!;
                             });
                           },
                         ),
-                        const Text(
+                        Text(
                           "Payment Received",
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF006D04),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
 
                     const SizedBox(height: 10),
-
-                    // ✅ Acknowledge Button (Enabled only if Payment Received)
-                    ElevatedButton(
-                      onPressed: paymentReceived[orderId] == true
-                          ? () => acknowledgeOrder(orderId)
-                          : null, // Disabled if unchecked
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: paymentReceived[orderId] == true
-                            ? Colors.green
-                            : Colors.green.shade300, // Light green when disabled
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                    // Acknowledge Button (Enabled only if Payment Received)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: paymentReceived[order["order_id"]] == true
+                            ? () => acknowledgeOrder(order["order_id"])
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF7FBF08),
+                          disabledBackgroundColor: Colors.black38,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: loadingOrders.contains(order["order_id"])
+                            ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                            : const Text(
+                          "Acknowledge",
+                          style: TextStyle(color: Colors.white),
                         ),
                       ),
-                      child: const Text("Acknowledge", style: TextStyle(color: Colors.white)),
-                    ),
+                    )
+
                   ],
                 ),
               ),
@@ -185,4 +303,43 @@ class _FboAcknowledgmentScreenState extends State<FboAcknowledgmentScreen> {
       ),
     );
   }
+
+
+
+  Widget _buildVoucherItem(String title, String value, {bool multiline = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4), // Slight vertical padding
+      child: Row(
+        crossAxisAlignment: multiline ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            flex: 4,
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+                color: Color(0xFF5D6E1E),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            flex: 6,
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+                color: Color(0xFF006D04),
+                height: multiline ? 1.4 : 1.0,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 }

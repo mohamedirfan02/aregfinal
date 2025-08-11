@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../common/shimmer_loader.dart';
 import '../agent_service/fbo_document_service.dart';
+import '../common/agent_appbar.dart';
 
 class FboDocumentScreen extends StatefulWidget {
   const FboDocumentScreen({super.key});
@@ -91,9 +92,9 @@ class _FboDocumentScreenState extends State<FboDocumentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("FBO Users")),
+      appBar: const AgentAppBar(title: 'FBO Documents'),
       body: isLoading
-          ? _buildShimmerList() // ✅ Show Shimmer While Loading
+          ? _buildShimmerList()
           : users.isEmpty
           ? const Center(child: Text("No users found."))
           : ListView.builder(
@@ -103,49 +104,87 @@ class _FboDocumentScreenState extends State<FboDocumentScreen> {
           int userId = user["id"];
 
           return Card(
-            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            child: ListTile(
-              title: Text(
-                user["restaurant_name"] ?? "N/A",
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(user["address"] ?? "N/A"),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
+            elevation: 6,
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ✅ Self Declaration PDF Button with Progress Indicator
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.picture_as_pdf, color: Colors.red),
-                        onPressed: () => _startDownload(userId, "selfdeclaration"),
-                      ),
-                      if (downloadProgress.containsKey("$userId-selfdeclaration"))
-                        SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(value: downloadProgress["$userId-selfdeclaration"]),
+                  // Restaurant Details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user["restaurant_name"] ?? "N/A",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
                         ),
+                        const SizedBox(height: 6),
+                        Text(
+                          user["address"] ?? "N/A",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Download Buttons
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      downloadProgress.containsKey("$userId-selfdeclaration")
+                          ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                          : SizedBox(
+                        width: 150, // 👈 Fixed width
+                        child: ElevatedButton.icon(
+                          onPressed: () => _startDownload(userId, "selfdeclaration"),
+                          icon: const Icon(Icons.download, size: 18),
+                          label: const Text("Self Declaration", style: TextStyle(fontSize: 12)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF006D04),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      downloadProgress.containsKey("$userId-contract")
+                          ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                          : SizedBox(
+                        width: 150, // 👈 Same fixed width
+                        child: ElevatedButton.icon(
+                          onPressed: () => _startDownload(userId, "contract"),
+                          icon: const Icon(Icons.download, size: 18),
+                          label: const Text("Contract", style: TextStyle(fontSize: 12)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF006D04),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
 
-                  // ✅ Contract PDF Button with Progress Indicator
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.description, color: Colors.blue),
-                        onPressed: () => _startDownload(userId, "contract"),
-                      ),
-                      if (downloadProgress.containsKey("$userId-contract"))
-                        SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(value: downloadProgress["$userId-contract"]),
-                        ),
-                    ],
-                  ),
                 ],
               ),
             ),
@@ -153,5 +192,6 @@ class _FboDocumentScreenState extends State<FboDocumentScreen> {
         },
       ),
     );
+
   }
 }

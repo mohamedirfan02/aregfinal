@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:areg_app/config/api_config.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:go_router/go_router.dart';
 import '../../common/custom_button.dart';
-import '../../common/custom_scaffold.dart';
 
 class UserCreationOTP extends StatefulWidget {
   final String email;
@@ -85,7 +85,7 @@ class _UserCreationOTPState extends State<UserCreationOTP> {
       if (widget.email.isNotEmpty) {
         // ✅ Verify Email OTP via Laravel API
         final response = await http.post(
-          Uri.parse("https://abd3-152-59-220-104.ngrok-free.app/api/verify-otp"),
+          Uri.parse(ApiConfig.verifyOtp),
           headers: {"Content-Type": "application/json"},
           body: jsonEncode({"email": widget.email, "otp": otpCode}),
         );
@@ -137,7 +137,7 @@ class _UserCreationOTPState extends State<UserCreationOTP> {
     try {
       // ✅ Resend Email OTP via Laravel
       final response = await http.post(
-        Uri.parse("https://abd3-152-59-220-104.ngrok-free.app/api/send-otp"),
+        Uri.parse(ApiConfig.sendOtp),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"email": widget.email}),
       );

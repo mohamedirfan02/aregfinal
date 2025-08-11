@@ -1,14 +1,13 @@
 import 'dart:convert';
+import 'package:areg_app/config/api_config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
-
 import '../common/custom_back_button.dart';
 import '../common/custom_button.dart';
 import '../common/custom_paratext_widget.dart';
 import '../common/custom_passwordfield.dart';
-import '../common/custom_scaffold.dart';
 
 class NewPassword extends StatefulWidget {
   final String email; // ✅ Get email from previous screen
@@ -25,7 +24,31 @@ class _NewPasswordState extends State<NewPassword> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
+  // Future<String?> _getUsernameFromEmail(String email) async {
+  //   try {
+  //     final response = await http.post(
+  //       Uri.parse(ApiConfig.getProfileData),
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "Accept": "application/json",
+  //       },
+  //       body: jsonEncode({"email": email}),
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body);
+  //       return data["username"]; // depends on your API response structure
+  //     }
+  //   } catch (e) {
+  //     print("❌ Error fetching username: $e");
+  //   }
+  //   return null;
+  // }
+
+
   Future<void> _changePassword() async {
+    //SharedPreferences prefs = await SharedPreferences.getInstance();
+   // String? id = prefs.getString('userId');
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -33,29 +56,48 @@ class _NewPasswordState extends State<NewPassword> {
     });
 
     try {
+      final requestBody = {
+        "email": widget.email, // 👈 changed from 'username' to 'email'
+        "new_password": _newPasswordController.text,
+        "old_password": _confirmPasswordController.text,
+      };
+
+      // 🔵 Print the outgoing request data
+      print("📤 Sending request to: ${ApiConfig.ChangePassword}");
+      print("📦 Request headers: ${{
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      }}");
+      print("📦 Request body: ${jsonEncode(requestBody)}");
+
       final response = await http.post(
-        Uri.parse("https://87df-103-186-120-91.ngrok-free.app/api/auth/change-password"),
+        Uri.parse(ApiConfig.ChangePassword),
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
-        body: jsonEncode({
-          "email": widget.email,
-          "new_password": _newPasswordController.text,
-        }),
+        body: jsonEncode(requestBody),
       );
+
+      // 🔵 Log the full response
+      print('🔵 Response status: ${response.statusCode}');
+      print('🟡 Response body: ${response.body}');
 
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Password changed successfully!", style: TextStyle(color: Colors.green))),
+          const SnackBar(
+            content: Text("Password changed successfully!",
+                style: TextStyle(color: Colors.green)),
+          ),
         );
-        context.go('/login'); // ✅ Navigate to login after success
+        context.go('/login');
       } else {
         _showError(data["message"] ?? "Failed to reset password.");
       }
     } catch (e) {
+      print('🔴 Exception caught: $e');
       _showError("Server error: $e");
     }
 
@@ -63,6 +105,8 @@ class _NewPasswordState extends State<NewPassword> {
       _isLoading = false;
     });
   }
+
+
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(

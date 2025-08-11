@@ -2,8 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../config/api_config.dart';
+
 class ApiService {
-  static const String baseUrl = "https://enzopik.thikse.in/api";
 
   Future<Map<String, dynamic>?> fetchRestaurantDetails() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -18,7 +19,7 @@ class ApiService {
       return null;
     }
 
-    final String apiUrl = "$baseUrl/get-oil-sale/$userId";
+    final String apiUrl = ApiConfig.getOilSale(userId);
 
     try {
       final response = await http.get(

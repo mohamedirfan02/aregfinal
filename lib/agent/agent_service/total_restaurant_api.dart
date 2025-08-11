@@ -3,11 +3,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../config/api_config.dart';
+
 Future<List<Restaurant>> fetchRestaurants() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? token = prefs.getString("token");
 
-  const String apiUrl = 'https://enzopik.thikse.in/api/fbo/all';
+  const String apiUrl = ApiConfig.fboAll;
 
   debugPrint("🔹 Token: $token");
 
@@ -46,6 +48,9 @@ class Restaurant {
   final String licenseUrl;
   final String restaurantUrl;
   final String status;
+  final String bankName;
+  final String accountNo;
+  final String agreedPrice;
 
   Restaurant({
     required this.id,
@@ -60,6 +65,9 @@ class Restaurant {
     required this.licenseUrl,
     required this.restaurantUrl,
     required this.status,
+    required this.bankName,
+    required this.accountNo,
+    required this.agreedPrice,
   });
 
   factory Restaurant.fromJson(Map<String, dynamic> json) {
@@ -68,14 +76,17 @@ class Restaurant {
       fullName: json['full_name'],
       restaurantName: json['restaurant_name'],
       category: json['category'],
+        agreedPrice: json['agreed_price'],
       countryCode: json['country_code'],
       contactNumber: json['contact_number'],
       email: json['email'],
       licenseNumber: json['license_number'],
       address: json['address'],
+      bankName:json ['bank_name'],
+        accountNo: json['account_no'],
       licenseUrl: json['license_url'],
       restaurantUrl: json['restaurant_url'],
-      status: json['status'],
+      status: json['status']
     );
   }
 }

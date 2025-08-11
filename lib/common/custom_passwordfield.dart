@@ -27,11 +27,11 @@ class CustomPasswordField extends StatefulWidget {
 class _CustomPasswordFieldState extends State<CustomPasswordField> {
   bool _obscureText = true;
 
-  void _toggleVisibility() {
-    setState(() {
-      _obscureText = !_obscureText;
-    });
-  }
+  // void _toggleVisibility() {
+  //   setState(() {
+  //     _obscureText = !_obscureText;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:go_router/go_router.dart';
 import '../../common/custom_button.dart';
-import '../../common/custom_scaffold.dart';
+import '../../config/api_config.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
   final String email;
@@ -86,7 +86,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       if (widget.email.isNotEmpty) {
         // ✅ Verify Email OTP via API (Laravel or other)
         final response = await http.post(
-          Uri.parse("https://abd3-152-59-220-104.ngrok-free.app/api/verify-otp"),
+          Uri.parse(ApiConfig.verifyOtp),
           headers: {"Content-Type": "application/json"},
           body: jsonEncode({"email": widget.email, "otp": otpCode}),
         );
@@ -138,7 +138,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     try {
       // ✅ Resend Email OTP via API (Laravel or other)
       final response = await http.post(
-        Uri.parse("https://abd3-152-59-220-104.ngrok-free.app/api/send-otp"),
+        Uri.parse(ApiConfig.sendOtp),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"email": widget.email}),
       );
@@ -175,8 +175,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScaffold(
-      child: Stack(
+    return Scaffold(
+  body:  Stack(
         children: [
           SingleChildScrollView(
             child: Padding(
@@ -195,7 +195,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
                   // ✅ Subtitle
                   Text(
-                    "Enter the 6-digit code sent to your email & phone\nEmail: ${widget.email}\nPhone: +91${widget.phone}",
+                    "Enter the 6-digit code sent to your phone\nPhone: ${widget.phone}",
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 16, height: 1.5, fontWeight: FontWeight.w400, color: Colors.black54),
                   ),

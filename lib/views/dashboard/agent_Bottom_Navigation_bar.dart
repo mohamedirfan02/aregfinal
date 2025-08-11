@@ -6,7 +6,8 @@ import '../screens/ai_chat_screen.dart';
 import '../screens/profile_screen.dart';
 
 class AgentBottomNavigation extends StatefulWidget {
-  const AgentBottomNavigation({super.key});
+  final Map<String, dynamic>? userDetails;
+  const AgentBottomNavigation({super.key ,this.userDetails});
 
   @override
   State<AgentBottomNavigation> createState() => _AgentBottomNavigationState();
@@ -16,12 +17,13 @@ class _AgentBottomNavigationState extends State<AgentBottomNavigation> {
   int _selectedIndex = 1; // ✅ Start at "Home" (Index 1)
 
   // ✅ Updated List of Pages
-  final List<Widget> _pages = [
+  List<Widget> get _pages => [
     AiChatScreen(),
-    AgentHomeScreen(token: 'token',), // ✅ Use dashboard, NOT AgentPage
-    ProfileScreen(userDetails: {},),
+    AgentHomeScreen(token: 'token'),
+    ProfileScreen(),
     AgentSettingsScreen(),
   ];
+
 
   void _onNavItemTapped(int index) {
     setState(() {

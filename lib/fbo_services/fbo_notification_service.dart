@@ -3,8 +3,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../config/api_config.dart';
+
 class FboNotificationService {
-  static const String _baseUrl = "https://enzopik.thikse.in/api";
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
@@ -49,7 +50,7 @@ class FboNotificationService {
 
     try {
       final response = await http.post(
-        Uri.parse("$_baseUrl/save-fcm-token"),
+        Uri.parse(ApiConfig.SaveFcmToken),
         headers: {
           "Authorization": "Bearer $authToken",
           "Content-Type": "application/json",
@@ -67,6 +68,7 @@ class FboNotificationService {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
     String? userId = prefs.getString('user_id');
+    String? role = prefs.getString('role');
 
     if (token == null || userId == null) {
       print("❌ No authentication token or user ID found.");
@@ -75,14 +77,14 @@ class FboNotificationService {
 
     try {
       final response = await http.post(
-        Uri.parse("$_baseUrl/get-notifications"),
+        Uri.parse(ApiConfig.getNotification),
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
           "Authorization": "Bearer $token",
         },
         body: jsonEncode({
-          "role": "user",
+          "role": role,
           "id": int.parse(userId),
         }),
       );

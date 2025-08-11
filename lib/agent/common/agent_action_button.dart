@@ -1,59 +1,59 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ActionButton extends StatelessWidget {
   final String title;
+  final String imagePath;
   final VoidCallback? onTap;
 
-  const ActionButton({super.key, required this.title, this.onTap});
+  const ActionButton({
+    super.key,
+    required this.title,
+    required this.imagePath,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell( // ✅ Detect taps
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.green.shade100,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
         padding: const EdgeInsets.all(12),
-        child: Center(
-          child: Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              imagePath,
+              width: 30,
+              height: 32,
+              fit: BoxFit.contain,
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-/////////agent home page colour
-
-class AgentHomeGradientContainer extends StatelessWidget {
-  final Widget child;
-
-  const AgentHomeGradientContainer({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFFCBE54E).withOpacity(0.9), // Reduce intensity
-            Colors.white.withOpacity(0.7),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 10, // Smaller size for fitting inside button
+                fontWeight: FontWeight.w900,
+                color: const Color(0xFF006D04),
+              ),
+            ),
           ],
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
         ),
       ),
-      child: child,
     );
   }
 }
+
 

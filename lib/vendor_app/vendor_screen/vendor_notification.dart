@@ -1,10 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../agent/common/agent_gradient.dart';
+import '../../config/api_config.dart';
 
 class VendorNotificationPage extends StatefulWidget {
   const VendorNotificationPage({super.key});
@@ -27,7 +25,7 @@ class _VendorNotificationPageState extends State<VendorNotificationPage> {
     return prefs.getString('token');
   }
   Future<void> fetchNotifications() async {
-    final url = Uri.parse("https://enzopik.thikse.in/api/get-notifications");
+    final url = Uri.parse(ApiConfig.getNotification);
 
     // ✅ Fetch Token & ID Dynamically
     String? token = await getToken();
@@ -72,13 +70,9 @@ class _VendorNotificationPageState extends State<VendorNotificationPage> {
       setState(() => isLoading = false);
     }
   }
-
-
   @override
   Widget build(BuildContext context) {
-    return AgentGradientContainer(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+    return Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -115,7 +109,7 @@ class _VendorNotificationPageState extends State<VendorNotificationPage> {
                     final String title = notification["title"] ?? "No Title";
                     final String message = notification["message"] ?? "No Message";
                     final String orderId = notification["order_id"]?.toString() ?? "N/A";
-                    final String date = notification["created_at"]?.split('T')[0] ?? "Unknown Date";
+                    final String date = notification["created_date"]?.split('T')[0] ?? "Unknown Date";
 
                     return _buildNotificationCard(
                       title: title,
@@ -135,7 +129,6 @@ class _VendorNotificationPageState extends State<VendorNotificationPage> {
             ],
           ),
         ),
-      ),
     );
   }
 

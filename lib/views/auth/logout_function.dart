@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui'; // Import for ImageFilter
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -40,26 +41,37 @@ Future<void> logout(BuildContext context) async {
         await prefs.clear();
         print("✅ All user data cleared from SharedPreferences");
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Logout successful')),
+        _showTopSnackbar(
+          context,
+          'Logout successful',
+          backgroundColor: Colors.white38,
+          textColor: Colors.black,
         );
-
         // 🔹 Navigate to login screen
         context.go('/login');
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Logout failed. Please try again')),
+        _showTopSnackbar(
+          context,
+          'Logout failed. Please try again',
+          backgroundColor: Colors.white38,
+          textColor: Colors.black,
         );
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No token found. Please log in again')),
+      _showTopSnackbar(
+        context,
+        'No token found. Please log in again',
+        backgroundColor: Colors.white38,
+        textColor: Colors.black,
       );
     }
   } catch (e) {
     print("❌ Error during logout: $e");
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error during logout: $e')),
+    _showTopSnackbar(
+      context,
+      ' Error during logout: pleas turn the network on and try again.',
+      backgroundColor: Colors.white38,
+      textColor: Colors.black,
     );
   }
 }
@@ -98,4 +110,61 @@ Future<Map<String, dynamic>> _getDeviceInfo() async {
   print("✅ Device Info: $deviceInfo"); // 🔹 Print Device Info in Console
 
   return deviceInfo;
+}
+
+// Custom snackbar implementation that shows at the top with blur effect and black text
+void _showTopSnackbar(
+    BuildContext context,
+    String message, {
+      Color backgroundColor = Colors.black87,
+      Color textColor = Colors.white,
+      Widget? icon,
+    }) {
+  final overlay = Overlay.of(context);
+  final overlayEntry = OverlayEntry(
+    builder: (context) => Positioned(
+      top: MediaQuery.of(context).viewPadding.top + 16,
+      left: 20,
+      right: 20,
+      child: Material(
+        color: Colors.transparent,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              decoration: BoxDecoration(
+                color: backgroundColor.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  if (icon != null) ...[
+                    icon,
+                    SizedBox(width: 10),
+                  ],
+                  Expanded(
+                    child: Text(
+                      message,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  overlay.insert(overlayEntry);
+  Future.delayed(const Duration(seconds: 2)).then((_) => overlayEntry.remove());
 }

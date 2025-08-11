@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../config/api_config.dart';
+
 class CompletedOrdersScreen extends StatefulWidget {
   const CompletedOrdersScreen({super.key});
 
@@ -33,7 +35,7 @@ class _CompletedOrdersScreenState extends State<CompletedOrdersScreen> {
       return;
     }
 
-    final url = "https://enzopik.thikse.in/api/get-user-oil-completed-sale";
+    final url = ApiConfig.getAllCompletedOrders;
     final body = jsonEncode({"role": "vendor", "id": vendorId});
 
     try {
@@ -46,7 +48,7 @@ class _CompletedOrdersScreenState extends State<CompletedOrdersScreen> {
         },
         body: body,
       );
-
+      debugPrint("Response Body: ${response.body}");
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         setState(() {
@@ -65,57 +67,108 @@ class _CompletedOrdersScreenState extends State<CompletedOrdersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Completed Orders")),
+      appBar: AppBar(
+        backgroundColor: isDark ? Colors.grey[900] : const Color(0xFF006D04),
+        centerTitle: true,
+        elevation: 4,
+        title: Text(
+          'Completed Orders',
+          style: TextStyle(
+            color: Colors.white, // keep white on both modes for contrast
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator()) // ✅ Show loader
+          ? const Center(child: CircularProgressIndicator())
           : completedOrders.isEmpty
-          ? const Center(
+          ? Center(
         child: Text(
           "No completed orders found",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white70 : Colors.black87,
+          ),
         ),
-      ) // ✅ Show empty state
+      )
           : ListView.builder(
         padding: const EdgeInsets.all(12),
         itemCount: completedOrders.length,
         itemBuilder: (context, index) {
-          return _buildCompletedOrderCard(completedOrders[index]);
+          return _buildCompletedOrderCard(completedOrders[index], theme, isDark);
         },
       ),
     );
   }
 
-  /// ✅ Completed Order Card UI
-  Widget _buildCompletedOrderCard(Map<String, dynamic> order) {
+  /// Modified to accept theme and isDark params for colors
+  Widget _buildCompletedOrderCard(Map<String, dynamic> order, ThemeData theme, bool isDark) {
     return Card(
       elevation: 3,
       margin: const EdgeInsets.symmetric(vertical: 8),
+      color: isDark ? theme.cardColor : Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Order ID: #${order["order_id"]}",
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green)),
-            const Divider(),
-            _buildDetailRow("Oil Type", order["type"]),
-            _buildDetailRow("Oil Quantity", "${order['quantity'] ?? 0} KG"),
-            _buildDetailRow("Customer", order["user_name"]),
-            _buildDetailRow("Phone", order["user_contact"]),
-            _buildDetailRow("Address", order["registered_address"]?.toString() ?? "N/A"),
-            _buildDetailRow("Date", order["date"]),
-            _buildDetailRow("Time", order["time"]),
-            _buildDetailRow("Pickup Date", order["timeline"]?.toString() ?? "N/A"),
-            _buildDetailRow("Pickup Location", order["pickup_location"]?.toString() ?? "N/A"),
-            _buildDetailRow("counter price", order["counter_unit_price"]?.toString() ?? "N/A"),
-            buildDetailRow("Total Amount", "₹${order["amount"] ?? "N/A"}"),
+            Text(
+              "Order ID: #${order["order_id"]}",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary, // use theme primary color (green-ish)
+              ),
+            ),
+            Divider(color: isDark ? Colors.white24 : Colors.black26),
+            _buildDetailRow(order, "Oil Type", order["type"], isDark),
+            _buildDetailRow(order, "Oil Quantity", "${order['quantity'] ?? 0} KG", isDark),
+            _buildDetailRow(order, "Customer", order["user_name"], isDark),
+            _buildDetailRow(order, "Phone", order["user_contact"], isDark),
+            _buildDetailRow(order, "Address", order["registered_address"]?.toString() ?? "N/A", isDark),
+            _buildDetailRow(order, "Date", order["date"], isDark),
+            _buildDetailRow(order, "Time", order["time"], isDark),
+            _buildDetailRow(order, "Pickup Date", order["timeline"]?.toString() ?? "N/A", isDark),
+            _buildDetailRow(order, "Pickup Location", order["pickup_location"]?.toString() ?? "N/A", isDark),
+            _buildDetailRow(order, "Agreed Price", order["agreed_price"]?.toString() ?? "N/A", isDark),
+            buildDetailRow("Total Amount", "₹${order["amount"] ?? "N/A"}", theme, isDark),
           ],
         ),
       ),
     );
   }
-  Widget buildDetailRow(String title, String value) {
+
+  /// Updated to include dark mode color for value text
+  Widget _buildDetailRow(Map<String, dynamic> order, String title, String value, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Text(
+            "$title: ",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white70 : Colors.black87,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                color: isDark ? Colors.white60 : Colors.black54,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildDetailRow(String title, String value, ThemeData theme, bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -123,32 +176,23 @@ class _CompletedOrdersScreenState extends State<CompletedOrdersScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: isDark ? Colors.white70 : Colors.black87,
+            ),
           ),
           Text(
             value,
-            style: const TextStyle(fontSize: 16),
-          ),
-        ],
-      ),
-    );
-  }
-  /// ✅ Helper for displaying order details
-  Widget _buildDetailRow(String title, dynamic value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Text("$title: ", style: const TextStyle(fontWeight: FontWeight.bold)),
-          Expanded(
-            child: Text(
-              value?.toString() ?? "N/A", // ✅ Handle null values safely
-              style: const TextStyle(color: Colors.black54),
+            style: TextStyle(
+              fontSize: 16,
+              color: isDark ? Colors.white60 : Colors.black54,
             ),
           ),
         ],
       ),
     );
   }
+
 
 }

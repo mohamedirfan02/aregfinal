@@ -8,7 +8,7 @@ class CustomHomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.transparent,
+      backgroundColor: const Color(0xFF006D04),
       elevation: 0,
       leading: Padding(
         padding: EdgeInsets.only(left: screenWidth * 0.04), // ✅ Add spacing
@@ -25,24 +25,24 @@ class CustomHomeAppBar extends StatelessWidget implements PreferredSizeWidget {
           },
         ),
       ),
-      actions: [
-        Padding(
-          padding: EdgeInsets.only(right: screenWidth * 0.04), // ✅ Add spacing
-          child: Row(
-            children: [
-              IconButton(
-                icon: Image.asset("assets/icon/cart.png", width: 24, height: 24),
-                onPressed: () {},
-              ),
-              SizedBox(width: 10), // ✅ Space between cart and bell
-              IconButton(
-                icon: Image.asset("assets/icon/bell.png", width: 24, height: 24),
-                onPressed: () {},
-              ),
-            ],
-          ),
-        ),
-      ],
+      // actions: [
+      //   Padding(
+      //     padding: EdgeInsets.only(right: screenWidth * 0.04), // ✅ Add spacing
+      //     child: Row(
+      //       children: [
+      //         IconButton(
+      //           icon: Image.asset("assets/icon/cart.png", width: 24, height: 24),
+      //           onPressed: () {},
+      //         ),
+      //         SizedBox(width: 10), // ✅ Space between cart and bell
+      //         IconButton(
+      //           icon: Image.asset("assets/icon/bell.png", width: 24, height: 24),
+      //           onPressed: () {},
+      //         ),
+      //       ],
+      //     ),
+      //   ),
+      // ],
     );
   }
 

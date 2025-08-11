@@ -56,14 +56,14 @@ class StartScreen extends StatelessWidget {
               CustomLoginButton(
                 buttonText: 'Login',
                 onPressed: () {
-                  context.go('/login');
+                  context.push('/login');
                 },
               ),
               const SizedBox(height: 20),
               CustomLoginButton(
                 buttonText: 'Create Account',
                 onPressed: () {
-                  context.go('/RoleScreen');
+                  context.push('/RoleScreen');
                 },
               ),
             ],

@@ -2,23 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import '../../common/custom_GradientContainer.dart';
+import '../../common/custom_button.dart';
 import '../../config/api_config.dart';
+import '../../theme/size_config.dart';
+import '../dashboard/restaurant_bottom_navigation.dart';
 
-class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key});
+class ForgotPasswordScreen extends StatefulWidget {
+  const ForgotPasswordScreen({super.key});
 
   @override
-  _ResetPasswordScreenState createState() => _ResetPasswordScreenState();
+  _ForgotPasswordScreenState createState() => _ForgotPasswordScreenState();
 }
 
-class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController oldPasswordController = TextEditingController();
   final TextEditingController newPasswordController = TextEditingController();
 
   Future<void> _changePassword() async {
-    //const String apiUrl = 'http://192.168.0.219:8000/api/auth/reset-password';
-
     try {
       final prefs = await SharedPreferences.getInstance();
       String? email = prefs.getString('email');
@@ -38,38 +38,53 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       }
 
       final requestData = {
-        "email": email,
+        "username": email,
         "new_password": newPasswordController.text,
         "old_password": oldPasswordController.text,
       };
 
-      final response = await http.post(
-        Uri.parse(ApiConfig.resetPassword), // ✅ Use API Config
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: json.encode(requestData),
-      );
+      // 👉 Add this line to debug the URL
+      print("📌 Reset Password URL: ${ApiConfig.resetPassword}");
+      print("📌 Reset Password URL: ${requestData}");
 
-      final Map<String, dynamic> responseData = json.decode(response.body);
+      final client = http.Client();
+      final request = http.Request('POST', Uri.parse(ApiConfig.resetPassword));
+      request.headers.addAll({
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      });
+      request.body = json.encode(requestData);
 
-      if (response.statusCode == 200 && responseData['status'] == 'success') {
-        // ✅ Clear text fields after success
-        oldPasswordController.clear();
-        newPasswordController.clear();
+      final streamedResponse = await client.send(request);
+      final response = await http.Response.fromStream(streamedResponse);
 
-        // ✅ Show popup dialog
-        _showPopup(responseData['message'], Colors.green);
+      print("📌 Manual Status Code: ${response.statusCode}");
+      print("📌 Manual Response: ${response.body}");
+
+
+      print("📌 Status Code: ${response.statusCode}");
+      print("📌 Response Body: ${response.body}");
+
+      if (response.headers['content-type']?.contains('application/json') == true) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+
+        if (response.statusCode == 200 && responseData['status'] == 'success') {
+          oldPasswordController.clear();
+          newPasswordController.clear();
+          _showPopup(responseData['message'], Colors.green);
+        } else {
+          _showPopup(responseData['message'] ?? 'Something went wrong.', Colors.red);
+        }
       } else {
-        _showPopup(responseData['message'] ?? 'Something went wrong.', Colors.red);
+        _showPopup("Unexpected server response. Please try again later.", Colors.red);
       }
     } catch (e) {
       _showPopup('Error: $e', Colors.red);
     }
   }
 
-  // Function to show popup messages
+
   void _showPopup(String message, Color color) {
     showDialog(
       context: context,
@@ -81,115 +96,191 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         content: Text(message),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              if (color == Colors.green) {
+                // Wait for the dialog to fully close before navigating
+                Future.delayed(Duration(milliseconds: 100), () {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => BottomNavigation(userDetails: {}),
+                    ),
+                        (route) => false,
+                  );
+                });
+              }
+            },
             child: const Text("OK"),
           ),
         ],
       ),
     );
   }
-
-  @override
   @override
   Widget build(BuildContext context) {
+    SizeConfig.init(context);
     return Scaffold(
-      body:
-      //GradientContainer(
-     SingleChildScrollView(  // Wrap the entire Column with SingleChildScrollView
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 40),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: SizeConfig.w(5)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: SizeConfig.h(5)),
 
-                // Back Button
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Image.asset(
-                    "assets/icon/back.png", // ✅ Custom back button image
-                    width: 24,
-                    height: 24,
+              // Back Button
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Image.asset(
+                  "assets/icon/back.png",
+                  width: SizeConfig.w(6),
+                  height: SizeConfig.h(3),
+                ),
+              ),
+
+              SizedBox(height: SizeConfig.h(5)),
+
+              // Title
+              Center(
+                child: Text(
+                  "Change Password",
+                  style: TextStyle(
+                    fontSize: SizeConfig.ts(22),
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
+              ),
 
-                const SizedBox(height: 40),
+              SizedBox(height: SizeConfig.h(10)),
 
-                // Title
-                const Center(
-                  child: Text(
-                    "Change Password",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              // Illustration
+              Center(
+                child: Image.asset(
+                  "assets/image/login.png",
+                  width: SizeConfig.w(60),
+                ),
+              ),
+
+              SizedBox(height: SizeConfig.h(3)),
+
+              // Password Fields
+              CustomTextField(
+                hintText: "Old Password",
+                controller: oldPasswordController,
+              ),
+
+              SizedBox(height: SizeConfig.h(2)),
+              CustomTextField(
+                hintText: "New Password",
+                controller: newPasswordController,
+              ),
+              SizedBox(height: SizeConfig.h(10)),
+              Center(
+                child: SizedBox(
+                  width: double.infinity,
+                  height: SizeConfig.h(8.5),
+                  child: CustomSubmitButton(
+                    buttonText: "Submit",
+                    onPressed: _changePassword,
                   ),
                 ),
+              ),
 
-                const SizedBox(height: 90),
-
-                // Illustration
-                Center(
-                  child: Image.asset("assets/image/login.png", width: 250),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Password Fields
-                CustomTextField(label: "Old Password", controller: oldPasswordController),
-                const SizedBox(height: 15),
-                CustomTextField(label: "New Password", controller: newPasswordController),
-
-                const SizedBox(height: 130),
-
-                // Submit Button
-                Center(
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF5D6E1E), // ✅ Updated button color
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                      onPressed: _changePassword, // ✅ Call change password function
-                      child: const Text(
-                        "Submit",
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              SizedBox(height: SizeConfig.h(5)),
+            ],
           ),
-        ),
-     // ),
-    );
-  }
-
-}
-
-// Reusable TextField Widget
-class CustomTextField extends StatelessWidget {
-  final String label;
-  final TextEditingController controller;
-
-  const CustomTextField({super.key, required this.label, required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      obscureText: true, // ✅ Hide password input
-      decoration: InputDecoration(
-        labelText: label,
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
         ),
       ),
     );
   }
 }
+
+// Reusable TextField Widget
+
+class CustomTextField extends StatefulWidget {
+  final String hintText;
+  final TextEditingController controller;
+  final TextInputType keyboardType;
+  final FormFieldValidator<String>? validator;
+  final ValueChanged<String>? onChanged;
+
+  const CustomTextField({
+    super.key,
+    required this.hintText,
+    required this.controller,
+    this.keyboardType = TextInputType.text,
+    this.validator,
+    this.onChanged,
+  });
+
+  @override
+  State<CustomTextField> createState() => _CustomTextFieldState();
+}
+
+class _CustomTextFieldState extends State<CustomTextField> {
+  bool isHintVisible = true;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_checkHintVisibility);
+  }
+
+  void _checkHintVisibility() {
+    setState(() {
+      isHintVisible = widget.controller.text.isEmpty;
+    });
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_checkHintVisibility);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    SizeConfig.init(context); // ✅ Initialize SizeConfig
+
+    return Container(
+      width: double.infinity,
+      height: SizeConfig.h(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8.0),
+        border: Border.all(
+          color: const Color(0xFF6FA006),
+          width: 1.0,
+        ),
+      ),
+      child: Center(
+        child: TextFormField(
+          controller: widget.controller,
+          keyboardType: widget.keyboardType,
+          onChanged: widget.onChanged,
+          validator: widget.validator,
+          obscureText: true, // Optional: remove this if not all fields are passwords
+          style: TextStyle(
+            color: const Color(0xFF006D04),
+            fontWeight: FontWeight.w600,
+            fontSize: SizeConfig.ts(14),
+          ),
+          textAlign: TextAlign.center,
+          decoration: InputDecoration(
+            hintText: isHintVisible ? widget.hintText : null,
+            hintStyle: TextStyle(
+              color: const Color(0xFF006D04),
+              fontWeight: FontWeight.w600,
+              fontSize: SizeConfig.ts(14),
+            ),
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+      ),
+    );
+  }
+}
+

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:areg_app/vendor_app/vendor_screen/vendor_home.dart';
-import 'package:areg_app/vendor_app/vendor_screen/vendorprofie.dart';
+import 'package:areg_app/vendor_app/vendor_screen/vendor_profile.dart';
 import '../../agent/auth/agent_setting.dart';
 import '../../common/custom_bottom_nav_bar.dart';
 import '../../views/screens/ai_chat_screen.dart';

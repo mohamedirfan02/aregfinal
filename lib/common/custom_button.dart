@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class CustomSubmitButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final String buttonText;
+  final bool isLoading;
 
   const CustomSubmitButton({
     super.key,
     this.onPressed,
     required this.buttonText,
+    this.isLoading = false,
   });
 
   @override
@@ -18,22 +20,22 @@ class _CustomSubmitButtonState extends State<CustomSubmitButton> {
   bool _isPressed = false;
 
   void _handleTapDown(TapDownDetails details) {
-    setState(() {
-      _isPressed = true;
-    });
+    if (!widget.isLoading) {
+      setState(() => _isPressed = true);
+    }
   }
 
   void _handleTapUp(TapUpDetails details) {
-    setState(() {
-      _isPressed = false;
-    });
-    widget.onPressed?.call();
+    if (!widget.isLoading) {
+      setState(() => _isPressed = false);
+      widget.onPressed?.call();
+    }
   }
 
   void _handleTapCancel() {
-    setState(() {
-      _isPressed = false;
-    });
+    if (!widget.isLoading) {
+      setState(() => _isPressed = false);
+    }
   }
 
   @override
@@ -50,13 +52,13 @@ class _CustomSubmitButtonState extends State<CustomSubmitButton> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: _isPressed
-                ? [Color(0xFF6FA006), Color(0xFF5A8B04)]
-                : [Color(0xFF7FBF08), Color(0xFF6FA006)],
+                ? [const Color(0xFF6FA006), const Color(0xFF5A8B04)]
+                : [const Color(0xFF7FBF08), const Color(0xFF6FA006)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(30.0),
-          boxShadow: _isPressed
+          boxShadow: _isPressed || widget.isLoading
               ? []
               : const [
             BoxShadow(
@@ -72,7 +74,16 @@ class _CustomSubmitButtonState extends State<CustomSubmitButton> {
           ],
         ),
         child: Center(
-          child: Text(
+          child: widget.isLoading
+              ? const SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              strokeWidth: 2,
+            ),
+          )
+              : Text(
             widget.buttonText,
             style: const TextStyle(
               fontSize: 16,

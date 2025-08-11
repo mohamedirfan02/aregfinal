@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class FboAcknowledgmentService {
-  static const String _baseUrl = "https://enzopik.thikse.in/api";
+import '../config/api_config.dart';
 
+class FboAcknowledgmentService {
   /// ✅ Fetch Completed Orders
-  static Future<List<Map<String, dynamic>>?> fetchCompletedOrders(String userId, String token) async {
-    const String apiUrl = "$_baseUrl/get-user-oil-completed-sale";
+  static Future<List<Map<String, dynamic>>?> fetchCompletedOrders()
+  async {
+    const String apiUrl = ApiConfig.getOrderDetails;
 
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -30,6 +31,7 @@ class FboAcknowledgmentService {
         body: jsonEncode({
           "role": role,  // ✅ Dynamically fetched role
           "id": int.parse(userId),
+          "status": "completed", // ✅ Include status filter
         }),
       );
 
@@ -51,18 +53,24 @@ class FboAcknowledgmentService {
     }
   }
 
-  /// ✅ Acknowledge Order
+  /// ✅ Acknowledge Order for FBO or Vendor
   static Future<bool> acknowledgeOrder(int orderId) async {
-    const String apiUrl = "$_baseUrl/add-voucher";
+    const String apiUrl = ApiConfig.addVoucher;
 
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('token');
+      String? role = prefs.getString('role'); // 👈 Fetch role
 
-      if (token == null) {
-        print("❌ Missing authentication token.");
+      if (token == null || role == null) {
+        print("❌ Missing token or role.");
         return false;
       }
+
+      // 🔁 Determine the correct acknowledgment field based on role
+      String acknowledgementField = role == "vendor"
+          ? "collector_acknowledgement"
+          : "FBO_acknowledgement";
 
       final response = await http.post(
         Uri.parse(apiUrl),
@@ -73,7 +81,7 @@ class FboAcknowledgmentService {
         },
         body: jsonEncode({
           "order_id": orderId.toString(),
-          "FBO_acknowledgement": "acknowledged",
+          acknowledgementField: "acknowledged", // 👈 Dynamic field key
         }),
       );
 
@@ -91,4 +99,5 @@ class FboAcknowledgmentService {
       return false;
     }
   }
+
 }

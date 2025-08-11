@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shimmer_animation/shimmer_animation.dart';
+import 'package:lottie/lottie.dart';
+import '../../agent/common/common_appbar.dart';
 import '../../common/shimmer_loader.dart'; // ✅ Import Global Shimmer
-import '../../common/custom_GradientContainer.dart';
-import '../../common/custom_appbar.dart';
 import '../../fbo_services/FBO_voucher_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,14 +16,37 @@ class _VoucherHistoryScreenState extends State<VoucherHistoryScreen> {
   final VoucherService _voucherService = VoucherService();
   late Future<List<Map<String, dynamic>>> _vouchersFuture;
   String? userRole;
+  bool _isLoading = false;
 
   Map<int, bool> isDownloading = {}; // ✅ Track download state
+  Map<String, bool> isDownloadingTypeSpecific =
+      {}; // Key format: "$orderId-type"
 
   @override
   void initState() {
     super.initState();
     _fetchUserRole();
     _vouchersFuture = _voucherService.fetchVouchers();
+  }
+
+  Future<void> _downloadStatement(DateTime start, DateTime end) async {
+    try {
+      final String filePath = await _voucherService.downloadVoucher(
+        0,
+        format: "pdf",
+        fromDate: start,
+        toDate: end,
+      );
+
+      _voucherService.openFile(filePath);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('✅ Statement downloaded from $start to $end')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('❌ Error downloading statement: $e')),
+      );
+    }
   }
 
   /// ✅ Fetch user role from shared preferences
@@ -36,13 +58,14 @@ class _VoucherHistoryScreenState extends State<VoucherHistoryScreen> {
   }
 
   /// ✅ Handle voucher download with loading indicator
-  Future<void> _downloadVoucher(int orderId, String format) async {
+  Future<void> _downloadVoucher(int orderId, String format, String type) async {
     setState(() {
-      isDownloading[orderId] = true; // ✅ Show downloading indicator
+      isDownloadingTypeSpecific["$orderId-$type"] = true;
     });
 
     try {
-      String filePath = await _voucherService.downloadVoucher(orderId, format: format);
+      String filePath =
+          await _voucherService.downloadVoucher(orderId, format: format);
       print("✅ Voucher ($format) saved at: $filePath");
       _voucherService.openFile(filePath);
 
@@ -56,7 +79,7 @@ class _VoucherHistoryScreenState extends State<VoucherHistoryScreen> {
     }
 
     setState(() {
-      isDownloading[orderId] = false; // ✅ Hide downloading indicator
+      isDownloadingTypeSpecific["$orderId-$type"] = false;
     });
   }
 
@@ -80,9 +103,11 @@ class _VoucherHistoryScreenState extends State<VoucherHistoryScreen> {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    const Expanded(child: ShimmerLoader(height: 40)), // ✅ Fake PDF Button
+                    const Expanded(child: ShimmerLoader(height: 40)),
+                    // ✅ Fake PDF Button
                     const SizedBox(width: 10),
-                    const Expanded(child: ShimmerLoader(height: 40)), // ✅ Fake Excel Button
+                    const Expanded(child: ShimmerLoader(height: 40)),
+                    // ✅ Fake Excel Button
                   ],
                 ),
               ],
@@ -93,105 +118,421 @@ class _VoucherHistoryScreenState extends State<VoucherHistoryScreen> {
     );
   }
 
+  int _selectedTabIndex = 0; // 0 => Voucher, 1 => Statement
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: CustomAppBar(),
-        body: FutureBuilder<List<Map<String, dynamic>>>(
-          future: _vouchersFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return _buildShimmerList(); // ✅ Shimmer Effect Instead of Spinner
-            } else if (snapshot.hasError) {
-              return Center(child: Text("Error: ${snapshot.error}"));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text("No vouchers available."));
-            }
+      appBar: CommonAppbar(title: "Get Your Vouchers"),
+      body: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0FDF0),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                _buildTopTab("Voucher", 0),
+                _buildTopTab("Statement Download", 1),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _selectedTabIndex == 0
+                ? _buildVoucherList()
+                : _buildStatementDownloadTab(),
+          ),
+        ],
+      ),
+    );
+  }
 
-            List<Map<String, dynamic>> vouchers = snapshot.data!;
+  Widget _buildTopTab(String label, int index) {
+    final bool isSelected = _selectedTabIndex == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _selectedTabIndex = index;
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? Color(0xFFE6F9E6) : Colors.white,
+            borderRadius: BorderRadius.horizontal(
+              left: Radius.circular(index == 0 ? 12 : 0),
+              right: Radius.circular(index == 1 ? 12 : 0),
+            ),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Colors.green.shade800,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
-            return ListView.builder(
-              itemCount: vouchers.length,
-              itemBuilder: (context, index) {
-                final voucher = vouchers[index];
-                int orderId = voucher["order_id"];
+  Widget _buildVoucherList() {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _vouchersFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildShimmerList();
+        } else if (snapshot.hasError) {
+          return Center(child: Text("Error: ${snapshot.error}"));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Lottie.asset(
+                  'assets/animations/empty.json',
+                  width: 200,
+                  height: 200,
+                  repeat: false,
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  "No completed orders yet!",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
 
-                return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Order ID: ${voucher["order_id"]}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        Text('Type: ${voucher["type"]}'),
-                        Text('Quantity: ${voucher["quantity"]}'),
-                        Text('Status: ${voucher["status"]}'),
-                        if (voucher["unit_price"] != null)
-                          Text('Unit Price: ₹${voucher["unit_price"]}'),
-                        Text('User Name: ${voucher["user_name"]}'),
-                        Text('Address: ${voucher["address"]}'),
-                        Text('User Contact: ${voucher["user_contact"]}'),
-                        Text('Amount: ₹${voucher["amount"]}'),
-                        Text('Date: ${voucher["date"]}'),
-                        Text('Time: ${voucher["time"]}'),
+        List<Map<String, dynamic>> vouchers = snapshot.data!;
 
-                        const SizedBox(height: 10),
+        return ListView.builder(
+          itemCount: vouchers.length,
+          itemBuilder: (context, index) {
+            final voucher = vouchers[index];
+            int orderId = voucher["order_id"];
 
-                        // ✅ Buttons for PDF & Excel download
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            // ✅ PDF Download Button
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: isDownloading[orderId] == true
-                                    ? null
-                                    : () => _downloadVoucher(orderId, "pdf"),
-                                icon: isDownloading[orderId] == true
-                                    ? const SizedBox(
+            return Container(
+              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.green),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildVoucherItem("Order ID:", voucher["order_id"].toString()),
+                  _buildVoucherItem("Type:", voucher["type"]),
+                  _buildVoucherItem("Quantity:", "kg ${voucher["quantity"]}".toString()),
+                  _buildVoucherItem("Status:", voucher["status"]),
+                //  _buildVoucherItem("Agreed Price:", "₹${voucher["agreed_price"]}"),
+                  _buildVoucherItem("User Name:", voucher["user_name"]),
+                  _buildVoucherItem("Address:", voucher["address"], multiline: true),
+                  _buildVoucherItem("User Contact:", voucher["user_contact"]),
+                  _buildVoucherItem("Amount:", "₹${voucher["amount"]}"),
+                  _buildVoucherItem("Pickup Date:", voucher["date"]),
+                  _buildVoucherItem("Time:", voucher["time"]),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed:
+                              isDownloadingTypeSpecific["$orderId-pdf"] == true
+                                  ? null
+                                  : () =>
+                                      _downloadVoucher(orderId, "pdf", "pdf"),
+                          // Passing 'pdf' as the 'type' argument
+
+                          icon: isDownloadingTypeSpecific["$orderId-pdf"] ==
+                                  true
+                              ? const SizedBox(
                                   width: 18,
                                   height: 18,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
                                 )
-                                    : const Icon(Icons.picture_as_pdf, color: Colors.white),
-                                label: Text(isDownloading[orderId] == true ? "Downloading..." : "PDF",
-                                    style: const TextStyle(color: Colors.white)),
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            if (userRole == "agent")
-                            // ✅ Excel Download Button (Only for Agents)
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed: isDownloading[orderId] == true
-                                      ? null
-                                      : () => _downloadVoucher(orderId, "excel"),
-                                  icon: isDownloading[orderId] == true
-                                      ? const SizedBox(
+                              : const Image(
+                                  image:
+                                      AssetImage('assets/icon/pdf.png'),
+                                  width: 24,
+                                  height: 24,
+
+                                ),
+
+                          label: Text(
+                            isDownloading[orderId] == true
+                                ? "Downloading..."
+                                : "PDF",
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFD32027)),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      if (userRole == "agent")
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed:
+                                isDownloadingTypeSpecific["$orderId-excel"] ==
+                                        true
+                                    ? null
+                                    : () => _downloadVoucher(
+                                        orderId, "excel", "excel"),
+
+                            icon: isDownloadingTypeSpecific["$orderId-excel"] ==
+                                    true
+                                ? const SizedBox(
                                     width: 18,
                                     height: 18,
-                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
                                   )
-                                      : const Icon(Icons.table_chart, color: Colors.white),
-                                  label: Text(isDownloading[orderId] == true ? "Downloading..." : "Excel",
-                                      style: const TextStyle(color: Colors.white)),
-                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                                ),
-                              ),
-                          ],
-                        )
-                      ],
-                    ),
-                  ),
-                );
-              },
+                                : const Image(
+                              image:
+                              AssetImage('assets/icon/excel.png'),
+                              width: 24,
+                              height: 24,
+
+                            ),
+
+                            label: Text(
+                              isDownloading[orderId] == true
+                                  ? "Downloading..."
+                                  : "Excel",
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor:  Color(0xFF6FA006)),
+                          ),
+                        ),
+                    ],
+                  )
+                ],
+              ),
             );
           },
-        ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStatementDownloadTab() {
+    String? _selectedOption;
+    DateTime? _startDate;
+    DateTime? _endDate;
+
+    final List<String> options = [
+      'Last 30 Days',
+      'Last 90 Days',
+      'Last 180 Days',
+      'Last 365 Days',
+    ];
+
+    Future<void> _pickDate(BuildContext context, bool isStart) async {
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2022),
+        lastDate: DateTime.now(),
+      );
+      if (picked != null) {
+        if (isStart) {
+          _startDate = picked;
+        } else {
+          _endDate = picked;
+        }
+      }
+    }
+
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              // Radio options
+              ...options.map((option) => Column(
+                    children: [
+                      RadioListTile<String>(
+                        title: Text(
+                          option,
+                          style: TextStyle(
+                              color: Color(0xFF006D04),
+                              fontWeight: FontWeight.bold),
+                        ),
+                        value: option,
+                        groupValue: _selectedOption,
+                        activeColor: Color(0xFF7FBF08),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedOption = value;
+                          });
+                        },
+                      ),
+                      const Divider(height: 1),
+                    ],
+                  )),
+
+              const SizedBox(height: 10),
+
+              // Date pickers
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _pickDate(context, true).then((_) {
+                        setState(() {});
+                      }),
+                      icon: SizedBox(
+                        width: 20, // control width
+                        height: 20, // control height
+                        child: Image.asset('assets/icon/calender.png'),
+                      ),
+                      label: Text(
+                        _startDate == null
+                            ? 'Start from'
+                            : '${_startDate!.toLocal()}'.split(' ')[0],
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.black,
+                        side: const BorderSide(color: Color(0xFF7FBF08)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _pickDate(context, false).then((_) {
+                        setState(() {});
+                      }),
+                      icon: SizedBox(
+                        width: 20, // control width
+                        height: 20, // control height
+                        child: Image.asset('assets/icon/calender.png'),
+                      ),
+                      label: Text(
+                        _endDate == null
+                            ? 'End on'
+                            : '${_endDate!.toLocal()}'.split(' ')[0],
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.black,
+                        side: const BorderSide(color: Color(0xFF7FBF08)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const Spacer(), // Pushes the download button to the bottom
+              ElevatedButton(
+                onPressed: _isLoading
+                    ? null
+                    : () async {
+                        DateTime now = DateTime.now();
+                        DateTime start;
+                        DateTime end = now;
+
+                        if (_selectedOption != null) {
+                          switch (_selectedOption) {
+                            case 'Last 30 Days':
+                              start = now.subtract(const Duration(days: 30));
+                              break;
+                            case 'Last 90 Days':
+                              start = now.subtract(const Duration(days: 90));
+                              break;
+                            case 'Last 180 Days':
+                              start = now.subtract(const Duration(days: 180));
+                              break;
+                            case 'Last 365 Days':
+                              start = now.subtract(const Duration(days: 365));
+                              break;
+                            default:
+                              start = now;
+                          }
+                        } else if (_startDate != null && _endDate != null) {
+                          start = _startDate!;
+                          end = _endDate!;
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Please select a date range')),
+                          );
+                          return;
+                        }
+
+                        setState(() => _isLoading = true);
+                        await _downloadStatement(start, end);
+                        setState(() => _isLoading = false);
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      _isLoading ? Colors.grey : const Color(0xFF7FBF08),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 70),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        "Download",
+                        style: TextStyle(color: Colors.white),
+                      ),
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildVoucherItem(String title, String value,
+      {bool multiline = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment:
+            multiline ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                color: Colors.green.shade800,
+                height: multiline ? 1.4 : 1.0,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

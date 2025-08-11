@@ -32,31 +32,53 @@ class _AssignAgentState extends State<AssignAgent> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+  //  final isDark = Theme.of(context).brightness == Brightness.dark;
+    //final textColor = isDark ? Colors.white70 : Colors.black;
+
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Assigned Agent"),
-          backgroundColor: Colors.blueAccent,
+          backgroundColor: const Color(0xFF006D04),
           elevation: 0,
-          bottom: const TabBar(
-            tabs: [
+          title: Text(
+            "Assigned Agent",
+            style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.light
+                  ? Colors.white
+                  : Colors.white70,
+            ),
+          ),
+          bottom: TabBar(
+            labelColor: Theme.of(context).brightness == Brightness.light
+                ? Colors.white
+                : Colors.white,
+            unselectedLabelColor: Theme.of(context).brightness == Brightness.light
+                ? Colors.white70
+                : Colors.white54,
+            tabs: const [
               Tab(text: 'Assigned'),
               Tab(text: 'Completed'),
             ],
           ),
+
         ),
         body: TabBarView(
           children: [
-            _buildOrderList(_assignedOrdersFuture),
-            _buildOrderList(_completedOrdersFuture),
+            _buildOrderList(context, _assignedOrdersFuture),
+            _buildOrderList(context, _completedOrdersFuture),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildOrderList(Future<List<Order>> futureOrders) {
+  Widget _buildOrderList(BuildContext context, Future<List<Order>> futureOrders) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? Colors.grey[850] : Colors.white;
+    final borderColor = isDark ? Colors.white10 : Colors.black.withOpacity(0.1);
+    final textColor = isDark ? Colors.white70 : Colors.black;
+
     return FutureBuilder<List<Order>>(
       future: futureOrders,
       builder: (context, snapshot) {
@@ -78,10 +100,14 @@ class _AssignAgentState extends State<AssignAgent> with SingleTickerProviderStat
             ),
           );
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
               "No orders found",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
             ),
           );
         }
@@ -93,59 +119,59 @@ class _AssignAgentState extends State<AssignAgent> with SingleTickerProviderStat
           itemCount: orders.length,
           itemBuilder: (context, index) {
             Order order = orders[index];
-
-            return Card(
-              elevation: 4,
+            return Container(
               margin: const EdgeInsets.symmetric(vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: cardColor,
+                border: Border.all(color: borderColor, width: 1),
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Order #${order.orderId ?? 'N/A'} - ${order.type ?? 'Unknown'}",
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Order ${order.orderId ?? 'N/A'} - ${order.type ?? 'Unknown'}",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
                     ),
-                    const SizedBox(height: 10),
-                    _orderDetailRow("Vendor ID", order.vendorId?.toString()),
-                    _orderDetailRow("Quantity", order.quantity),
-                    _orderDetailRow("Status", order.status),
-                    _orderDetailRow("User ID", order.userId?.toString()),
-                    _orderDetailRow("Proposed Price", order.proposedUnitPrice),
-                    _orderDetailRow("Counter Price", order.counterUnitPrice),
-                    _orderDetailRow("Amount", order.amount),
-                    _orderDetailRow("Vendor Status", order.vendorStatus),
-                    _orderDetailRow("Agent ID", order.agentId?.toString()),
-                    _orderDetailRow("Oil Quality", order.oilQuality),
-                    _orderDetailRow("Timeline", order.timeline),
-                    _orderDetailRow("Pickup Location", order.pickupLocation),
-                    _orderDetailRow("User Name", order.userName),
-                    _orderDetailRow("Contact", order.userContact),
-                    _orderDetailRow("Address", order.registeredAddress),
-                    _orderDetailRow("Date", order.date),
-                    _orderDetailRow("Time", order.time),
-                    if (order.oilImage != null && order.oilImage!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            order.oilImage!,
-                            width: double.infinity,
-                            height: 200,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => const Text("Image load failed"),
-                          ),
+                  ),
+                  const SizedBox(height: 10),
+                  _orderDetailRow(context, "Vendor ID", order.vendorId?.toString()),
+                  _orderDetailRow(context, "Quantity", order.quantity),
+                  _orderDetailRow(context, "Status", order.status),
+                  _orderDetailRow(context, "User ID", order.userId?.toString()),
+                  //_orderDetailRow(context, "Proposed Price", order.proposedUnitPrice),
+               //_orderDetailRow(context, "Counter Price", order.counterUnitPrice),
+                  _orderDetailRow(context, "Amount", order.amount),
+                 // _orderDetailRow(context, "Vendor Status", order.vendorStatus),
+                //  _orderDetailRow(context, "Agent ID", order.agentId?.toString()),
+                  _orderDetailRow(context, "Oil Quality", order.oilQuality),
+                 // _orderDetailRow(context, "Timeline", order.timeline),
+                  _orderDetailRow(context, "Pickup Location", order.pickupLocation),
+                  _orderDetailRow(context, "User Name", order.userName),
+                  _orderDetailRow(context, "Contact", order.userContact),
+                  _orderDetailRow(context, "Address", order.registeredAddress),
+                  _orderDetailRow(context, "Pickup Date", order.date),
+                  _orderDetailRow(context, "Time", order.time),
+                  if (order.oilImage != null && order.oilImage!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          order.oilImage!,
+                          width: double.infinity,
+                          height: 200,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                          const Text("Image load failed"),
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                ],
               ),
             );
           },
@@ -154,13 +180,39 @@ class _AssignAgentState extends State<AssignAgent> with SingleTickerProviderStat
     );
   }
 
+  Widget _orderDetailRow(BuildContext context, String label, String? value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final labelColor = isDark ? Colors.white70 : Colors.black;
+    final valueColor = const Color(0xFF006D04);
 
-  Widget _orderDetailRow(String label, String? value) {
-    return Text(
-      "$label: ${value ?? 'N/A'}",
-      style: const TextStyle(fontSize: 14),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 4,
+            child: Text(
+              "$label:",
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: labelColor),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            flex: 6,
+            child: Text(
+              value ?? 'N/A',
+              textAlign: TextAlign.right,
+              style: TextStyle(fontSize: 14, color: valueColor),
+            ),
+          ),
+        ],
+      ),
     );
   }
+
+
 }
 
 // Model with Null Safety

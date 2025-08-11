@@ -1,302 +1,421 @@
+import 'dart:convert';
 import 'package:areg_app/vendor_app/vendor_screen/vendor_cart.dart';
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../agent/agent_screen/history.dart';
 import '../../agent/common/agent_action_button.dart';
+import '../../config/api_config.dart';
 import '../../views/screens/fbo_voucher.dart';
 import '../comman/vendor_appbar.dart';
 import 'Vendor_Acknowledge.dart';
-import 'completed_order_screen.dart'; // Import your custom app bar
+import 'completed_order_screen.dart';
+import 'order_reject.dart';
 
-class VendorHomeScreen extends StatelessWidget {
+class VendorHomeScreen extends StatefulWidget {
   const VendorHomeScreen({super.key});
 
   @override
+  State<VendorHomeScreen> createState() => _VendorHomeScreenState();
+}
+
+class _VendorHomeScreenState extends State<VendorHomeScreen> {
+  String oilCollection = "0 KG";
+  String todaycount = "0";
+  String currentDate = "";
+
+  @override
+  void initState() {
+    super.initState();
+    fetchVendorData();
+  }
+
+  Future<void> fetchVendorData() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
+      String? agentId = prefs.getString('vendor_id');
+
+      if (token == null || agentId == null) {
+        print("🚨 Token or Agent ID is null.");
+        return;
+      }
+
+      print("🔄 Fetching vendor data...");
+
+      var response = await http.post(
+        Uri.parse(ApiConfig.getCpHome),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({
+          "role": "vendor",
+          "id": int.parse(agentId),
+        }),
+      );
+
+      print("🔹 Response Status Code: ${response.statusCode}");
+      print("🔹 Raw Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+
+        setState(() {
+          todaycount = "${data["today_count"] ?? 0}";
+          oilCollection = "${data["total_quantity"] ?? 0} KG";
+          currentDate = data["current_date"] ?? "";
+        });
+
+        print(
+            "✅ Updated: $todaycount orders, $oilCollection oil, $currentDate");
+      } else {
+        print("❌ Failed to fetch data: ${response.body}");
+      }
+    } catch (e) {
+      print("🚨 Error fetching data: $e");
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold( // ✅ Wrap Scaffold with gradient container
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
- body: Scaffold(
-   backgroundColor: Colors.transparent, // Light green background
-      body: SafeArea(
-        child: Column(
+    // Define dynamic colors for light/dark
+    final backgroundColor =
+        isDark ? theme.scaffoldBackgroundColor : Colors.white;
+    final primaryGreen = isDark ? Color(0xFF4CAF50) : const Color(0xFF006D04);
+    final secondaryGreen = isDark ? Color(0xFF81C784) : const Color(0xFF7FBF08);
+    final textColorLight = isDark ? Colors.white70 : Colors.white70;
+    final textColorWhite = isDark ? Colors.white : Colors.white;
+    final textColorDark = isDark ? Colors.white70 : Colors.black87;
+    final containerBgColor = isDark ? theme.cardColor : Colors.white;
+    final containerBorderColor =
+        isDark ? Colors.white12 : Colors.black.withOpacity(0.1);
+    final shadowColor = isDark ? Colors.black45 : Colors.black12;
+
+    return Scaffold(
+        backgroundColor: backgroundColor,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: VendorAppBar(title: 'Welcome'),
+        ),
+        body: Stack(
           children: [
-            // ✅ Use Custom Vendor App Bar
-            const VendorAppBar(title: 'Agent Home'),
-
-            Expanded(
+            Positioned(
+              top: -2,
+              left: -2,
+              right: -2,
+              child: Container(
+                height: screenHeight * 0.35,
+                width: screenWidth,
+                decoration: BoxDecoration(
+                  color: primaryGreen,
+                  image: const DecorationImage(
+                    image: AssetImage('assets/image/agent_home.png'),
+                    fit: BoxFit.contain,
+                  ),
+                  border: Border.all(
+                    width: 1.28,
+                    color: theme.dividerColor.withOpacity(0.2),
+                  ),
+                ),
+              ),
+            ),
+            SafeArea(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 🔹 Restaurant Management Card
-                   // _buildRestaurantCard(),
-
-                    // ✅ Truck Animation with Date
-                    // ✅ Truck Animation with Date (Reduced Top Space)
-                    Stack(
-                      clipBehavior: Clip.none, // ✅ Allows positioning outside parent
-                      children: [
-                        Column(
-                          children: [
-                            SizedBox(
-                              //height: screenHeight * 0.5, // ✅ Adjust height
-                              child: Lottie.asset(
-                                'assets/animations/animation.json',
-                                fit: BoxFit.cover,
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Text(
+                            "Total Oil Collected",
+                            style: TextStyle(
+                              color: textColorLight,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            oilCollection,
+                            style: TextStyle(
+                              color: textColorWhite,
+                              fontSize: 36,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const HistoryScreen()),
+                              );
+                            },
+                            label: const Text(
+                              'History',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(height: 5), // ✅ Reduce space below animation
-                            // const Text(
-                            //   "Today Wed 8 Feb, 2025",
-                            //   style: TextStyle(color: Colors.black54),
-                            // ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryGreen,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 40, vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(9),
+                                side: const BorderSide(
+                                  color: Colors.white,
+                                  width: 1.5,
+                                ),
+                              ),
+                              elevation: 0,
+                            ),
+                            icon: const Icon(Icons.arrow_outward,
+                                size: 16, color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 60,),
+                    Container(
+                      margin: const EdgeInsets.only(
+                          top: 20, left: 16, right: 16, bottom: 8),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 20),
+                      decoration: BoxDecoration(
+                        color: containerBgColor,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: shadowColor,
+                            blurRadius: 6,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            currentDate.isNotEmpty
+                                ? "Today $currentDate"
+                                : "Loading date...",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: textColorDark,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                constraints: BoxConstraints(
+                                  maxWidth: MediaQuery.of(context).size.width * 0.9, // Responsive width
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                    width: 1.2,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        "Today Collection",
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF006D04),
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF7FBF08),
+                                        borderRadius: BorderRadius.circular(10),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withAlpha((0.2 * 255).toInt()),
+                                            blurRadius: 3,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Text(
+                                        "$todaycount Restaurant",
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+
+
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 20),
+                      child: Row(
+                        children: [
+                          Expanded(
+                              child:
+                                  Divider(color: secondaryGreen, thickness: 1)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(
+                              "Service Request",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: primaryGreen,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                              child:
+                                  Divider(color: secondaryGreen, thickness: 1)),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: containerBgColor,
+                          border:
+                              Border.all(color: containerBorderColor, width: 1),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                _serviceBtn(
+                                  context,
+                                  title: "Orders",
+                                  imagePath: "assets/icon/lg1.png",
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) => const VendorCartPage()),
+                                  ),
+                                ),
+                                _divider(),
+                                _serviceBtn(
+                                  context,
+                                  title: "Completed",
+                                  imagePath: "assets/icon/lg2.png",
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const CompletedOrdersScreen()),
+                                  ),
+                                ),
+                                _divider(),
+                                _serviceBtn(
+                                  context,
+                                  title: "Rejected",
+                                  imagePath: "assets/icon/lg3.png",
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) => const OrdersRejected()),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Spacer(flex: 1),
+                                _serviceBtn(
+                                  context,
+                                  title: "Acknowledge",
+                                  imagePath: "assets/icon/lg4.png",
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const VendorAcknowledge()),
+                                  ),
+                                ),
+                                _divider(),
+                                _serviceBtn(
+                                  context,
+                                  title: "Voucher",
+                                  imagePath: "assets/icon/lg5.png",
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const VoucherHistoryScreen()),
+                                  ),
+                                ),
+                                const Spacer(flex: 1),
+                              ],
+                            ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                    const SizedBox(height: 15),
-
-                    // 🔹 Total Amount & Oil Collection Section
-                    //_buildTotalAmountSection(),
-
-                    const SizedBox(height: 15),
-
-                    // 🔹 Action Buttons Grid
-                    GridView.count(
-                      crossAxisCount: 2,
-                      shrinkWrap: true,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        _customActionButton("Acknowledge", onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const VendorAcknowledge()),
-                          );
-                        }),
-                        _customActionButton("Voucher", onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const VoucherHistoryScreen()),
-                          );
-                        }),
-                      //  _customActionButton("FBO Request", badgeCount: 8),
-                       // _customActionButton("Order Assign"),
-                        _customActionButton("Completed Orders", onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const CompletedOrdersScreen()),
-                          );
-                        }),
-                       // _customActionButton("Collection Data"),
-                        _customActionButton("History", onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const HistoryScreen()),
-                          );
-                        }),
-                        _customActionButton("Service data", onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const VendorCartPage()),
-                          );
-                        }),
-                      ],
-                    ),
-//Acknowledge
                   ],
                 ),
               ),
             ),
           ],
-        ),
-      ),
-    ),
+        ));
+  }
+
+  Widget _serviceBtn(
+    BuildContext ctx, {
+    required String title,
+    required String imagePath,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      width: 90,
+      height: 90,
+      child: ActionButton(title: title, imagePath: imagePath, onTap: onTap),
     );
   }
 
-  // // 🔹 Restaurant Management Card
-  // Widget _buildRestaurantCard() {
-  //   return Container(
-  //     padding: const EdgeInsets.all(12),
-  //     decoration: BoxDecoration(
-  //       gradient: LinearGradient(
-  //         colors: [Colors.green.shade200, Colors.green.shade100],
-  //         begin: Alignment.topLeft,
-  //         end: Alignment.bottomRight,
-  //       ),
-  //       borderRadius: BorderRadius.circular(12),
-  //     ),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         const Text(
-  //           "Restaurant Management",
-  //           style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-  //         ),
-  //         const Text(
-  //           "For - CareWell",
-  //           style: TextStyle(fontSize: 12, color: Colors.black54),
-  //         ),
-  //         const SizedBox(height: 8),
-  //         Row(
-  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //           children: [
-  //             Row(
-  //               children: [
-  //                 // Image.asset("assets/images/sample_fbo.png", width: 50), // Replace with your asset
-  //                 const SizedBox(width: 8),
-  //                 Container(
-  //                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-  //                   decoration: BoxDecoration(
-  //                     color: Colors.green.shade700,
-  //                     borderRadius: BorderRadius.circular(8),
-  //                   ),
-  //                   child: const Text(
-  //                     "+8",
-  //                     style: TextStyle(color: Colors.white, fontSize: 12),
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //             Column(
-  //               children: [
-  //                 const Text("Due date", style: TextStyle(fontSize: 12, color: Colors.black54)),
-  //                 const Text("🗓️ June 6, 2025", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-  //               ],
-  //             ),
-  //             Stack(
-  //               alignment: Alignment.center,
-  //               children: [
-  //                 CircularProgressIndicator(
-  //                   value: 0.88, // 88%
-  //                   backgroundColor: Colors.grey[300],
-  //                   valueColor: AlwaysStoppedAnimation<Color>(Colors.green.shade700),
-  //                 ),
-  //                 const Text("88%", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-  //               ],
-  //             ),
-  //           ],
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  // // 🔹 Total Amount & Oil Collection Section
-  // Widget _buildTotalAmountSection() {
-  //   return Container(
-  //     padding: const EdgeInsets.all(12),
-  //     decoration: BoxDecoration(
-  //       color: Colors.white,
-  //       borderRadius: BorderRadius.circular(12),
-  //       boxShadow: [
-  //         BoxShadow(
-  //           color: Colors.grey.shade300,
-  //           blurRadius: 6,
-  //           spreadRadius: 2,
-  //         ),
-  //       ],
-  //     ),
-  //     child: Column(
-  //       children: [
-  //         Row(
-  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //           children: [
-  //             Column(
-  //               crossAxisAlignment: CrossAxisAlignment.start,
-  //               children: const [
-  //                 Text("Total Amount", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-  //                 Text("2528.60 ₹", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
-  //               ],
-  //             ),
-  //             Column(
-  //               crossAxisAlignment: CrossAxisAlignment.start,
-  //               children: const [
-  //                 Text("Oil Collection", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-  //                 Text("250 KG", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
-  //               ],
-  //             ),
-  //           ],
-  //         ),
-  //         const SizedBox(height: 8),
-  //         // Row(
-  //         //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //         //   children: [
-  //         //     _customTabButton("Restaurant", true),
-  //         //     _customTabButton("Vendor", false),
-  //         //   ],
-  //         // ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  // 🔹 Custom Tab Button
-  Widget _customTabButton(String text, bool isSelected) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.green.shade700 : Colors.green.shade200,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.black87,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // 🔹 Custom Action Button
-  Widget _customActionButton(String text, {int? badgeCount, VoidCallback? onTap}) {
-    return InkWell(
-      onTap: onTap, // Handle navigation or actions
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.green.shade300, Colors.green.shade100],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Stack(
-          children: [
-            Center(
-              child: Text(
-                text,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ),
-            if (badgeCount != null)
-              Positioned(
-                right: 10,
-                top: 10,
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    "+$badgeCount",
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
+  Widget _divider() => Container(
+        height: 60,
+        width: 1,
+        color: const Color(0xFF7FBF08).withOpacity(0.5),
+      );
 }

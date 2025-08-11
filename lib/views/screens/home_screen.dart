@@ -1,18 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../common/custom_ImageSlider.dart';
 import '../../common/custom_appbar.dart';
-import '../../common/custom_circular_indicator.dart';
 import 'package:shimmer/shimmer.dart' as shimmer;
+import '../../config/api_config.dart';
 import '../../fbo_services/oil_sale_service.dart';
-import '../dashboard/FBOAcknowledgmentScreen.dart';
-import 'fbo_voucher.dart';
-import 'monthly_view_screen.dart';
-import 'oil_place_screen.dart';
-import 'order_tracking_screen.dart';
+
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -26,17 +22,25 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
   bool hasError = false;
 
+  Future<void> _onRefresh() async {
+    setState(() {
+      isLoading = true;
+      hasError = false;
+    });
+
+    await _fetchUserData(); // Re-fetch user data on pull-down
+  }
+
   @override
   void initState() {
     super.initState();
     _loadUserId(); // Load user ID first
   }
-
   // ✅ Load User ID from SharedPreferences
   Future<void> _loadUserId() async {
     final prefs = await SharedPreferences.getInstance();
     String? storedUserId = prefs.getString('userId');
-
+    if (!mounted) return; // 👈 prevents setState if widget is disposed
     if (storedUserId != null) {
       print("✅ Loaded User ID from SharedPreferences: $storedUserId");
       setState(() {
@@ -52,8 +56,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _fetchUserData() async {
+Future <void> _fetchUserData() async {
     final data = await OilSaleService.fetchOilSaleData();
+    if (!mounted) return; // 👈 prevents setState if widget is disposed
+
     if (data != null) {
       setState(() {
         userData = data;
@@ -66,12 +72,12 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
+  @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
-      appBar: PreferredSize(
+      appBar: const PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
         child: CustomAppBar(),
       ),
@@ -79,42 +85,51 @@ class _HomeScreenState extends State<HomeScreen> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return Scrollbar(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.only(bottom: screenHeight * 0.05),
-                child: Stack(
-                  children: [
-                    Positioned(
-                      top: -2,
-                      left: -2,
-                      child: Container(
-                        width: 418.0,
-                        height: 177.0,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF006D04),
-                          border: Border.all(
-                            width: 1.28,
-                            color: Colors.black.withOpacity(0.1),
+              child: RefreshIndicator(
+                onRefresh: _onRefresh,
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.only(bottom: screenHeight * 0.05),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        top: -2,
+                        left: -2,
+                        child: Container(
+                          width: constraints.maxWidth,
+                          height: constraints.maxHeight * 0.22, // ~22% of screen height
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? Theme.of(context).colorScheme.surfaceVariant
+                                : const Color(0xFF006D04),
+                            border: Border.all(
+                              width: 1.28,
+                              color: Theme.of(context).dividerColor.withOpacity(0.2),
+                            ),
                           ),
                         ),
+
+
                       ),
-                    ),
-                    Column(
-                      children: [
-                        if (isLoading)
-                          _buildShimmerList()
-                        else if (hasError)
-                          const Text("❌ Failed to load data", style: TextStyle(color: Colors.red))
-                        else
-                          buildUserData(screenWidth),
-                        SizedBox(height: 10,),
-                        MyWidget(),
-                        _buildMonthlyDropdown(screenWidth, context),
-                        SizedBox(height: 10,),
-                        buildWeeklyProgress(screenWidth, userData?["weekly"] ?? []),
-                        _buildReuseOilPickup(screenWidth),
-                      ],
-                    ),
-                  ],
+
+                      // Main content
+                      Column(
+                        children: [
+                          if (isLoading)
+                            _buildShimmerList()
+                          else if (hasError)
+                            const Text("❌To many attempt please wait for 5 to 10 sec and switch tab", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
+                          else
+                            buildUserData(screenWidth, context ),
+                          const SizedBox(height: 10),
+                          //MyWidget(),
+                          _buildReuseOilPickup(screenWidth,context),
+                          _buildMonthlyDropdown(screenWidth, context),
+                          const SizedBox(height: 10),
+                          buildWeeklyProgress(screenWidth, userData?["weekly"] ?? []),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -140,7 +155,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 10),
-
         // ✅ Shimmer for Online & Cash Payment Progress Bars
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -154,7 +168,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 10),
-
         // ✅ Shimmer for Weekly Progress Cards
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -172,7 +185,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 20),
-
         // ✅ Shimmer for Oil Pickup Section
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -196,10 +208,14 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+  Widget buildUserData(double screenWidth, BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-  Widget buildUserData(double screenWidth) {
     if (userData == null) {
-      return const Text("❌ No Data Found", style: TextStyle(color: Colors.red));
+      return const Text(
+        "❌ Too many attempts, please wait 5–10 seconds and switch tab",
+        style: TextStyle(color: Colors.red),
+      );
     }
 
     final totalRevenue = userData?["total"]?["revenue"] ?? 0;
@@ -214,18 +230,22 @@ class _HomeScreenState extends State<HomeScreen> {
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF6FA006), Color(0xFF6FA006)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+            image: const DecorationImage(
+              image: AssetImage("assets/image/cover.png"),
+              fit: BoxFit.cover,
             ),
-            borderRadius: BorderRadius.circular(16),
+            color: isDark ? const Color(0xFF2F4F1F) : const Color(0xFF6FA006),
+            borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
             children: [
-              const Text(
+              Text(
                 'Year 2025',
-                style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold, fontSize: 22),
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 22,
+                ),
               ),
               const SizedBox(height: 10),
               Row(
@@ -233,13 +253,24 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Column(
                     children: [
-                      const Text('Total Amount', style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold, fontSize: 12)),
+                      Text(
+                        'Total Amount',
+                        style: TextStyle(
+                          color: isDark ? Colors.white70 : Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
                           Text(
                             '₹ $totalRevenue',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 22,
+                            ),
                           ),
                           const SizedBox(width: 4),
                           Lottie.asset(
@@ -255,12 +286,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   Column(
                     children: [
-                      const Text('Total Oil KG', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold,fontSize: 12)),
+                      Text(
+                        'Total Oil KG',
+                        style: TextStyle(
+                          color: isDark ? Colors.white70 : Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
                           Lottie.asset(
-                            'assets/animations/fuel.json',
+                            'assets/animations/fuelnew.json',
                             width: 30,
                             height: 30,
                             repeat: true,
@@ -269,7 +307,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(width: 4),
                           Text(
                             '$totalQuantity Kg',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 22,
+                            ),
                           ),
                         ],
                       ),
@@ -291,8 +333,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: LinearProgressIndicator(
-                      value: totalQuantity / 1000,
-                      backgroundColor: Colors.white30,
+                      value: (totalQuantity / 1000).clamp(0.0, 1.0),
+                      backgroundColor: isDark ? Colors.white10 : Colors.white30,
                       color: Colors.white,
                       minHeight: 8,
                       borderRadius: BorderRadius.circular(4),
@@ -308,12 +350,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-
-
             ],
           ),
         ),
-
+        Padding(
+          padding: EdgeInsets.only(left: screenWidth * 0.05, bottom: 6),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "Money That You’ve Earned!",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Color(0xFF006D04),
+              ),
+            ),
+          ),
+        ),
         // 💵 Online & Cash Amount
         Padding(
           padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
@@ -324,29 +377,43 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   margin: const EdgeInsets.symmetric(horizontal: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: Color(0xFF6FA006),),
+                    color: isDark ? const Color(0xFF1F1F1F) : Colors.white,
+                    border: Border.all(color: const Color(0xFF6FA006)),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
                     children: [
-                      const Text("Online Transfer", style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold,)),
+                      Text(
+                        "Online Transfer",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white70 : Colors.black,
+                        ),
+                      ),
                       const SizedBox(height: 6),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.center, // 💥 Center align
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             "$onlinePayment",
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: isDark
+                                  ? Colors.lightGreenAccent
+                                  : const Color(0xFF006D04),
+                            ),
                           ),
                           const SizedBox(width: 4),
                           Lottie.asset(
-                            'assets/animations/money.json',
-                            width: 30,
-                            height: 30,
+                            'assets/animations/online.json',
+                            width: 40,
+                            height: 40,
                             repeat: true,
                             fit: BoxFit.cover,
                           ),
+
                         ],
                       ),
                     ],
@@ -358,26 +425,39 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   margin: const EdgeInsets.symmetric(horizontal: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: Color(0xFF6FA006),),
+                    color: isDark ? const Color(0xFF1F1F1F) : Colors.white,
+                    border: Border.all(color: const Color(0xFF6FA006)),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
                     children: [
-                      const Text("Cash Amount", style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold,)),
+                      Text(
+                        "Cash Amount",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white70 : Colors.black,
+                        ),
+                      ),
                       const SizedBox(height: 6),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.center, // 💥 Center align
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             "$cashPayment",
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: isDark
+                                  ? Colors.lightGreenAccent
+                                  : const Color(0xFF006D04),
+                            ),
                           ),
                           const SizedBox(width: 4),
                           Lottie.asset(
                             'assets/animations/money.json',
-                            width: 30,
-                            height: 30,
+                            width: 40,
+                            height: 40,
                             repeat: true,
                             fit: BoxFit.cover,
                           ),
@@ -394,10 +474,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
-
 // ✅ Show weekly progress dynamically, ensuring 4 weeks are displayed
   Widget buildWeeklyProgress(double screenWidth, List weeklyData) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDarkMode ? Colors.white : const Color(0xFF006D04);
+    final subTextColor = isDarkMode ? Colors.white70 : Colors.black;
+    final cardBackground = isDarkMode ? const Color(0xFF1E1E1E) : Colors.white;
+    final borderColor = isDarkMode ? Colors.white24 : Colors.black12;
+
     List<Map<String, dynamic>> defaultWeeks = [
       {"week": 1, "quantity": 0, "revenue": 0},
       {"week": 2, "quantity": 0, "revenue": 0},
@@ -405,17 +489,27 @@ class _HomeScreenState extends State<HomeScreen> {
       {"week": 4, "quantity": 0, "revenue": 0},
     ];
 
-    // Merge actual data with default weeks, ensuring all weeks exist
     for (var weekData in weeklyData) {
       int weekNumber = weekData["week"];
       if (weekNumber >= 1 && weekNumber <= 4) {
-        defaultWeeks[weekNumber - 1] = weekData; // Replace default with actual data
+        defaultWeeks[weekNumber - 1] = weekData;
       }
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04, vertical: 8),
+          child: Text(
+            "Weekly Oil Collection Summary",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: textColor,
+            ),
+          ),
+        ),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
@@ -423,24 +517,25 @@ class _HomeScreenState extends State<HomeScreen> {
             children: defaultWeeks.map<Widget>((week) {
               return _buildWeekCard(
                 "Week ${week["week"]}",
-                week["quantity"] > 0 ?"${week["quantity"]}KG/${week["revenue"]}₹" : "No Data",
-                week["quantity"] > 0 ? week["quantity"] / 100 : 0, // Show 0 progress for empty weeks
+                week["quantity"] > 0 ? "${week["quantity"]}KG / ${week["revenue"]}₹" : "0 KG / 0 ₹",
+                week["quantity"] > 0 ? week["quantity"] / 100 : 0,
                 screenWidth,
+                textColor,
+                subTextColor,
+                cardBackground,
+                borderColor,
               );
             }).toList(),
           ),
         ),
-
-        // ✅ Centered month display with <>
         Padding(
           padding: const EdgeInsets.only(top: 10),
           child: Center(
             child: Text(
-              "<${_getMonthName(DateTime.now().month)}>",
-              style: const TextStyle(
+              "<  ${_getMonthName(DateTime.now().month)}  >",
+              style: TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black54,
+                color: subTextColor,
               ),
             ),
           ),
@@ -448,6 +543,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     );
   }
+
 // ✅ Helper function to get month name
   String _getMonthName(int month) {
     List<String> months = [
@@ -456,118 +552,120 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
     return months[month - 1];
   }
-
-
-
-  Widget _buildProgressIndicator(String label, String amount, double value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 14)),
-        Text(amount, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 9),
-        SizedBox(
-          width: 140,
-          child: LinearProgressIndicator(
-            value: value,
-            backgroundColor: Colors.grey.shade300,
-            color: const Color(0xFF86BC23),
-            minHeight: 6,
-          ),
-        ),
-      ],
-    );
-  }
 // Add this method to build Monthly Dropdown and Voucher Button side by side
   Widget _buildMonthlyDropdown(double screenWidth, BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // ✅ Monthly Dropdown
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.black26),
-                color: Colors.white,
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<int>(
-                  value: 1, // Default to January
-                  items: List.generate(12, (index) {
-                    return DropdownMenuItem<int>(
-                      value: index + 1,
-                      child: Text("${_getMonthName(index + 1)}", style: const TextStyle(fontSize: 16)),
-                    );
-                  }),
-                  onChanged: (int? newMonth) {
-                    if (newMonth != null) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => MonthlyViewPage(month: newMonth),
-                        ),
-                      );
-                    }
-                  },
-                ),
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      color: isDarkMode ? Colors.black : Colors.white, // 🌓 Background color
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Select Month & View Vouchers",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: isDarkMode ? Colors.white : const Color(0xFF006D04), // 🌓 Text color
               ),
             ),
-          ),
-          const SizedBox(width: 10), // Space between Dropdown and Voucher button
-
-          // ✅ Voucher Button
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => VoucherHistoryScreen()),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 25),
-              decoration: BoxDecoration(
-                color: const Color(0xFF6FA006),
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    offset: const Offset(3, 4),
-                    blurRadius: 6,
-                  ),
-                  const BoxShadow(
-                    color: Colors.white24,
-                    offset: Offset(-2, -2),
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-              child: const Text(
-                "Voucher",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      offset: Offset(1, 1),
-                      blurRadius: 2,
-                      color: Colors.black38,
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // 🗓 Monthly Dropdown
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: isDarkMode ? Colors.white38 : Colors.black26),
+                      color: isDarkMode ? Colors.grey[900] : Colors.white,
                     ),
-                  ],
-                ),
-              ),
-            ),
-          )
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<int>(
+                        dropdownColor: isDarkMode ? Colors.grey[900] : Colors.white,
+                        value: 1,
+                        items: List.generate(12, (index) {
+                          return DropdownMenuItem<int>(
+                            value: index + 1,
+                            child: Text(
+                              _getMonthName(index + 1),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: isDarkMode ? Colors.white : const Color(0xFF006D04),
+                              ),
+                            ),
+                          );
+                        }),
+                        onChanged: (int? newMonth) {
+                          if (newMonth != null) {
+                            GoRouter.of(context).push(
+                              '/monthly-view',
+                              extra: {'month': newMonth},
+                            );
 
-        ],
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                // 🎫 Voucher Button
+                GestureDetector(
+                   onTap: () {
+                           context.push('/voucherPage'); // ✅ Go to voucher pa
+                   },
+                   child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 25),
+                    decoration: BoxDecoration(
+                      color: isDarkMode ? const Color(0xFF6FA006) : const Color(0xFF699706),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isDarkMode
+                              ? Colors.black.withOpacity(0.6)
+                              : Colors.black.withOpacity(0.3),
+                          offset: const Offset(3, 4),
+                          blurRadius: 6,
+                        ),
+                        BoxShadow(
+                          color: isDarkMode ? Colors.white12 : Colors.white24,
+                          offset: const Offset(-2, -2),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: const Text(
+                      "Voucher",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(1, 1),
+                            blurRadius: 2,
+                            color: Colors.black38,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
-  Widget _buildWeekCard(String week, String details, double progress, double screenWidth) {
+
+  Widget _buildWeekCard(String week, String details, double progress, double screenWidth, Color textColor, Color subTextColor, Color cardBackground, Color borderColor) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.03),
       padding: EdgeInsets.all(screenWidth * 0.03),
@@ -575,121 +673,164 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 2),
-        ],
+        border: Border.all(color: Colors.black12, width: 1), // ✅ Border added
+        // boxShadow removed
       ),
       child: Column(
         children: [
-          Text(week, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-          Text(details, style: const TextStyle(fontSize: 12, color: Colors.black54)),
-          const SizedBox(height: 5),
-          LinearProgressIndicator(
-            value: progress,
-            backgroundColor: Colors.grey.shade300,
-            color: const Color(0xFF86BC23),
-            minHeight: 6,
+          Text(
+            week,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w100,
+              color: Color(0xFF006D04),
+            ),
           ),
+          Text(
+            details,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w100,
+              color: Color(0xFF006D04),
+            ),
+          ),
+          const SizedBox(height: 5),
         ],
       ),
     );
   }
 // ✅ Reuse oil pickup section with separate Voucher button
-  Widget _buildReuseOilPickup(double screenWidth) {
+  Widget _buildReuseOilPickup(double screenWidth, BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: 20),
       child: Container(
-        padding: const EdgeInsets.all(7),
-        child: Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF86BC23),
-            borderRadius: BorderRadius.circular(25),
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-          child: Column(
-            children: [
-              const Text(
-                "Used Oil Pickup",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // ✅ Vertical Buttons
-              _buildActionButton(
-                title: "Acknowledge",
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => FboAcknowledgmentScreen()));
-                },
-              ),
-              const SizedBox(height: 12),
-              _buildActionButton(
-                title: "Order Status",
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => OrderTrackingScreen()));
-                },
-              ),
-              const SizedBox(height: 12),
-              _buildActionButton(
-                title: "Request Sale",
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => OilPlacedScreen()));
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton({required String title, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: const Color(0xFF5A8E14),
-          borderRadius: BorderRadius.circular(25),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 6,
-              offset: const Offset(0, 3),
+          color: isDark ? const Color(0xFF558400) : const Color(0xFF6FA006),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Reused Cooking Oil Pickup",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildActionButton(
+                    title: "Acknowledge",
+                    context: context,
+                    onTap: () {
+                      context.push('/FboAcknowledgmentScreen'); // ✅ Go to voucher pa
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildActionButton(
+                    title: "Request Sale",
+                    context: context,
+                    onTap: () {
+                      context.push('/OilPlacedScreen'); // ✅ Go to voucher pa
+                    },
+                  ),
+                ),
+              ],
             ),
           ],
         ),
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        alignment: Alignment.center,
-        child: Text(
-          title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
       ),
     );
   }
 
+  Widget _buildActionButton({
+    required String title,
+    required VoidCallback onTap,
+    required BuildContext context,
+  }) {
+    bool _isPressed = false;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return GestureDetector(
+          onTapDown: (_) => setState(() => _isPressed = true),
+          onTapUp: (_) {
+            setState(() => _isPressed = false);
+            onTap();
+          },
+          onTapCancel: () => setState(() => _isPressed = false),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 100),
+            transform: _isPressed ? Matrix4.translationValues(0, 2, 0) : Matrix4.identity(),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF2E2E2E) : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: isDark ? Colors.black54 : Colors.white12,
+                  offset: const Offset(-3, -3),
+                  blurRadius: 4,
+                ),
+                BoxShadow(
+                  color: isDark ? Colors.black87 : Colors.black38,
+                  offset: const Offset(4, 4),
+                  blurRadius: 6,
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            alignment: Alignment.center,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.lightGreenAccent.shade100 : const Color(0xFF006D04),
+                    shadows: const [
+                      Shadow(
+                        color: Colors.black45,
+                        offset: Offset(0, 1),
+                        blurRadius: 1,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
 }
 class MyWidget extends StatefulWidget {
   @override
   _MyWidgetState createState() => _MyWidgetState();
 }
-
 class _MyWidgetState extends State<MyWidget> {
   bool isLoading = true;
   bool hasError = false;
   List<Map<String, dynamic>> rangeDataList = []; // ✅ Declare list here
-
   @override
   void initState() {
     super.initState();
     fetchRangeData();
   }
-
   Future<void> fetchRangeData() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -701,7 +842,7 @@ class _MyWidgetState extends State<MyWidget> {
       };
 
       final response = await http.get(
-        Uri.parse("https://enzopik.thikse.in/api/get-range"),
+        Uri.parse(ApiConfig.getRange),
         headers: headers,
       );
 
@@ -711,6 +852,7 @@ class _MyWidgetState extends State<MyWidget> {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         if (jsonData['data'] != null && jsonData['data'].isNotEmpty) {
+          if (!mounted) return; // ✅ Check before setState
           setState(() {
             rangeDataList = List<Map<String, dynamic>>.from(jsonData['data']);
             isLoading = false;
@@ -718,18 +860,21 @@ class _MyWidgetState extends State<MyWidget> {
 
           print("🟢 Updated rangeDataList: $rangeDataList"); // Debugging
         } else {
+          if (!mounted) return; // ✅ Check before setState
           setState(() {
             hasError = true;
             isLoading = false;
           });
         }
       } else {
+        if (!mounted) return; // ✅ Check before setState
         setState(() {
           hasError = true;
           isLoading = false;
         });
       }
     } catch (e) {
+      if (!mounted) return; // ✅ Check before setState
       setState(() {
         hasError = true;
         isLoading = false;
@@ -737,8 +882,6 @@ class _MyWidgetState extends State<MyWidget> {
       print('Error: $e');
     }
   }
-
-
   Widget _buildRangeList() {
     print("🔹 UI Rebuilding with rangeDataList: $rangeDataList");
 
@@ -750,60 +893,72 @@ class _MyWidgetState extends State<MyWidget> {
         child: Text("Failed to load price ranges", style: TextStyle(color: Colors.red)),
       );
     }
-
-    return SizedBox(
-      height: 70, // Reduced height
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: rangeDataList.length,
-        itemBuilder: (context, index) {
-          final rangeData = rangeDataList[index];
-          return Container(
-            width: 220,
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.green.shade200),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 3,
-                  offset: const Offset(0, 1),
-                ),
-              ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Text(
+            "Oil Amount Price List",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF006D04),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "From: ${rangeData['from']}Kg",
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          ),
+        ),
+        SizedBox(
+          height: 70,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: rangeDataList.length,
+            itemBuilder: (context, index) {
+              final rangeData = rangeDataList[index];
+              return Container(
+                width: 220,
+                margin: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0x1A87BD23),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0x1A87BD23),),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
                 ),
-                Text(
-                  "To: ${rangeData['to']}Kg",
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "From: ${rangeData['from']}Kg",
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700,   color: Color(0xFF006D04),),
+                    ),
+                    Text(
+                      "To: ${rangeData['to']}Kg",
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700,  color: Color(0xFF006D04),),
+                    ),
+                    Text(
+                      "₹${rangeData['price']}",
+                      style: const TextStyle(
+                        color: Color(0xFF006D04),
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  "₹${rangeData['price']}",
-                  style: const TextStyle(
-                    color: Colors.green,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
-
-
-
   @override
   Widget build(BuildContext context) {
     return _buildRangeList();

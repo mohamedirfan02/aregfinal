@@ -7,6 +7,7 @@ class CustomTextFormField extends StatefulWidget {
   final IconData? iconData;
   final String? Function(String?)? validator;
   final TextEditingController controller;
+  final bool isPassword;
 
   const CustomTextFormField({
     super.key,
@@ -16,63 +17,126 @@ class CustomTextFormField extends StatefulWidget {
     this.iconData,
     this.validator,
     required this.controller,
+    this.isPassword = false,
   });
 
   @override
-  _CustomTextFormFieldState createState() => _CustomTextFormFieldState();
+  State<CustomTextFormField> createState() => _CustomTextFormFieldState();
 }
 
 class _CustomTextFormFieldState extends State<CustomTextFormField> {
+  bool _obscurePassword = true;
+  String? errorText;
   bool isHintVisible = true;
 
   @override
   void initState() {
     super.initState();
+    _obscurePassword = widget.isPassword;
+
     widget.controller.addListener(() {
-      setState(() {
-        isHintVisible = widget.controller.text.isEmpty;
-      });
+      final isEmpty = widget.controller.text.isEmpty;
+      if (isHintVisible != isEmpty) {
+        setState(() {
+          isHintVisible = isEmpty;
+        });
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-
-    return Container(
-      width: screenWidth,
-      height: 65,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(
-          color: const Color(0xFF6FA006), // Green border
-          width: 1.0,
-        ),
-      ),
-      child: Center(
-        child: TextFormField(
-          controller: widget.controller,
-          keyboardType: widget.keyboardType,
-          onChanged: widget.onChanged,
-          style: const TextStyle(
-            color: Color(0xFF006D04), // Green text color
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
-          textAlign: TextAlign.center,
-          decoration: InputDecoration(
-            hintText: isHintVisible ? widget.hintText : null,
-            hintStyle: const TextStyle(
-              color: Color(0xFF006D04),
-              fontWeight: FontWeight.w600,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              height: 60,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10.0),
+                border: Border.all(
+                  color: const Color(0xFF6FA006),
+                  width: 1.0,
+                ),
+              ),
             ),
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.zero,
-          ),
-          validator: widget.validator,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: TextFormField(
+                controller: widget.controller,
+                keyboardType: widget.keyboardType,
+                onChanged: (value) {
+                  if (widget.onChanged != null) {
+                    widget.onChanged!(value);
+                  }
+                  if (widget.validator != null) {
+                    setState(() {
+                      errorText = widget.validator!(value);
+                    });
+                  }
+                },
+                style: const TextStyle(
+                  color: Color(0xFF006D04),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+                obscureText: widget.isPassword ? _obscurePassword : false,
+                textAlign: TextAlign.start,
+                decoration: InputDecoration(
+                  hintText: null, // Always null here because we handle it manually
+                  border: InputBorder.none,
+                  isCollapsed: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 45.0, vertical: 18.0),
+                  prefixIcon: widget.iconData != null
+                      ? Icon(widget.iconData, color: Color(0xFF006D04))
+                      : null,
+                  suffixIcon: widget.isPassword
+                      ? IconButton(
+                    icon: Icon(
+                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  )
+                      : null,
+                ),
+              ),
+            ),
+            if (isHintVisible)
+              IgnorePointer(
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Text(
+                    widget.hintText,
+                    style: const TextStyle(
+                      color: Color(0xFF006D04),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
-      ),
+        if (errorText != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0, left: 12.0),
+            child: Text(
+              errorText!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontSize: 12,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
