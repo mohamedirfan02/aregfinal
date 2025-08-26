@@ -93,56 +93,73 @@ class _VendorCreationState extends State<VendorCreation> {
         _showError("❌ You must agree to the Privacy Policy to continue.");
         return;
       }
+
       setState(() {
         _isSubmitting = true;
       });
 
-      final role = 'vendor';
+      try {
+        final role = 'vendor';
 
-      int age = _calculateAge(dobController.text);
-      if (age < 18) {
-        _showError("❌ You must be at least 18 years old.");
+        int age = _calculateAge(dobController.text);
+        if (age < 18) {
+          _showError("❌ You must be at least 18 years old.");
+          setState(() {
+            _isSubmitting = false;
+          });
+          return;
+        }
+
+        Map<String, String> userData = {
+          "role": role,
+          "full_name": nameController.text,
+          "email": emailController.text,
+          "dob": dobController.text,
+          "age": age.toString(),
+          "gender": selectedGender ?? "Male",
+          "country_code": _selectedPhoneNumber.isoCode ?? "",
+          "contact_number": _selectedPhoneNumber.parseNumber(),
+          "license_number": licenseController.text,
+          "address": addressController.text,
+          "pincode": pinCodeController.text,
+          "password": passwordController.text,
+        };
+
+        print("User Data: $userData");
+
+        // API call for registration
+        var response = await UserRegistration.registerVendor(userData, _selectedImage);
+        print("🚀 API Response: $response");
+
+        if (response.containsKey("error")) {
+          _showError(response["error"]);
+          setState(() {
+            _isSubmitting = false;
+          });
+          return;
+        }
+
+        // Don't stop loading here - continue with OTP sending
+         _sendOTP(_selectedPhoneNumber.phoneNumber ?? "");
+
+      } catch (e) {
+        print("❌ Error in form submission: $e");
+        _showError("❌ Something went wrong. Please try again.");
         setState(() {
           _isSubmitting = false;
         });
-        return;
       }
-
-      Map<String, String> userData = {
-        "role": role,
-        "full_name": nameController.text,
-        "email": emailController.text,
-        "dob": dobController.text,
-        "age": age.toString(), // ✅ Age Sent
-        "gender": selectedGender ?? "Male",
-        "country_code": _selectedPhoneNumber.isoCode ?? "",
-        "contact_number": _selectedPhoneNumber.parseNumber(),
-        "license_number": licenseController.text,
-        "address": addressController.text,
-        "pincode": pinCodeController.text,
-        "password": passwordController.text,
-      };
-
-      print("User Data: $userData");
-
-      var response = await UserRegistration.registerVendor(userData, _selectedImage);
-      print("🚀 API Response: $response");
-
-      if (response.containsKey("error")) {
-        _showError(response["error"]);
-      } else {
-        _sendOTP(_selectedPhoneNumber.phoneNumber ?? "");
-      }
-      setState(() {
-        _isSubmitting = false;
-      });
     }
   }
-
 
   void _sendOTP(String phoneNumber) async {
     if (phoneNumber.isEmpty) {
       _showError("❌ Enter a valid phone number!");
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
       return;
     }
 
@@ -152,13 +169,32 @@ class _VendorCreationState extends State<VendorCreation> {
         timeout: const Duration(seconds: 60),
         verificationCompleted: (PhoneAuthCredential credential) async {
           print("✅ Auto Verification Completed");
+          // Stop loading only when navigation happens
+          if (mounted) {
+            setState(() {
+              _isSubmitting = false;
+            });
+          }
         },
         verificationFailed: (FirebaseAuthException e) {
           print("❌ Phone Verification Failed: ${e.message}");
           _showError("❌ ${e.message}");
+          // Stop loading on failure
+          if (mounted) {
+            setState(() {
+              _isSubmitting = false;
+            });
+          }
         },
         codeSent: (String verificationId, int? resendToken) {
           print("✅ SMS OTP Sent!");
+
+          // Stop loading only when navigation happens
+          if (mounted) {
+            setState(() {
+              _isSubmitting = false;
+            });
+          }
 
           context.go('/OTPVerificationScreen', extra: {
             "phone": phoneNumber,
@@ -167,10 +203,20 @@ class _VendorCreationState extends State<VendorCreation> {
         },
         codeAutoRetrievalTimeout: (String verificationId) {
           print("⏳ Auto Retrieval Timeout: $verificationId");
+          // Stop loading on timeout
+          if (mounted) {
+            setState(() {
+              _isSubmitting = false;
+            });
+          }
         },
       );
     } catch (e) {
+      print("❌ OTP Sending Failed: $e");
       _showError("❌ OTP Sending Failed: $e");
+      setState(() {
+        _isSubmitting = false;
+      });
     }
   }
 
@@ -259,7 +305,7 @@ class _VendorCreationState extends State<VendorCreation> {
                                     ),
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () async {
-                                        final url = Uri.parse('https://ai.thikse.in/privacy-policy');
+                                        final url = Uri.parse('https://ai.thikse.in/enzopik/privacy-policy');
                                         if (await canLaunchUrl(url)) {
                                           await launchUrl(url, mode: LaunchMode.externalApplication);
                                         }

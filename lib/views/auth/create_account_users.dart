@@ -406,7 +406,7 @@ class _UserCreationState extends State<UserCreation> {
                                   ),
                                   recognizer: TapGestureRecognizer()
                                     ..onTap = () async {
-                                      final url = Uri.parse('https://ai.thikse.in/privacy-policy');
+                                      final url = Uri.parse('https://ai.thikse.in/enzopik/privacy-policy');
                                       if (await canLaunchUrl(url)) {
                                         await launchUrl(url, mode: LaunchMode.externalApplication);
                                       }

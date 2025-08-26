@@ -1,3 +1,4 @@
+import 'package:areg_app/views/screens/privacy_policy_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../common/app_colors.dart';
@@ -6,8 +7,6 @@ import '../../views/auth/logout_function.dart';
 import '../common/common_appbar.dart';
 
 class AgentSettingsScreen extends StatelessWidget {
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,10 +22,27 @@ class AgentSettingsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 10),
-                    _buildListTile("About Us", Icons.arrow_forward_ios, AppColors.darkGreen, onTap: () {}),
-                    _buildListTile("Privacy Policy", Icons.arrow_forward_ios, AppColors.darkGreen, onTap: () {}),
-                    _buildListTile("Terms and Conditions", Icons.add, AppColors.darkGreen, onTap: () {}),
-                    _buildListTile("Language", Icons.arrow_forward_ios, AppColors.darkGreen, onTap: () {}),
+                    _buildListTile("About Us", Icons.arrow_forward_ios,
+                        AppColors.darkGreen,
+                        onTap: () {}),
+                    _buildListTile(
+                      "Privacy Policy",
+                      Icons.arrow_forward_ios,
+                      AppColors.darkGreen,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const PrivacyPolicyScreen()),
+                        );
+                      },
+                    ),
+                    _buildListTile(
+                        "Terms and Conditions", Icons.add, AppColors.darkGreen,
+                        onTap: () {}),
+                    _buildListTile("Language", Icons.arrow_forward_ios,
+                        AppColors.darkGreen,
+                        onTap: () {}),
 
                     // Consumer<ThemeNotifier>(
                     //   builder: (context, themeNotifier, _) {
@@ -59,14 +75,13 @@ class AgentSettingsScreen extends StatelessWidget {
     );
   }
 
-
   Widget _buildListTile(
-      String title,
-      IconData icon,
-      Color textColor, {
-        bool isLogout = false,
-        required VoidCallback onTap,
-      }) {
+    String title,
+    IconData icon,
+    Color textColor, {
+    bool isLogout = false,
+    required VoidCallback onTap,
+  }) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(
@@ -82,7 +97,8 @@ class AgentSettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSwitchTile(String title, bool value, ValueChanged<bool> onChanged) {
+  Widget _buildSwitchTile(
+      String title, bool value, ValueChanged<bool> onChanged) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(
