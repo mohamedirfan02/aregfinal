@@ -1,8 +1,6 @@
 import 'package:areg_app/views/screens/privacy_policy_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../common/app_colors.dart';
-import '../../theme/ThemeNotifier.dart';
 import '../../views/auth/logout_function.dart';
 import '../common/common_appbar.dart';
 
