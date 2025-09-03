@@ -15,7 +15,7 @@ android {
         applicationId "com.thikse.enzopik"
         minSdkVersion 23  // ✅ Ensure this is correctly set
         targetSdkVersion 35
-        versionCode 12
+        versionCode 13
         versionName "1.0.1"
     }
     ndkVersion  "29.0.13113456"

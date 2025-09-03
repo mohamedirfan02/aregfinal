@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../common/custom_appbar.dart';
@@ -117,7 +118,7 @@ Future <void> _fetchUserData() async {
                           if (isLoading)
                             _buildShimmerList()
                           else if (hasError)
-                            const Text("❌To many attempt please wait for 5 to 10 sec and switch tab", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
+                            const Text("To many attempt please wait for 5 to 10 sec and switch tab", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
                           else
                             buildUserData(screenWidth, context ),
                           const SizedBox(height: 10),
@@ -208,8 +209,10 @@ Future <void> _fetchUserData() async {
       ),
     );
   }
+
   Widget buildUserData(double screenWidth, BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final formatter = NumberFormat('#,##0'); // Create number formatter
 
     if (userData == null) {
       return const Text(
@@ -265,7 +268,7 @@ Future <void> _fetchUserData() async {
                       Row(
                         children: [
                           Text(
-                            '₹ $totalRevenue',
+                            '₹ ${formatter.format(totalRevenue)}', // Format with commas
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -306,7 +309,7 @@ Future <void> _fetchUserData() async {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '$totalQuantity Kg',
+                            '${formatter.format(totalQuantity)} Kg', // Format with commas
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -358,7 +361,7 @@ Future <void> _fetchUserData() async {
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              "Money That You’ve Earned!",
+              "Money That You've Earned!",
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -396,7 +399,7 @@ Future <void> _fetchUserData() async {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "$onlinePayment",
+                            "₹ ${formatter.format(onlinePayment)}", // Format with commas and add currency symbol
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -413,7 +416,6 @@ Future <void> _fetchUserData() async {
                             repeat: true,
                             fit: BoxFit.cover,
                           ),
-
                         ],
                       ),
                     ],
@@ -444,7 +446,7 @@ Future <void> _fetchUserData() async {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "$cashPayment",
+                            "₹ ${formatter.format(cashPayment)}", // Format with commas and add currency symbol
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -715,13 +717,23 @@ Future <void> _fetchUserData() async {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              "Reused Cooking Oil Pickup",
+              "Manage Oil Pickup",
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
+            SizedBox(height: 4), // spacing between title & subtitle
+            Text(
+              "Confirm request a sale of your Used oil",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.normal,
+                color: Colors.white70,
+              ),
+            ),
+
             const SizedBox(height: 16),
             Row(
               children: [
@@ -770,43 +782,62 @@ Future <void> _fetchUserData() async {
           },
           onTapCancel: () => setState(() => _isPressed = false),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
-            transform: _isPressed ? Matrix4.translationValues(0, 2, 0) : Matrix4.identity(),
+            duration: const Duration(milliseconds: 150),
+            transform: _isPressed
+                ? (Matrix4.identity()..scale(0.97))
+                : Matrix4.identity(),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF2E2E2E) : Colors.white,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: isDark ? Colors.black54 : Colors.white12,
-                  offset: const Offset(-3, -3),
-                  blurRadius: 4,
-                ),
-                BoxShadow(
-                  color: isDark ? Colors.black87 : Colors.black38,
-                  offset: const Offset(4, 4),
+                  color: isDark ? Colors.black54 : Colors.black26,
+                  offset: const Offset(2, 2),
                   blurRadius: 6,
                 ),
               ],
             ),
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            alignment: Alignment.center,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.lightGreenAccent.shade100 : const Color(0xFF006D04),
-                    shadows: const [
-                      Shadow(
-                        color: Colors.black45,
-                        offset: Offset(0, 1),
-                        blurRadius: 1,
+                // Title text
+                Expanded(
+                  child: Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: isDark
+                          ? Colors.lightGreenAccent.shade100
+                          : const Color(0xFF006D04),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                // Arrow container
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.black : Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isDark ? Colors.black87 : Colors.black26,
+                        offset: const Offset(2, 2),
+                        blurRadius: 4,
                       ),
                     ],
+                  ),
+                  child: Icon(
+                    Icons.arrow_forward,
+                    size: 18,
+                    color: isDark
+                        ? Colors.lightGreenAccent.shade100
+                        : const Color(0xFF006D04),
                   ),
                 ),
               ],
@@ -817,6 +848,7 @@ Future <void> _fetchUserData() async {
     );
   }
 
+
 }
 class MyWidget extends StatefulWidget {
   @override
@@ -825,7 +857,7 @@ class MyWidget extends StatefulWidget {
 class _MyWidgetState extends State<MyWidget> {
   bool isLoading = true;
   bool hasError = false;
-  List<Map<String, dynamic>> rangeDataList = []; // ✅ Declare list here
+  List<Map<String, dynamic>> rangeDataList = []; // Declare list here
   @override
   void initState() {
     super.initState();

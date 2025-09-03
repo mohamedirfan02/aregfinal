@@ -31,6 +31,20 @@ class _AgentCartPageState extends State<AgentCartPage> {
   bool isSubmitting = false;
   bool isCompleting = false;
 
+  TextEditingController searchController = TextEditingController();
+  String searchQuery = "";
+
+  List<dynamic> _filterOrders(List<dynamic> orders) {
+    if (searchQuery.isEmpty) return orders;
+
+    return orders.where((order) {
+      final orderId = order['order_id'].toString();
+      final restaurant = (order['restaurant_name'] ?? "").toLowerCase();
+      return orderId.contains(searchQuery) || restaurant.contains(searchQuery);
+    }).toList();
+  }
+
+
   final Map<int, bool> showCollectionOptions = {};
   final Map<int, String> selectedCollectionMethod = {};
   final Map<int, bool> onlinePaySelected = {};
@@ -301,7 +315,7 @@ class _AgentCartPageState extends State<AgentCartPage> {
         child: Scaffold(
           backgroundColor: isDark ? Colors.black : Colors.white,
           appBar: AppBar(
-            backgroundColor: isDark ? Colors.grey[900] : Colors.transparent,
+            backgroundColor: isDark ? Colors.grey[900] : Color(0xFF006D04),
             elevation: 0,
             leading: IconButton(
               icon: Image.asset("assets/icon/back.png", width: 24, height: 24),
@@ -320,44 +334,75 @@ class _AgentCartPageState extends State<AgentCartPage> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            bottom: TabBar(
-              labelColor: Colors.green,
-              unselectedLabelColor: isDark ? Colors.grey[400] : Colors.black54,
-              indicatorColor: Colors.green,
-              labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-              tabs: const [
-                Tab(text: "Pending"),
-                Tab(text: "Completed"),
-                Tab(text: "Self Collection"),
-              ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(100),
+              child: Column(
+                children: [
+                  // 🔎 Search bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: TextField(
+                      controller: searchController,
+                      onChanged: (value) {
+                        setState(() {
+                          searchQuery = value.toLowerCase();
+                        });
+                      },
+                      decoration: InputDecoration(
+                        hintText: "Search by Order ID or Restaurant Name",
+                        prefixIcon: const Icon(Icons.search),
+                        filled: true,
+                        fillColor: isDark ? Colors.grey[800] : Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // 📌 Tabs
+                  TabBar(
+                    labelColor: Colors.white,
+                    unselectedLabelColor: isDark ? Colors.grey[400] : Colors.white38,
+                    indicatorColor: Colors.white54,
+                    labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    tabs: const [
+                      Tab(text: "Pending"),
+                      Tab(text: "Completed"),
+                      Tab(text: "Self Collection"),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
           body: isLoading
               ? _buildShimmerList()
               : TabBarView(
-                  children: [
-                    _buildOrderList(
-                      pendingOrders,
-                      isPending: true,
-                      key: const ValueKey("pending"),
-                    ),
-                    _buildOrderList(
-                      completedOrders,
-                      isPending: false,
-                      isCompleted: true,
-                      key: const ValueKey("completed"),
-                    ),
-                    _buildOrderList(
-                      confirmedOrders,
-                      isPending: false,
-                      key: ValueKey("accepted_${confirmedOrders.length}"),
-                    ),
-                  ],
-                ),
+            children: [
+              _buildOrderList(
+                _filterOrders(pendingOrders),
+                isPending: true,
+                key: const ValueKey("pending"),
+              ),
+              _buildOrderList(
+                _filterOrders(completedOrders),
+                isPending: false,
+                isCompleted: true,
+                key: const ValueKey("completed"),
+              ),
+              _buildOrderList(
+                _filterOrders(confirmedOrders),
+                isPending: false,
+                key: ValueKey("accepted_${confirmedOrders.length}"),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
 
   Widget _buildOrderList(List<dynamic> orders,
       {required bool isPending, bool isCompleted = false, Key? key}) {
@@ -1282,46 +1327,11 @@ Widget _buildDetailRow(String title, String value,
             ),
           ),
         ),
-        // if (isPhoneNumber)
-        //   IconButton(
-        //     icon: Image.asset(
-        //       "assets/image/call.png",
-        //       width: 30, // Set desired width
-        //       height: 30, // Set desired height
-        //     ),
-        //     padding: const EdgeInsets.only(left: 4),
-        //     constraints: const BoxConstraints(),
-        //     onPressed: () async {
-        //       String phoneNumber = value.replaceAll(RegExp(r'\D'), '');
-        //       if (!phoneNumber.startsWith("91")) {
-        //         phoneNumber = "91$phoneNumber";
-        //       }
-        //
-        //       final Uri whatsappUri =
-        //           Uri.parse("whatsapp://send?phone=$phoneNumber");
-        //       if (await canLaunchUrl(whatsappUri)) {
-        //         await launchUrl(whatsappUri,
-        //             mode: LaunchMode.externalApplication);
-        //       } else {
-        //         debugPrint(
-        //             "❌ WhatsApp is not installed or cannot be launched.");
-        //       }
-        //     },
-        //   ),
       ],
     ),
   );
 }
 
-// BoxDecoration _boxDecoration() {
-//   return BoxDecoration(
-//     color: Colors.white,
-//     borderRadius: BorderRadius.circular(10),
-//     boxShadow: const [
-//       BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 2)
-//     ],
-//   );
-// }
 
 /// ✅ Build Shimmer UI for Loading State
 Widget _buildShimmerList() {

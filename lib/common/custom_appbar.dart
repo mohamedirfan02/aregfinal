@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../fbo_services/appbar_api.dart';
 import '../fbo_services/fbo_notification_service.dart';
 
@@ -45,11 +46,23 @@ class _CustomAppBarState extends State<CustomAppBar> {
     }
   }
 
+// 2. In your parent widget (where the notification icon is), modify the _loadNotificationCount method:
   Future<void> _loadNotificationCount() async {
-    final notifications = await FboNotificationService().fetchNotifications();
-    if (!mounted) return;
+    final prefs = await SharedPreferences.getInstance();
+    final notificationService = FboNotificationService(); // Initialize your service
+    final allNotifications = await notificationService.fetchNotifications() ?? [];
+
+    int unreadCount = 0;
+    for (var notification in allNotifications) {
+      final messageId = notification['id']?.toString() ?? notification['title'];
+      final isRead = prefs.getBool('read_$messageId') ?? false;
+      if (!isRead) {
+        unreadCount++;
+      }
+    }
+
     setState(() {
-      notificationCount = notifications?.length ?? 0;
+      notificationCount = unreadCount; // This will now only show unread notifications
     });
   }
 
@@ -308,8 +321,8 @@ class _CustomAppBarState extends State<CustomAppBar> {
                       ? ClipOval(
                     child: Image.network(
                       restaurantImage!,
-                      width: 50,
-                      height: 50,
+                      width: 40,
+                      height: 40,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Container(
                         width: 40,
@@ -335,7 +348,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
                     ),
                     child: Icon(
                       Icons.restaurant,
-                      size: 24,
+                      size: 18,
                       color: isDarkMode ? Colors.white : Colors.white,
                     ),
                   ),
@@ -347,7 +360,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
                 child: Text(
                   restaurantName ?? "Loading...",
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: isDarkMode ? Colors.white : Colors.white,
                   ),

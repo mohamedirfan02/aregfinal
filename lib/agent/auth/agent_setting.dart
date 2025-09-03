@@ -41,20 +41,6 @@ class AgentSettingsScreen extends StatelessWidget {
                     _buildListTile("Language", Icons.arrow_forward_ios,
                         AppColors.darkGreen,
                         onTap: () {}),
-
-                    // Consumer<ThemeNotifier>(
-                    //   builder: (context, themeNotifier, _) {
-                    //     final isDark = themeNotifier.themeMode == ThemeMode.dark;
-                    //     return _buildSwitchTile(
-                    //       "Dark mode",
-                    //       isDark,
-                    //           (value) {
-                    //         themeNotifier.toggleTheme(value);
-                    //       },
-                    //     );
-                    //   },
-                    // ),
-
                     const Divider(height: 30),
                     _buildListTile(
                       "Logout",

@@ -27,6 +27,22 @@ class _FboNotificationScreenState extends State<FboNotificationScreen> {
     fetchNotifications();
     setupFirebaseListeners();
   }
+  Future<int> getUnreadNotificationCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final allNotifications = await _notificationService.fetchNotifications() ?? [];
+
+    int unreadCount = 0;
+    for (var notification in allNotifications) {
+      final messageId = notification['id']?.toString() ?? notification['title'];
+      final isRead = prefs.getBool('read_$messageId') ?? false;
+      if (!isRead) {
+        unreadCount++;
+      }
+    }
+    return unreadCount;
+  }
+
+
 
   Map<String, List<Map<String, dynamic>>> groupNotificationsByDate(
       List<Map<String, dynamic>> items) {
