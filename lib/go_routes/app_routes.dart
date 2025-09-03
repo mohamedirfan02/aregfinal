@@ -28,7 +28,7 @@ import '../views/otpscreen.dart';
 import '../views/new_password_view.dart';
 import '../views/vendor_home.dart';
 import '../agent/agent_screen/CartPage.dart';
-import '../vendor_app/vendor_screen/vendor_cart.dart';
+import '../vendor_app/vendor_screen/vendor_order_screen.dart';
 import '../agent/agent_home_screen.dart';
 
 final GoRouter appRouter = GoRouter(

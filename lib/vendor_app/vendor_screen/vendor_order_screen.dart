@@ -22,7 +22,6 @@ class _VendorCartPageState extends State<VendorCartPage>
     with SingleTickerProviderStateMixin {
   List<dynamic> pendingOrders = []; // ✅ Store pending orders
   List<dynamic> approvedOrders = []; // ✅ Store approved order
-  //List<dynamic> completedOrders = []; // ✅ Completed orders
   bool isLoading = true;
   Map<int, bool> isAccepting = {};
   Map<int, bool> isAccepted = {}; // ✅ Track accepted orders
@@ -30,6 +29,9 @@ class _VendorCartPageState extends State<VendorCartPage>
   Map<int, String?> selectedRemarks = {};
   Map<int, bool> isPaymentDone = {};
   Map<int, File?> capturedImages = {}; // Declare globally to store images per order
+
+  String searchQuery = "";
+
 
   late TabController _tabController; // ✅ Tab controller for Pending and Approved tabs
 
@@ -39,8 +41,6 @@ class _VendorCartPageState extends State<VendorCartPage>
     _tabController =
         TabController(length: 2, vsync: this); // ✅ Initialize tab controller
     _fetchAssignedOrders();
-
-    ///  _fetchCompletedOrders(); // ✅ Fetch completed orders
   }
 
   @override
@@ -367,6 +367,25 @@ class _VendorCartPageState extends State<VendorCartPage>
                 ],
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                onChanged: (value) {
+                  setState(() {
+                    searchQuery = value.toLowerCase(); // store lowercase for easy search
+                  });
+                },
+                decoration: InputDecoration(
+                  hintText: "Search by Order ID or Restaurant Name",
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+            ),
             Expanded(
               child: TabBarView(
                 controller: _tabController,
@@ -385,30 +404,42 @@ class _VendorCartPageState extends State<VendorCartPage>
 
 
   /// ✅ Build Order List (for Pending and Approved tabs)
-  Widget _buildOrderList(List<dynamic> orders,
-      {required bool isPending,
+  Widget _buildOrderList(
+      List<dynamic> orders, {
+        required bool isPending,
         // bool isCompleted = false
       }) {
+    // 🔎 Apply search filter
+    final filteredOrders = orders.where((order) {
+      final orderId = order['order_id'].toString().toLowerCase();
+      final restaurant = (order['restaurant_name'] ?? "").toLowerCase();
+
+      return orderId.contains(searchQuery) || restaurant.contains(searchQuery);
+    }).toList();
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : orders.isEmpty
-              ? const Center(
-                  child: Text(
-                    "No orders available",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: orders.length,
-                  itemBuilder: (context, index) {
-                    return _buildMessageCard(orders[index],
-                        isPending: isPending);
-                  },
-                ),
+          : filteredOrders.isEmpty
+          ? const Center(
+        child: Text(
+          "No matching orders found",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      )
+          : ListView.builder(
+        itemCount: filteredOrders.length,
+        itemBuilder: (context, index) {
+          return _buildMessageCard(
+            filteredOrders[index],
+            isPending: isPending,
+          );
+        },
+      ),
     );
   }
+
 
   void _showDeclineDialog(int orderId) {
     TextEditingController reasonController = TextEditingController();
@@ -502,6 +533,7 @@ class _VendorCartPageState extends State<VendorCartPage>
           Divider(thickness: 1.2, color: isDark ? Colors.white24 : Colors.black26),
           const SizedBox(height: 12),
           _buildDetailColumn([
+            _buildDetailRow("Restaurant Name", "${order["restaurant_name"]}"),
             _buildDetailRow("Oil Type", order["type"]),
             _buildDetailRow("Quantity", "${order["quantity"]} KG"),
             _buildDetailRow("Customer", order["user_name"]),

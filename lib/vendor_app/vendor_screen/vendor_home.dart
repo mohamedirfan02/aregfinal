@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:areg_app/vendor_app/vendor_screen/vendor_cart.dart';
+import 'package:areg_app/vendor_app/vendor_screen/vendor_order_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
