@@ -1,9 +1,10 @@
+import 'package:areg_app/common/custom_bottom_nav_bar.dart';
+import 'package:areg_app/views/screens/ai_chat_screen.dart';
+import 'package:areg_app/views/screens/home_screen.dart';
+import 'package:areg_app/views/screens/profile_screen.dart';
+import 'package:areg_app/views/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
-import '../../common/custom_bottom_nav_bar.dart';
-import '../screens/ai_chat_screen.dart';
-import '../screens/home_screen.dart';
-import '../screens/profile_screen.dart';
-import '../screens/settings_screen.dart';
+
 
 class BottomNavigation extends StatefulWidget {
   final Map<String, dynamic> userDetails; // ✅ Accept user details

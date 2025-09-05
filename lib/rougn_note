@@ -185,7 +185,9 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      body: Stack(
+      body: KLinearGradientBg(
+        gradientColor: AppColors.GradientColor,
+        child: Stack(
           children: [
             LayoutBuilder(
               builder: (context, constraints) {
@@ -313,7 +315,7 @@ class _LoginPageState extends State<LoginPage> {
                                           : Center(
                                               // ✅ Centered the button
                                               child: CustomSubmitButton(
-                                                buttonText: 'Log in',
+                                                buttonText: 'Sign in',
                                                 onPressed: _login,
                                               ),
                                             ),
@@ -342,6 +344,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ],
         ),
+      ),
     );
   }
 }

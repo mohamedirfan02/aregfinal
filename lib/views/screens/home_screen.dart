@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:areg_app/common/app_colors.dart';
+import 'package:areg_app/common/k_linear_gradient_bg.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -83,60 +85,60 @@ Future <void> _fetchUserData() async {
         child: CustomAppBar(),
       ),
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Scrollbar(
-              child: RefreshIndicator(
-                onRefresh: _onRefresh,
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.only(bottom: screenHeight * 0.05),
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        top: -2,
-                        left: -2,
-                        child: Container(
-                          width: constraints.maxWidth,
-                          height: constraints.maxHeight * 0.22, // ~22% of screen height
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).brightness == Brightness.dark
-                                ? Theme.of(context).colorScheme.surfaceVariant
-                                : const Color(0xFF006D04),
-                            border: Border.all(
-                              width: 1.28,
-                              color: Theme.of(context).dividerColor.withOpacity(0.2),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return Scrollbar(
+                child: RefreshIndicator(
+                  onRefresh: _onRefresh,
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.only(bottom: screenHeight * 0.05),
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          top: -2,
+                          left: -2,
+                          child: Container(
+                            width: constraints.maxWidth,
+                            height: constraints.maxHeight * 0.22, // ~22% of screen height
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Theme.of(context).colorScheme.surfaceVariant
+                                  :  AppColors.primaryGreen,
+                              border: Border.all(
+                                width: 1.28,
+                                color: Theme.of(context).dividerColor.withOpacity(0.2),
+                              ),
                             ),
                           ),
+
+
                         ),
 
-
-                      ),
-
-                      // Main content
-                      Column(
-                        children: [
-                          if (isLoading)
-                            _buildShimmerList()
-                          else if (hasError)
-                            const Text("To many attempt please wait for 5 to 10 sec and switch tab", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
-                          else
-                            buildUserData(screenWidth, context ),
-                          const SizedBox(height: 10),
-                          //MyWidget(),
-                          _buildReuseOilPickup(screenWidth,context),
-                          _buildMonthlyDropdown(screenWidth, context),
-                          const SizedBox(height: 10),
-                          buildWeeklyProgress(screenWidth, userData?["weekly"] ?? []),
-                        ],
-                      ),
-                    ],
+                        // Main content
+                        Column(
+                          children: [
+                            if (isLoading)
+                              _buildShimmerList()
+                            else if (hasError)
+                              const Text("To many attempt please wait for 5 to 10 sec and switch tab", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
+                            else
+                              buildUserData(screenWidth, context ),
+                            const SizedBox(height: 10),
+                            //MyWidget(),
+                            _buildReuseOilPickup(screenWidth,context),
+                            _buildMonthlyDropdown(screenWidth, context),
+                            const SizedBox(height: 10),
+                            buildWeeklyProgress(screenWidth, userData?["weekly"] ?? []),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
-      ),
     );
   }
 
@@ -559,7 +561,6 @@ Future <void> _fetchUserData() async {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      color: isDarkMode ? Colors.black : Colors.white, // 🌓 Background color
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: 10),
         child: Column(

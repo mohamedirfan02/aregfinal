@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -24,9 +25,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       String? email = prefs.getString('email');
       String? token = prefs.getString('token');
 
-      print("📌 Debug - Email: $email");
-      print("📌 Debug - Token: $token");
-
       if (email == null || token == null) {
         _showPopup('Authentication error. Please log in again.', Colors.red);
         return;
@@ -43,10 +41,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         "old_password": oldPasswordController.text,
       };
 
-      // 👉 Add this line to debug the URL
-      print("📌 Reset Password URL: ${ApiConfig.resetPassword}");
-      print("📌 Reset Password URL: ${requestData}");
-
       final client = http.Client();
       final request = http.Request('POST', Uri.parse(ApiConfig.resetPassword));
       request.headers.addAll({
@@ -59,20 +53,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       final streamedResponse = await client.send(request);
       final response = await http.Response.fromStream(streamedResponse);
 
-      print("📌 Manual Status Code: ${response.statusCode}");
-      print("📌 Manual Response: ${response.body}");
-
-
-      print("📌 Status Code: ${response.statusCode}");
-      print("📌 Response Body: ${response.body}");
-
       if (response.headers['content-type']?.contains('application/json') == true) {
         final Map<String, dynamic> responseData = json.decode(response.body);
 
         if (response.statusCode == 200 && responseData['status'] == 'success') {
           oldPasswordController.clear();
           newPasswordController.clear();
-          _showPopup(responseData['message'], Colors.green);
+
+          // ✅ Just go back (no popup)
+          if (mounted) {
+            GoRouter.of(context).pop(true); // return success flag
+          }
         } else {
           _showPopup(responseData['message'] ?? 'Something went wrong.', Colors.red);
         }
@@ -85,37 +76,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
 
+
   void _showPopup(String message, Color color) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          color == Colors.green ? "Success" : "Error",
-          style: TextStyle(color: color),
-        ),
-        content: Text(message),
+        title: const Text("Your Changes Noted", style: TextStyle(color: Colors.red)),
+        content: Text('Kindly Exit the app and reopen the app to continue.'),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Close dialog
-              if (color == Colors.green) {
-                // Wait for the dialog to fully close before navigating
-                Future.delayed(Duration(milliseconds: 100), () {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => BottomNavigation(userDetails: {}),
-                    ),
-                        (route) => false,
-                  );
-                });
-              }
-            },
+            onPressed: () => Navigator.pop(context),
             child: const Text("OK"),
           ),
         ],
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     SizeConfig.init(context);
@@ -131,7 +108,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               // Back Button
               GestureDetector(
                 onTap: () {
-                  Navigator.pop(context);
+                  GoRouter.of(context).pop();
                 },
                 child: Image.asset(
                   "assets/icon/back.png",
@@ -169,12 +146,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               CustomTextField(
                 hintText: "Old Password",
                 controller: oldPasswordController,
+                isPassword: true, // ✅ enable eye toggle
               ),
 
               SizedBox(height: SizeConfig.h(2)),
               CustomTextField(
                 hintText: "New Password",
                 controller: newPasswordController,
+                isPassword: true, // ✅ enable eye toggle
+
               ),
               SizedBox(height: SizeConfig.h(10)),
               Center(
@@ -205,6 +185,7 @@ class CustomTextField extends StatefulWidget {
   final TextInputType keyboardType;
   final FormFieldValidator<String>? validator;
   final ValueChanged<String>? onChanged;
+  final bool isPassword; // ✅ Add this flag
 
   const CustomTextField({
     super.key,
@@ -213,6 +194,7 @@ class CustomTextField extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.validator,
     this.onChanged,
+    this.isPassword = false, // default false
   });
 
   @override
@@ -221,6 +203,7 @@ class CustomTextField extends StatefulWidget {
 
 class _CustomTextFieldState extends State<CustomTextField> {
   bool isHintVisible = true;
+  bool _obscureText = true; // ✅ Track password visibility
 
   @override
   void initState() {
@@ -242,7 +225,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
-    SizeConfig.init(context); // ✅ Initialize SizeConfig
+    SizeConfig.init(context);
 
     return Container(
       width: double.infinity,
@@ -261,7 +244,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           keyboardType: widget.keyboardType,
           onChanged: widget.onChanged,
           validator: widget.validator,
-          obscureText: true, // Optional: remove this if not all fields are passwords
+          obscureText: widget.isPassword ? _obscureText : false, // ✅ Only for password
           style: TextStyle(
             color: const Color(0xFF006D04),
             fontWeight: FontWeight.w600,
@@ -276,11 +259,27 @@ class _CustomTextFieldState extends State<CustomTextField> {
               fontSize: SizeConfig.ts(14),
             ),
             border: InputBorder.none,
-            contentPadding: EdgeInsets.zero,
+            contentPadding: EdgeInsets.symmetric(horizontal: 10),
+
+            // ✅ Show eye icon only if it's a password field
+            suffixIcon: widget.isPassword
+                ? IconButton(
+              icon: Icon(
+                _obscureText ? Icons.visibility_off : Icons.visibility,
+                color: const Color(0xFF006D04),
+              ),
+              onPressed: () {
+                setState(() {
+                  _obscureText = !_obscureText;
+                });
+              },
+            )
+                : null,
           ),
         ),
       ),
     );
   }
 }
+
 

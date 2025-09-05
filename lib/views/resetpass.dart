@@ -103,7 +103,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           },
         );
       } else {
-        _showError("❌ Enter a valid Email or 10-digit Phone Number.");
+        _showError("❌ Enter a valid 10-digit Phone Number.");
       }
     } catch (e) {
       _showError("❌ OTP Sending Failed: $e");
@@ -152,7 +152,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     const SizedBox(height: 18),
 
                     const Text(
-                      "Enter your email or phone number\nto receive the OTP",
+                      "Enter your phone number\nto receive the OTP",
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 15),
                     ),
@@ -162,15 +162,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     // ✅ Email/Phone Input Field
                     CustomTextFormField(
                       controller: _inputController,
-                      hintText: 'Enter Email or Phone Number',
+                      hintText: 'Enter Phone Number',
                       iconData: Icons.mail_outline,
                       keyboardType: TextInputType.text,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter an email or phone number';
+                          return 'Please enter an phone number';
                         }
                         if (!_isEmail(value) && !_isPhone(value)) {
-                          return 'Enter a valid email or 10-digit phone number';
+                          return 'Enter a valid 10-digit phone number';
                         }
                         return null;
                       },

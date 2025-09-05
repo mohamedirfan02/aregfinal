@@ -193,7 +193,7 @@ class _ChangePassOtpScreenState extends State<ChangePassOtpScreen> {
 
                   // ✅ Title
                   const Text(
-                    "OTP_Verification",
+                    "OTP Verification",
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,color: Color(0xFF006D04)),
                   ),
@@ -252,7 +252,7 @@ class _ChangePassOtpScreenState extends State<ChangePassOtpScreen> {
             left: 10,
             child: CustomBackButton(
               onPressed: () {
-                context.go('/reset-password');
+                context.go('/change-password');
               },
             ),
           ),

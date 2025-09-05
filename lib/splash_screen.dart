@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'package:areg_app/common/k_linear_gradient_bg.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'common/app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -24,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen>  with SingleTickerProviderS
     super.initState();
 
     _controller = AnimationController(
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 1),
       vsync: this,
     );
 
@@ -121,23 +124,26 @@ class _SplashScreenState extends State<SplashScreen>  with SingleTickerProviderS
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            return Opacity(
-              opacity: _opacityAnimation.value,
-              child: Transform.scale(
-                scale: _scaleAnimation.value,
-                child: child,
-              ),
-            );
-          },
-          child: Image.asset(
-            'assets/image/newsplash.png',
-            width: 250.w,
-            height: 250.h,
+      //backgroundColor: Colors.white,
+      body: KLinearGradientBg(
+        gradientColor: AppColors.GradientColor,
+        child: Center(
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Opacity(
+                opacity: _opacityAnimation.value,
+                child: Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: child,
+                ),
+              );
+            },
+            child: Image.asset(
+              'assets/icon/enzopik.png',
+              width: 250.w,
+              height: 250.h,
+            ),
           ),
         ),
       ),

@@ -44,6 +44,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
     try {
       if (_isEmail(input)) {
+        email = input; // ✅ FIX: assign email
+
         // ✅ Send Email OTP via Laravel API
         final response = await http.post(
           Uri.parse(ApiConfig.sendOtp),
@@ -58,20 +60,19 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
         if (response.statusCode == 200) {
           print("✅ Email OTP Sent Successfully!");
+
+          // ✅ Navigate with email
+          context.go('/ChangePassOtpScreen', extra: {
+            "email": email,
+            "phone": null,
+            "verificationId": null,
+          });
         } else {
           _showError(data["message"] ?? "Failed to send Email OTP.");
         }
-
-        // ✅ Navigate with email
-        context.go('/ChangePassOtpScreen', extra: {
-          "email": email,
-          "phone": null,
-          "verificationId": null
-        });
-
       } else if (_isPhone(input)) {
-        // ✅ Send SMS OTP via Firebase
         phoneNumber = "+91$input";
+
         await FirebaseAuth.instance.verifyPhoneNumber(
           phoneNumber: phoneNumber,
           timeout: const Duration(seconds: 60),
@@ -81,37 +82,34 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           verificationFailed: (FirebaseAuthException e) {
             print("❌ Phone Verification Failed: ${e.message}");
             _showError("❌ ${e.message}");
+            setState(() => _isSending = false); // stop loader
           },
           codeSent: (String verificationId, int? resendToken) {
             print("✅ SMS OTP Sent!");
-            setState(() {
-              this.verificationId = verificationId;
-            });
+            setState(() => _isSending = false); // stop loader
 
             // ✅ Navigate to OTP Verification Screen (Phone)
             context.go('/ChangePassOtpScreen', extra: {
-              "email": email,
-              "phone": phoneNumber,  // ✅ Ensure phone is passed
+              "email": null,
+              "phone": phoneNumber,
               "verificationId": verificationId,
             });
-
-
           },
           codeAutoRetrievalTimeout: (String verificationId) {
             print("⏳ Auto Retrieval Timeout: $verificationId");
+            setState(() => _isSending = false);
           },
         );
       } else {
         _showError("❌ Enter a valid 10-digit Phone Number.");
+        setState(() => _isSending = false);
       }
     } catch (e) {
       _showError("❌ OTP Sending Failed: $e");
+      setState(() => _isSending = false);
     }
-
-    setState(() {
-      _isSending = false;
-    });
   }
+
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -132,8 +130,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 100),
-
-                    // Illustration
                     Center(
                       child: SizedBox(
                         width: 250,
@@ -146,30 +142,31 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ),
                     const Text(
                       "Change Password",
-                      style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold,color: Color(0xFF006D04),),
+                      style: TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF006D04),
+                      ),
                     ),
                     const SizedBox(height: 18),
-
                     const Text(
-                      "Enter your phone number\nto receive the OTP",
+                      "Enter your phone number\n to receive the OTP",
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 15),
                     ),
-
                     const SizedBox(height: 30),
 
-                    // ✅ Email/Phone Input Field
                     CustomTextFormField(
                       controller: _inputController,
-                      hintText: 'Enter Phone Number',
+                      hintText: 'Enter Phone no',
                       iconData: Icons.mail_outline,
                       keyboardType: TextInputType.text,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter an phone number';
+                          return 'Please enter phone';
                         }
                         if (!_isEmail(value) && !_isPhone(value)) {
-                          return 'Enter a valid 10-digit phone number';
+                          return 'Enter valid 10-digit phone number';
                         }
                         return null;
                       },
@@ -177,9 +174,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
                     const SizedBox(height: 35),
 
-                    _isSending
-                        ? const CircularProgressIndicator()
-                        : CustomSubmitButton(
+                    CustomSubmitButton(
                       buttonText: 'Submit',
                       onPressed: _sendOtp,
                     ),
@@ -188,8 +183,18 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               ),
             ),
           ),
+
+          // ✅ Overlay Loader
+          if (_isSending)
+            Container(
+              color: Colors.black54,
+              child: const Center(
+                child: CircularProgressIndicator(color: Color(0xFF006D04)),
+              ),
+            ),
         ],
       ),
     );
   }
+
 }
