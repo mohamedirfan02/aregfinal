@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:areg_app/common/app_colors.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -344,7 +345,7 @@ class _VendorCartPageState extends State<VendorCartPage>
       length: 2, // Use 3 if adding "Completed" tab
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: const Color(0xFF006D04),
+          backgroundColor: AppColors.primaryColor,
           elevation: 0,
           title: const Text(
             "Order Assigned",
@@ -354,7 +355,7 @@ class _VendorCartPageState extends State<VendorCartPage>
         body: Column(
           children: [
             Container(
-              color: const Color(0xFF006D04), // Same color as AppBar
+              color: AppColors.primaryColor, // Same color as AppBar
               child: TabBar(
                 controller: _tabController,
                 indicatorColor: Colors.white,
@@ -598,7 +599,7 @@ class _VendorCartPageState extends State<VendorCartPage>
               child: ElevatedButton(
                 onPressed: () => _submitOrder(orderId),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF006D04),
+                  backgroundColor: AppColors.primaryColor,
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -712,7 +713,7 @@ class _VendorCartPageState extends State<VendorCartPage>
           icon: const Icon(Icons.camera_alt_outlined,color: Colors.white),
           label: const Text("Capture",style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF006D04),
+            backgroundColor: AppColors.primaryColor,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         ),

@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 
+import 'app_colors.dart';
+
 class CustomHomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double screenWidth;
+  
 
   const CustomHomeAppBar({super.key, required this.screenWidth});
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: const Color(0xFF006D04),
+      backgroundColor:AppColors.secondaryColor,
       elevation: 0,
       leading: Padding(
         padding: EdgeInsets.only(left: screenWidth * 0.04), // ✅ Add spacing

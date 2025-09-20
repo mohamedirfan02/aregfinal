@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -203,7 +204,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: _imageFile != null ? Colors.green : Colors.black,
+                  color: _imageFile != null ?AppColors.primaryColor: AppColors.titleColor,
                 ),
               ),
               const SizedBox(height: 30),
@@ -260,7 +261,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     color: isUploading
                         ? Colors.grey.shade400
                         : isReadyToSubmit
-                        ? const Color(0xFF006D04)
+                        ? AppColors.primaryColor
                         : Colors.grey.shade300,
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -324,7 +325,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               onTap: _pickImage,
               child: CircleAvatar(
                 radius: 18,
-                backgroundColor: _imageFile != null ? Colors.green : Colors.grey,
+                backgroundColor: _imageFile != null ? Colors.green : AppColors.primaryColor,
                 child: Icon(
                   _imageFile != null ? Icons.check : Icons.edit,
                   size: 18,

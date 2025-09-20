@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:areg_app/common/app_colors.dart';
 import 'package:areg_app/config/api_config.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -145,7 +146,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       style: TextStyle(
                         fontSize: 40,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF006D04),
+                        color: AppColors.primaryColor,
                       ),
                     ),
                     const SizedBox(height: 18),
@@ -189,7 +190,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             Container(
               color: Colors.black54,
               child: const Center(
-                child: CircularProgressIndicator(color: Color(0xFF006D04)),
+                child: CircularProgressIndicator(color: AppColors.primaryColor),
               ),
             ),
         ],

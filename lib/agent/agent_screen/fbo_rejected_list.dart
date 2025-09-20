@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:areg_app/common/app_colors.dart';
 import 'package:areg_app/config/api_config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -13,7 +14,7 @@ class FboRejectedList extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Theme.of(context).brightness == Brightness.dark
             ? Colors.grey[900]
-            : const Color(0xFF006D04),
+            : AppColors.secondaryColor,
         centerTitle: true,
         elevation: 4,
         title: Text(
@@ -180,7 +181,7 @@ class FboRejectedList extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(color: Color(0xFF006D04)),
+              style: const TextStyle(color: AppColors.secondaryColor),
             ),
           ),
         ],

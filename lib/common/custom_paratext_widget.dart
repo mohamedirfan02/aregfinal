@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_colors.dart';
+
 class CustomText extends StatelessWidget {
   final String boldText;
   final String text;
@@ -21,7 +23,7 @@ class CustomText extends StatelessWidget {
               fontSize: 34,
               fontWeight: FontWeight.bold,
               fontFamily: 'Inter', // Use Inter font
-              color: Color(0xFF006D04), // Customize as needed
+              color: AppColors.secondaryColor, // Customize as needed
             ),
           ),
         ),
@@ -35,7 +37,7 @@ class CustomText extends StatelessWidget {
               fontSize: 18,
               fontWeight: FontWeight.normal,
               fontFamily: 'Inter', // Use Inter font
-              color: Color(0xFF006D04), // Customize as needed
+              color:  AppColors.primaryColor, // Customize as needed
             ),
           ),
         ),

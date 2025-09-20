@@ -20,9 +20,10 @@ class _VendorBottomNavigationState extends State<VendorBottomNavigation> {
 
   // ✅ **Keep pages alive to prevent rebuilds**
   final List<Widget> _pages = [
-     AiChatScreen(),
-    const VendorHomeScreen(),
+   //  AiChatScreen(),
+
     const VendorProfileScreen(userDetails: {}),
+    const VendorHomeScreen(),
      AgentSettingsScreen(),
   ];
 

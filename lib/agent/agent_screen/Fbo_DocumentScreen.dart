@@ -1,3 +1,4 @@
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import '../../common/shimmer_loader.dart';
 import '../agent_service/fbo_document_service.dart';
@@ -154,7 +155,7 @@ class _FboDocumentScreenState extends State<FboDocumentScreen> {
                           icon: const Icon(Icons.download, size: 18),
                           label: const Text("Self Declaration", style: TextStyle(fontSize: 12)),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF006D04),
+                            backgroundColor:  AppColors.secondaryColor,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -175,7 +176,7 @@ class _FboDocumentScreenState extends State<FboDocumentScreen> {
                           icon: const Icon(Icons.download, size: 18),
                           label: const Text("Contract", style: TextStyle(fontSize: 12)),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF006D04),
+                            backgroundColor: AppColors.secondaryColor,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

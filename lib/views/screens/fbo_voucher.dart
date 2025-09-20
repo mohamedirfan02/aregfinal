@@ -1,3 +1,4 @@
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import '../../agent/common/common_appbar.dart';
@@ -128,7 +129,7 @@ class _VoucherHistoryScreenState extends State<VoucherHistoryScreen> {
           Container(
             margin: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF0FDF0),
+              color: Colors.grey,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -160,7 +161,7 @@ class _VoucherHistoryScreenState extends State<VoucherHistoryScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? Color(0xFFE6F9E6) : Colors.white,
+            color: isSelected ? AppColors.primaryColor : Colors.white,
             borderRadius: BorderRadius.horizontal(
               left: Radius.circular(index == 0 ? 12 : 0),
               right: Radius.circular(index == 1 ? 12 : 0),
@@ -170,7 +171,7 @@ class _VoucherHistoryScreenState extends State<VoucherHistoryScreen> {
           child: Text(
             label,
             style: TextStyle(
-              color: Colors.green.shade800,
+              color: Colors.black45,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -223,7 +224,7 @@ class _VoucherHistoryScreenState extends State<VoucherHistoryScreen> {
               margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.green),
+                border: Border.all(color: AppColors.secondaryColor),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -372,12 +373,12 @@ class _VoucherHistoryScreenState extends State<VoucherHistoryScreen> {
                         title: Text(
                           option,
                           style: TextStyle(
-                              color: Color(0xFF006D04),
+                              color: AppColors.secondaryColor,
                               fontWeight: FontWeight.bold),
                         ),
                         value: option,
                         groupValue: _selectedOption,
-                        activeColor: Color(0xFF7FBF08),
+                        activeColor: AppColors.secondaryColor,
                         onChanged: (value) {
                           setState(() {
                             _selectedOption = value;
@@ -411,7 +412,7 @@ class _VoucherHistoryScreenState extends State<VoucherHistoryScreen> {
                       ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.black,
-                        side: const BorderSide(color: Color(0xFF7FBF08)),
+                        side: const BorderSide(color:AppColors.secondaryColor),
                       ),
                     ),
                   ),
@@ -433,7 +434,7 @@ class _VoucherHistoryScreenState extends State<VoucherHistoryScreen> {
                       ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.black,
-                        side: const BorderSide(color: Color(0xFF7FBF08)),
+                        side: const BorderSide(color: AppColors.secondaryColor),
                       ),
                     ),
                   ),
@@ -483,7 +484,7 @@ class _VoucherHistoryScreenState extends State<VoucherHistoryScreen> {
                       },
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
-                      _isLoading ? Colors.grey : const Color(0xFF7FBF08),
+                      _isLoading ? Colors.grey : AppColors.secondaryColor,
                   padding:
                       const EdgeInsets.symmetric(vertical: 12, horizontal: 70),
                 ),
@@ -527,7 +528,7 @@ class _VoucherHistoryScreenState extends State<VoucherHistoryScreen> {
               value,
               textAlign: TextAlign.right,
               style: TextStyle(
-                color: Colors.green.shade800,
+                color: AppColors.secondaryColor,
                 height: multiline ? 1.4 : 1.0,
               ),
             ),

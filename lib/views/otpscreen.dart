@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:areg_app/common/app_colors.dart';
 import 'package:areg_app/config/api_config.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -195,7 +196,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   const Text(
                     "OTP Verification",
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,color: Color(0xFF006D04)),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,color: AppColors.primaryColor),
                   ),
                   const SizedBox(height: 10),
 
@@ -280,7 +281,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.green, width: 3),
+            borderSide: const BorderSide(color: AppColors.primaryColor, width: 3),
           ),
         ),
         onChanged: (value) {

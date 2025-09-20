@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import '../../common/custom_appbar.dart';
@@ -209,7 +210,7 @@ class _FboAcknowledgmentScreenState extends State<FboAcknowledgmentScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border.all(
-                    color: Color(0xFF7FBF08),
+                    color:AppColors.primaryColor,
                     width: 1,
                   ),
                   borderRadius: BorderRadius.circular(12),
@@ -223,7 +224,7 @@ class _FboAcknowledgmentScreenState extends State<FboAcknowledgmentScreen> {
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: Color(0xFF5D6E1E),
+                          color: AppColors.titleColor,
                         ),
                       ),
                     ),
@@ -256,7 +257,7 @@ class _FboAcknowledgmentScreenState extends State<FboAcknowledgmentScreen> {
                           "Payment Received",
                           style: TextStyle(
                             fontSize: 16,
-                            color: Color(0xFF006D04),
+                            color: AppColors.titleColor,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -272,7 +273,7 @@ class _FboAcknowledgmentScreenState extends State<FboAcknowledgmentScreen> {
                             ? () => acknowledgeOrder(order["order_id"])
                             : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF7FBF08),
+                          backgroundColor: AppColors.primaryColor,
                           disabledBackgroundColor: Colors.black38,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -319,7 +320,7 @@ class _FboAcknowledgmentScreenState extends State<FboAcknowledgmentScreen> {
               style: const TextStyle(
                 fontWeight: FontWeight.w500,
                 fontSize: 14,
-                color: Color(0xFF5D6E1E),
+                color: AppColors.titleColor,
               ),
             ),
           ),
@@ -332,7 +333,7 @@ class _FboAcknowledgmentScreenState extends State<FboAcknowledgmentScreen> {
               style: TextStyle(
                 fontWeight: FontWeight.w500,
                 fontSize: 14,
-                color: Color(0xFF006D04),
+                color: AppColors.secondaryColor,
                 height: multiline ? 1.4 : 1.0,
               ),
             ),

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../fbo_services/appbar_api.dart';
 import '../fbo_services/fbo_notification_service.dart';
+import 'app_colors.dart';
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   const CustomAppBar({super.key});
@@ -293,7 +294,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return AppBar(
-      backgroundColor: isDarkMode ? Colors.black : const Color(0xFF006D04),
+      backgroundColor: isDarkMode ? Colors.black : AppColors.fboColor,
       elevation: 0,
       title: isLoading
           ? const CircularProgressIndicator(color: Colors.white)

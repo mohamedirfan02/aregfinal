@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_colors.dart';
+
 class CustomSubmitButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final String buttonText;
@@ -52,8 +54,8 @@ class _CustomSubmitButtonState extends State<CustomSubmitButton> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: _isPressed
-                ? [const Color(0xFF6FA006), const Color(0xFF5A8B04)]
-                : [const Color(0xFF7FBF08), const Color(0xFF6FA006)],
+                ? [AppColors.primaryColor, AppColors.primaryColor]
+                : [AppColors.primaryColor,AppColors.primaryColor],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -62,7 +64,7 @@ class _CustomSubmitButtonState extends State<CustomSubmitButton> {
               ? []
               : const [
             BoxShadow(
-              color: Color(0xFF4C6A01),
+              color: Colors.grey,
               offset: Offset(4, 6),
               blurRadius: 10,
             ),

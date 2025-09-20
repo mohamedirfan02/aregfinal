@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_colors.dart';
+
 class CustomTextFormField extends StatefulWidget {
   final String hintText;
   final TextInputType keyboardType;
@@ -58,7 +60,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10.0),
                 border: Border.all(
-                  color: const Color(0xFF6FA006),
+                  color:  AppColors.primaryColor,
                   width: 1.0,
                 ),
               ),
@@ -79,7 +81,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                   }
                 },
                 style: const TextStyle(
-                  color: Color(0xFF006D04),
+                  color: AppColors.secondaryColor,
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                 ),
@@ -91,7 +93,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                   isCollapsed: true,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 45.0, vertical: 18.0),
                   prefixIcon: widget.iconData != null
-                      ? Icon(widget.iconData, color: Color(0xFF006D04))
+                      ? Icon(widget.iconData, color: AppColors.secondaryColor)
                       : null,
                   suffixIcon: widget.isPassword
                       ? IconButton(
@@ -116,7 +118,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                   child: Text(
                     widget.hintText,
                     style: const TextStyle(
-                      color: Color(0xFF006D04),
+                      color: AppColors.secondaryColor,
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),

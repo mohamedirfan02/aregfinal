@@ -1,3 +1,4 @@
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -291,7 +292,7 @@ class _AgentAcknowledgmentScreenState extends State<AgentAcknowledgmentScreen> {
                             : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: oilReceived[orderId] == true
-                              ? Colors.green
+                              ? AppColors.secondaryColor
                               : Colors.green.withOpacity(0.5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),

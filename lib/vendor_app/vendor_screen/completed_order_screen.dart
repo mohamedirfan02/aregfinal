@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -72,7 +73,7 @@ class _CompletedOrdersScreenState extends State<CompletedOrdersScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: isDark ? Colors.grey[900] : const Color(0xFF006D04),
+        backgroundColor: isDark ? Colors.grey[900] : AppColors.primaryColor,
         centerTitle: true,
         elevation: 4,
         title: Text(
@@ -117,11 +118,11 @@ class _CompletedOrdersScreenState extends State<CompletedOrdersScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Order ID: #${order["order_id"]}",
+              "Order ID: ${order["order_id"]}",
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: theme.colorScheme.primary, // use theme primary color (green-ish)
+                color: AppColors.titleColor, // use theme primary color (green-ish)
               ),
             ),
             Divider(color: isDark ? Colors.white24 : Colors.black26),

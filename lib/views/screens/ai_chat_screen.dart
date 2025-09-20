@@ -38,7 +38,7 @@ class AiChatScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: screenWidth * 0.07,
                         fontWeight: FontWeight.bold,
-                        color: isDarkMode ? Colors.white : AppColors.darkGreen,
+                        color: isDarkMode ? Colors.white : AppColors.secondaryColor,
                       ),
                     ),
 
@@ -71,7 +71,7 @@ class AiChatScreen extends StatelessWidget {
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6FA006),
+                          backgroundColor: AppColors.secondaryColor,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),

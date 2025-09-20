@@ -1,3 +1,4 @@
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../agent/common/common_appbar.dart';
@@ -189,8 +190,8 @@ class _VendorAcknowledgeState extends State<VendorAcknowledge> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor:
                                     paymentReceived[orderId] == true
-                                        ? Colors.green
-                                        : Colors.green.shade300,
+                                        ? AppColors.primaryColor
+                                        : AppColors.primaryColor,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),

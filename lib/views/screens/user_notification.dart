@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
@@ -368,7 +369,7 @@ class NotificationPopup extends StatelessWidget {
       case NotificationType.acknowledged:
         return {
           'icon': Icons.check_circle,
-          'color': Colors.blue,
+          'color': AppColors.primaryColor,
           'headerText': 'Sale Acknowledged!',
           'description': 'Your oil sale has been acknowledged and confirmed.',
           'showOrderId': true,

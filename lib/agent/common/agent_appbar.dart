@@ -1,3 +1,4 @@
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import '../../fbo_services/fbo_notification_service.dart';
 import '../agent_screen/CartPage.dart';
@@ -41,7 +42,7 @@ class _AgentAppBarState extends State<AgentAppBar> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     // final textColor = isDarkMode ? Colors.white : Colors.black;
     // final iconColor = isDarkMode ? Colors.white : Colors.black;
-    final backgroundColor = isDarkMode ? Colors.grey[900] : const Color(0xFF006D04);
+    final backgroundColor = isDarkMode ? Colors.grey[900] : AppColors.secondaryColor;
 
     return AppBar(
       backgroundColor: backgroundColor,

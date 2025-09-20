@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:lucide_icons/lucide_icons.dart';
@@ -308,84 +310,106 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Center(
             child: Column(
               children: [
-                Text(
-                  'Profile',
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
 
-                // Profile Image with tap functionality
-                GestureDetector(
-                  onTap: () => _showImagePopup(context),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          spreadRadius: 2,
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundImage: details['restaurant_url'] != null
-                          ? NetworkImage(details['restaurant_url'])
-                          : const AssetImage('assets/image/profile.png') as ImageProvider,
-                      onBackgroundImageError: (exception, stackTrace) {
-                        print("Image Load Error: $exception");
-                      },
-                    ),
-                  ),
-                ),
+
                 const SizedBox(height: 20),
 
                 // ✅ Name - Centered without label
-                Text(
-                  role == 'user'
-                      ? (details['restaurant_name'] ?? 'Restaurant Name')
-                      : (details['full_name'] ?? 'Your Name'),
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      width: 1.w,
+                      color: AppColors.greyColor.withOpacity(0.3),
+                    ),
+                    borderRadius: BorderRadius.circular(8.r),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: AppColors.cardGradientColor,
+                    ),
                   ),
-                  textAlign: TextAlign.center,
+                  child: Column(
+                    children: [
+                      Text(
+                        'Profile',
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Profile Image with tap functionality
+                      GestureDetector(
+                        onTap: () => _showImagePopup(context),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                spreadRadius: 2,
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: CircleAvatar(
+                            radius: 50,
+                            backgroundImage: details['restaurant_url'] != null
+                                ? NetworkImage(details['restaurant_url'])
+                                : const AssetImage('assets/image/profile.png') as ImageProvider,
+                            onBackgroundImageError: (exception, stackTrace) {
+                              print("Image Load Error: $exception");
+                            },
+                          ),
+                        ),
+                      ),
+                      Text(
+                        role == 'user'
+                            ? (details['restaurant_name'] ?? 'Restaurant Name')
+                            : (details['full_name'] ?? 'Your Name'),
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      // ✅ Email - Centered without label
+                      Text(
+                        details['email'] ?? 'Your Email ID',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: theme.colorScheme.secondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+
+                      // ✅ FSSAI No for 'user', Gender for others - Centered without label
+                      Text(
+                        role == 'user'
+                            ? (details['license_number'] ?? 'N/A')
+                            : (details['gender'] ?? 'N/A'),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.hintColor,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+
+                      // ✅ Contact Number - Centered without label
+                      Text(
+                        details['contact_number'] ?? 'Phone No',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 8),
 
-                // ✅ Email - Centered without label
-                Text(
-                  details['email'] ?? 'Your Email ID',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.secondary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
 
-                // ✅ FSSAI No for 'user', Gender for others - Centered without label
-                Text(
-                  role == 'user'
-                      ? (details['license_number'] ?? 'N/A')
-                      : (details['gender'] ?? 'N/A'),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.hintColor,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-
-                // ✅ Contact Number - Centered without label
-                Text(
-                  details['contact_number'] ?? 'Phone No',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
               ],
             ),
           ),
@@ -546,7 +570,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text("Cancel",style: TextStyle(color: Colors.black45,fontWeight: FontWeight.bold)),
+                  child: const Text("Cancel",style: TextStyle(color: AppColors.titleColor,fontWeight: FontWeight.bold)),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -559,14 +583,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: const Text("Feedback submitted!"),
-                          backgroundColor: Colors.green.shade600,
+                          backgroundColor: AppColors.primaryColor,
                           behavior: SnackBarBehavior.floating,
                           duration: const Duration(seconds: 2),
                         ),
                       );
                     }
                   },
-                  style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF006D04)),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryColor),
                   child: const Text(
                     "Submit",
                     style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

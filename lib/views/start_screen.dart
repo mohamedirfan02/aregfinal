@@ -1,3 +1,4 @@
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
@@ -31,7 +32,7 @@ class StartScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF006D04),
+                  color: AppColors.secondaryColor,
                 ),
               ),
               const Text(
@@ -39,7 +40,7 @@ class StartScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF006D04),
+                  color: AppColors.secondaryColor,
                 ),
               ),
               const SizedBox(height: 15),

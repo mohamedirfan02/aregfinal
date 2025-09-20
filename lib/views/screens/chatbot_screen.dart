@@ -1,3 +1,4 @@
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import '../../fbo_services/chatbot_service.dart';
@@ -55,7 +56,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text("Chatbot", style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF006D04),
+        backgroundColor: AppColors.secondaryColor,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -106,16 +107,16 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: isDarkMode
-                                      ? Colors.green[900]?.withOpacity(0.3)
-                                      : const Color(0xFFEFFFCF),
+                                      ? AppColors.primaryColor
+                                      :AppColors.white,
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: const Color(0xFF6FA006),
+                                    color: AppColors.primaryColor,
                                   ),
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.lightbulb, color: Color(0xFF6FA006)),
+                                    const Icon(Icons.lightbulb, color: AppColors.secondaryColor),
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Text(
@@ -193,8 +194,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     double maxBubbleWidth = MediaQuery.of(context).size.width * 0.75;
 
-    Color userBubbleColor = isDarkMode ? Colors.green[700]! : const Color(0xFFD7EB78);
-    Color botBubbleColor = isDarkMode ? Colors.green[900]! : const Color(0xFF6FA006);
+    Color userBubbleColor = isDarkMode ? Colors.green[700]! : AppColors.secondaryColor;
+    Color botBubbleColor = isDarkMode ? Colors.green[900]! : AppColors.secondaryColor;
 
     return Row(
       mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -218,7 +219,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               text,
               style: TextStyle(
                 fontSize: 15,
-                color: isUser ? (isDarkMode ? Colors.black : Colors.black) : Colors.white,
+                color: isUser ? (isDarkMode ? Colors.black : Colors.white) : Colors.white,
               ),
             ),
           ),

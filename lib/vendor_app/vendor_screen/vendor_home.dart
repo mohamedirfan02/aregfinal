@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:areg_app/common/app_colors.dart';
+import 'package:areg_app/common/floating_chatbot_btn.dart';
 import 'package:areg_app/vendor_app/vendor_screen/vendor_order_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -87,8 +89,8 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
     // Define dynamic colors for light/dark
     final backgroundColor =
         isDark ? theme.scaffoldBackgroundColor : Colors.white;
-    final primaryGreen = isDark ? Color(0xFF4CAF50) : const Color(0xFF006D04);
-    final secondaryGreen = isDark ? Color(0xFF81C784) : const Color(0xFF7FBF08);
+    final primaryGreen = isDark ? Color(0xFF4CAF50) : AppColors.secondaryColor;
+    final secondaryGreen = isDark ? Color(0xFF81C784) : AppColors.secondaryColor;
     final textColorLight = isDark ? Colors.white70 : Colors.white70;
     final textColorWhite = isDark ? Colors.white : Colors.white;
     final textColorDark = isDark ? Colors.white70 : Colors.black87;
@@ -243,7 +245,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
                                         style: TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w600,
-                                          color: const Color(0xFF006D04),
+                                          color: AppColors.secondaryColor,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -252,7 +254,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF7FBF08),
+                                        color: AppColors.secondaryColor,
                                         borderRadius: BorderRadius.circular(10),
                                         boxShadow: [
                                           BoxShadow(
@@ -396,6 +398,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
                 ),
               ),
             ),
+            const DraggableChatbotButton(),
           ],
         ));
   }
@@ -416,6 +419,6 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
   Widget _divider() => Container(
         height: 60,
         width: 1,
-        color: const Color(0xFF7FBF08).withOpacity(0.5),
+        color:AppColors.secondaryColor.withOpacity(0.5),
       );
 }

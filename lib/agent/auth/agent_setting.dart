@@ -21,12 +21,12 @@ class AgentSettingsScreen extends StatelessWidget {
                   children: [
                     const SizedBox(height: 10),
                     _buildListTile("About Us", Icons.arrow_forward_ios,
-                        AppColors.darkGreen,
+                        AppColors.titleColor,
                         onTap: () {}),
                     _buildListTile(
                       "Privacy Policy",
                       Icons.arrow_forward_ios,
-                      AppColors.darkGreen,
+                      AppColors.titleColor,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -36,16 +36,16 @@ class AgentSettingsScreen extends StatelessWidget {
                       },
                     ),
                     _buildListTile(
-                        "Terms and Conditions", Icons.add, AppColors.darkGreen,
+                        "Terms and Conditions", Icons.add, AppColors.titleColor,
                         onTap: () {}),
                     _buildListTile("Language", Icons.arrow_forward_ios,
-                        AppColors.darkGreen,
+                        AppColors.titleColor,
                         onTap: () {}),
                     const Divider(height: 30),
                     _buildListTile(
                       "Logout",
                       Icons.logout,
-                      AppColors.darkGreen,
+                      AppColors.titleColor,
                       isLogout: true,
                       onTap: () => logout(context),
                     ),
@@ -95,7 +95,7 @@ class AgentSettingsScreen extends StatelessWidget {
       ),
       trailing: Switch(
         value: value,
-        activeColor: AppColors.primaryGreen,
+        activeColor: AppColors.secondaryColor,
         onChanged: onChanged,
       ),
     );

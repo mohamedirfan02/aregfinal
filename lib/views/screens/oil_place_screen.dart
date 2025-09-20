@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:areg_app/common/app_colors.dart';
 import 'package:areg_app/config/api_config.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
@@ -305,7 +306,7 @@ class _OilPlacedScreenState extends State<OilPlacedScreen> {
             Center(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isDark ? Colors.green[700] : const Color(0xFF5D6E1E),
+                  backgroundColor: isDark ? Colors.green[700] : AppColors.primaryColor,
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
@@ -516,7 +517,7 @@ class _OilPlacedScreenState extends State<OilPlacedScreen> {
                   enabled: onTap == null,
                   keyboardType: keyboardType,
                   onChanged: onChanged,
-                  cursorColor: isDark ? Colors.greenAccent : Colors.green,
+                  cursorColor: isDark ? Colors.greenAccent : AppColors.primaryColor,
                   style: TextStyle(
                     color: theme.textTheme.bodyLarge?.color ?? (isDark ? Colors.white : Colors.black),
                   ),
@@ -694,7 +695,7 @@ class _OilPlacedScreenState extends State<OilPlacedScreen> {
                 selectedPaymentMethod = value!;
                 isCashSelected = false;
               }),
-              activeColor: const Color(0xFF006D04),
+              activeColor: AppColors.primaryColor,
             ),
             Text("Online", style: TextStyle(color: textColor)),
             Radio<String>(
@@ -704,7 +705,7 @@ class _OilPlacedScreenState extends State<OilPlacedScreen> {
                 selectedPaymentMethod = value!;
                 isCashSelected = true;
               }),
-              activeColor: const Color(0xFF006D04),
+              activeColor:AppColors.primaryColor,
             ),
             Text("Cash Request", style: TextStyle(color: textColor)),
           ],

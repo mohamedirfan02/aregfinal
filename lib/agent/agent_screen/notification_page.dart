@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:areg_app/common/app_colors.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -12,19 +13,19 @@ class AgentNotificationPage extends StatefulWidget {
   @override
   State<AgentNotificationPage> createState() => _AgentNotificationPageState();
 }
+
 class _AgentNotificationPageState extends State<AgentNotificationPage> {
-  List<dynamic> notifications = [];
+  List<Map<String, dynamic>> notifications = [];
   bool isLoading = true;
+  Set<String> readNotificationIds = {};
 
   @override
   void initState() {
     super.initState();
     fetchNotifications();
-    setupFirebaseListeners(); // ✅ Add Firebase Notification Listener
-    loadReadNotificationIds(); // Load read status from storage
+    setupFirebaseListeners();
+    loadReadNotificationIds();
   }
-
-  Set<String> readNotificationIds = {};
 
   Future<void> loadReadNotificationIds() async {
     final prefs = await SharedPreferences.getInstance();
@@ -38,11 +39,9 @@ class _AgentNotificationPageState extends State<AgentNotificationPage> {
     final prefs = await SharedPreferences.getInstance();
     readNotificationIds.add(notificationId);
     await prefs.setStringList('read_notifications', readNotificationIds.toList());
-    setState(() {}); // To rebuild UI with updated colors
+    setState(() {});
   }
 
-
-  /// ✅ Listen for real-time notifications
   void setupFirebaseListeners() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print("📩 New Notification: ${message.notification?.title}");
@@ -55,11 +54,12 @@ class _AgentNotificationPageState extends State<AgentNotificationPage> {
       });
     });
   }
-  /// ✅ Get Token from SharedPreferences
+
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
   }
+
   Future<Map<String, dynamic>> fetchOrderDetails(int orderId) async {
     const url = ApiConfig.getOrderDetails;
     final prefs = await SharedPreferences.getInstance();
@@ -86,7 +86,11 @@ class _AgentNotificationPageState extends State<AgentNotificationPage> {
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
-        return jsonData['data']?[0] ?? {};
+        final data = jsonData['data'] as List?;
+        if (data != null && data.isNotEmpty) {
+          return Map<String, dynamic>.from(data[0]);
+        }
+        return {};
       } else {
         return {};
       }
@@ -95,6 +99,7 @@ class _AgentNotificationPageState extends State<AgentNotificationPage> {
       return {};
     }
   }
+
   Future<void> fetchNotifications() async {
     final url = Uri.parse(ApiConfig.getNotification);
     final prefs = await SharedPreferences.getInstance();
@@ -123,15 +128,16 @@ class _AgentNotificationPageState extends State<AgentNotificationPage> {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         if (jsonData["status"] == "success") {
           setState(() {
+            // Proper type conversion to avoid casting errors
             notifications = (jsonData["data"] as List).map((notif) {
+              final Map<String, dynamic> notification = Map<String, dynamic>.from(notif);
               return {
-                ...notif,
-                'created_at': '${notif["created_date"]} ${notif["created_time"]}'
+                ...notification,
+                'created_at': '${notification["created_date"] ?? ""} ${notification["created_time"] ?? ""}'.trim()
               };
             }).toList();
             isLoading = false;
           });
-
         }
       } else {
         debugPrint("❌ API Error: ${response.statusCode} - ${response.body}");
@@ -142,55 +148,30 @@ class _AgentNotificationPageState extends State<AgentNotificationPage> {
       setState(() => isLoading = false);
     }
   }
-  Map<String, List<Map<String, dynamic>>> groupNotificationsByDate(List<dynamic> notifications) {
-    final Map<String, List<Map<String, dynamic>>> grouped = {};
 
-    for (var notif in notifications) {
-      final date = DateTime.tryParse(notif['created_at'] ?? '') ?? DateTime.now();
-      final now = DateTime.now();
-
-      String label;
-      if (date.year == now.year && date.month == now.month && date.day == now.day) {
-        label = "Today";
-      } else if (date.year == now.year && date.month == now.month && date.day == now.day - 1) {
-        label = "Yesterday";
-      } else {
-        label = "${date.day}/${date.month}/${date.year}";
-      }
-
-      if (!grouped.containsKey(label)) {
-        grouped[label] = [];
-      }
-      grouped[label]!.add(notif);
-    }
-
-    return grouped;
-  }
-
-  /// ✅ Build Shimmer UI for Loading State
   Widget _buildShimmerList() {
     return ListView.builder(
-      itemCount: 6, // ✅ Show 6 shimmer placeholders
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: 6,
       itemBuilder: (context, index) {
         return const Card(
-          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 0),
           child: Padding(
             padding: EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ShimmerLoader(height: 20, width: 100), // ✅ Fake Order ID
+                ShimmerLoader(height: 20, width: 100),
                 SizedBox(height: 10),
-                ShimmerLoader(height: 14), // ✅ Fake Name
-                ShimmerLoader(height: 14, width: 150), // ✅ Fake Address
+                ShimmerLoader(height: 14),
+                ShimmerLoader(height: 14, width: 150),
                 SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(child: ShimmerLoader(height: 40)),
-                    // ✅ Fake PDF Button
                     SizedBox(width: 10),
                     Expanded(child: ShimmerLoader(height: 40)),
-                    // ✅ Fake Excel Button
                   ],
                 ),
               ],
@@ -200,107 +181,118 @@ class _AgentNotificationPageState extends State<AgentNotificationPage> {
       },
     );
   }
+
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
+    return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF006D04),
+        backgroundColor: AppColors.secondaryColor,
         elevation: 0,
         leading: IconButton(
           icon: Image.asset("assets/icon/back.png", width: 24, height: 24),
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.maybePop(context);
-            }
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "Notifications",
-          style: TextStyle(fontSize: 20, color: Colors.white70,fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 20, color: Colors.white70, fontWeight: FontWeight.bold),
         ),
       ),
-      body: Padding(
+      body: isLoading
+          ? Padding(
         padding: const EdgeInsets.all(16.0),
+        child: _buildShimmerList(),
+      )
+          : notifications.isEmpty
+          ? const Center(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 10),
-            Expanded(
-              child: isLoading
-                  ? _buildShimmerList() // ✅ Show Shimmer While Loading
-                  : notifications.isEmpty
-                  ? const Center(
-                  child: Text("No notifications available"))
-                  : ListView.builder(
-                itemCount: notifications.length,
-                itemBuilder: (context, index) {
-                  final notification = notifications[index];
-                  return _buildNotificationCard(
-                    title: notification["title"] ?? "No Title",
-                    message: notification["message"] ?? "Your order #${notification["order_id"] ?? "N/A"} has been placed.",
-                    orderId: notification["order_id"]?.toString() ?? "N/A",
-                    vendorId: notification["vendor_id"]?.toString() ?? "N/A",
-                    reason: notification["reason"] ?? "-",
-                    createdAt: notification["created_at"]?.split("T")[0] ?? "Unknown",
-                    updatedAt: notification["updated_at"]?.split("T")[0] ?? "Unknown",
-                    date: notification["created_at"]?.split("T")[0] ?? "Unknown",
-                    onTap: () {}, statusIcon: '', statusColor: Colors.black, backgroundColor: Colors.black,
-                  );
-
-                },
-              ),
-            )
+            Icon(Icons.notifications_none, size: 64, color: Colors.grey),
+            SizedBox(height: 16),
+            Text(
+              "No notifications yet",
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
           ],
+        ),
+      )
+          : RefreshIndicator(
+        onRefresh: fetchNotifications,
+        child: ListView.builder(
+          padding: const EdgeInsets.all(16.0),
+          itemCount: notifications.length,
+          itemBuilder: (context, index) {
+            final notification = notifications[index];
+            final notificationId = notification["id"]?.toString() ?? index.toString();
+
+            return _buildNotificationCard(
+              notification: notification,
+              notificationId: notificationId,
+              onTap: () => _handleNotificationTap(notification, notificationId),
+            );
+          },
         ),
       ),
     );
   }
 
+  // Handle different notification types
+  void _handleNotificationTap(Map<String, dynamic> notification, String notificationId) async {
+    await markAsRead(notificationId);
+
+    final orderId = notification["order_id"];
+
+    if (orderId != null) {
+      // Order-related notification - fetch order details
+      final orderDetails = await fetchOrderDetails(orderId is int ? orderId : int.tryParse(orderId.toString()) ?? 0);
+      if (!context.mounted) return;
+      showDialog(
+        context: context,
+        builder: (_) => OrderDetailPopup(data: orderDetails),
+      );
+    } else {
+      // Non-order notification - show general notification details
+      if (!context.mounted) return;
+      showDialog(
+        context: context,
+        builder: (_) => GeneralNotificationPopup(notification: notification),
+      );
+    }
+  }
+
   Widget _buildNotificationCard({
-    required String title,
-    required String message,
-    required String orderId,
-    required String vendorId,
-    required String date,
-    required String reason,
-    required String createdAt,
-    required String updatedAt,
-    required String statusIcon,
-    required Color statusColor,
-    required Color backgroundColor,
+    required Map<String, dynamic> notification,
+    required String notificationId,
     required VoidCallback onTap,
   }) {
-    final isRead = readNotificationIds.contains(orderId);
+    final title = notification["title"]?.toString() ?? "No Title";
+    final message = notification["message"]?.toString() ?? "No Message";
+    final date = notification["created_at"]?.toString() ?? "Unknown";
+    final orderId = notification["order_id"];
 
-    Color cardBackground = isRead ? Colors.white : const Color(0xFFDFF5E3);
+    final isRead = readNotificationIds.contains(notificationId);
+    Color cardBackground = isRead ? Colors.white : Colors.black12;
     Color titleColor = title.toLowerCase().contains('cancel')
         ? Colors.red
-        : (isRead ? Colors.black : Colors.green.shade900);
+        : (isRead ? Colors.black : AppColors.titleColor);
 
     String resolvedIcon = title.toLowerCase().contains('cancel')
         ? "assets/icon/cancel.png"
         : "assets/icon/right.png";
 
-    String datePart = date.split(' ').first;
-    String timePart = date.split(' ').length > 1 ? date.split(' ')[1] : '';
+    List<String> dateParts = date.split(' ');
+    String datePart = dateParts.isNotEmpty ? dateParts.first : '';
+    String timePart = dateParts.length > 1 ? dateParts[1] : '';
 
     return GestureDetector(
-      onTap: () async {
-        await markAsRead(orderId);
-        final orderDetails = await fetchOrderDetails(int.tryParse(orderId) ?? 0);
-        if (!context.mounted) return;
-        showDialog(
-          context: context,
-          builder: (_) => OrderDetailPopup(data: orderDetails),
-        );
-      },
+      onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: cardBackground,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
               color: Colors.black12,
               blurRadius: 6,
@@ -325,12 +317,28 @@ class _AgentNotificationPageState extends State<AgentNotificationPage> {
                     ),
                   ),
                 ),
+                if (orderId != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      "Order #$orderId",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.secondaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 12),
             Text(
               message,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 color: Colors.black87,
                 fontWeight: FontWeight.w500,
@@ -339,11 +347,15 @@ class _AgentNotificationPageState extends State<AgentNotificationPage> {
             const SizedBox(height: 10),
             Row(
               children: [
-                Icon(Icons.access_time, size: 16, color: Colors.grey[700]),
+                Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
                 const SizedBox(width: 6),
                 Text(
-                  "$datePart at $timePart",
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  datePart.isNotEmpty && timePart.isNotEmpty
+                      ? "$datePart at $timePart"
+                      : date.isNotEmpty
+                      ? date
+                      : "Unknown time",
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ],
             ),
@@ -352,8 +364,9 @@ class _AgentNotificationPageState extends State<AgentNotificationPage> {
       ),
     );
   }
-
 }
+
+// Order Detail Popup
 class OrderDetailPopup extends StatelessWidget {
   final Map<String, dynamic> data;
 
@@ -361,34 +374,85 @@ class OrderDetailPopup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text("Order Details"),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _detailRow("Order ID", data["order_id"].toString()),
-         // _detailRow("Agent ID", data["vendor_id"].toString()),
-          _detailRow("Oil Type", data["type"] ?? "-"),
-          _detailRow("Name", data["user_name"] ?? "-"),
-          _detailRow("Restaurant Name", data["restaurant_name"] ?? "-"),
-          _detailRow("Quantity", "${data["quantity"]} KG"),
-         // _detailRow("Proposed Price", "₹${data["proposed_unit_price"]}"),
-          _detailRow("Excepted Pick Date", " ${data["timeline"]}"),
-        //  _detailRow("Collection date", "${data["timeline"]}"),
-          _detailRow("Amount", "₹${data["amount"]}"),
-          _detailRow("Payment Method", data["payment_method"] ?? "-"),
+    if (data.isEmpty) {
+      return AlertDialog(
+        title: const Text("Order Details"),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        content: const Text("Order details not available."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Close", style: TextStyle(color: AppColors.secondaryColor, fontWeight: FontWeight.bold)),
+          )
         ],
+      );
+    }
+
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      contentPadding: EdgeInsets.zero,
+      content: Container(
+        width: MediaQuery.of(context).size.width * 0.9,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: AppColors.secondaryColor,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      "Order Details",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _detailRow("Order ID", data["order_id"]?.toString() ?? "-"),
+                    _detailRow("Oil Type", data["type"]?.toString() ?? "-"),
+                    _detailRow("Name", data["user_name"]?.toString() ?? "-"),
+                    _detailRow("Restaurant Name", data["restaurant_name"]?.toString() ?? "-"),
+                    _detailRow("Quantity", "${data["quantity"]?.toString() ?? "0"} KG"),
+                    _detailRow("Expected Pick Date", data["timeline"]?.toString() ?? "-"),
+                    _detailRow("Amount", "₹${data["amount"]?.toString() ?? "0"}"),
+                    _detailRow("Payment Method", data["payment_method"]?.toString() ?? "-"),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text("Close",style: TextStyle(color: Color(0xFF006D04),fontWeight: FontWeight.bold),),
-        )
-      ],
     );
   }
+
   Widget _detailRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -396,6 +460,101 @@ class OrderDetailPopup extends StatelessWidget {
         children: [
           Expanded(flex: 2, child: Text("$label:")),
           Expanded(flex: 3, child: Text(value, style: const TextStyle(fontWeight: FontWeight.bold))),
+        ],
+      ),
+    );
+  }
+}
+
+// General Notification Popup
+class GeneralNotificationPopup extends StatelessWidget {
+  final Map<String, dynamic> notification;
+
+  const GeneralNotificationPopup({super.key, required this.notification});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      contentPadding: EdgeInsets.zero,
+      content: Container(
+        width: MediaQuery.of(context).size.width * 0.9,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.6,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: AppColors.secondaryColor,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      notification["title"]?.toString() ?? "Notification",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _detailRow("Message", notification["message"]?.toString() ?? "-"),
+                    _detailRow("Reason", notification["reason"]?.toString() ?? "-"),
+                    _detailRow("Date", notification["created_date"]?.toString() ?? "-"),
+                    _detailRow("Time", notification["created_time"]?.toString() ?? "-"),
+                    if (notification["owner_id"] != null)
+                      _detailRow("Owner ID", notification["owner_id"].toString()),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+              flex: 2,
+              child: Text(
+                "$label:",
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              )),
+          Expanded(
+              flex: 3,
+              child: Text(
+                value,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              )),
         ],
       ),
     );

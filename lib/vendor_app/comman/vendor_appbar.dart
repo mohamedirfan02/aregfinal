@@ -19,7 +19,7 @@ class VendorAppBar extends StatelessWidget implements PreferredSizeWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppBar(
-      backgroundColor: isDark ? Colors.black : const Color(0xFF006D04),
+      backgroundColor: isDark ? Colors.black : AppColors.secondaryColor,
       elevation: 0,
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -69,7 +69,7 @@ class CustomHeadline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final headlineColor = isDark ? Colors.white : AppColors.darkGreen;
+    final headlineColor = isDark ? Colors.white : AppColors.secondaryColor;
 
     return Center(
       child: Text(

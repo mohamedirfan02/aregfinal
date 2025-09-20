@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_colors.dart';
+
 class CustomLoginButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final String buttonText;
@@ -47,8 +49,8 @@ class _CustomLoginButtonState extends State<CustomLoginButton> {
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [
-              Color(0xFF7FBF08),
-              Color(0xFF6FA006),
+              AppColors.loginColor,
+              AppColors.loginColorSha,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -57,14 +59,14 @@ class _CustomLoginButtonState extends State<CustomLoginButton> {
           boxShadow: _isPressed
               ? [
             const BoxShadow(
-              color: Color(0xFF4C6A01),
+              color: AppColors.greyColor,
               offset: Offset(2, 3),
               blurRadius: 6,
             )
           ]
               : const [
             BoxShadow(
-              color: Color(0xFF4C6A01),
+              color: AppColors.greyColor,
               offset: Offset(4, 6),
               blurRadius: 10,
             ),

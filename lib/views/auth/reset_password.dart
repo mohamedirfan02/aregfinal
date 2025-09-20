@@ -1,3 +1,4 @@
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -81,7 +82,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Your Changes Noted", style: TextStyle(color: Colors.red)),
+        title: const Text("Your Password Has Been Changed Successfully", style: TextStyle(color: Colors.red)),
         content: Text('Kindly Exit the app and reopen the app to continue.'),
         actions: [
           TextButton(
@@ -234,7 +235,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.0),
         border: Border.all(
-          color: const Color(0xFF6FA006),
+          color: AppColors.primaryColor,
           width: 1.0,
         ),
       ),
@@ -246,7 +247,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           validator: widget.validator,
           obscureText: widget.isPassword ? _obscureText : false, // ✅ Only for password
           style: TextStyle(
-            color: const Color(0xFF006D04),
+            color: AppColors.primaryColor,
             fontWeight: FontWeight.w600,
             fontSize: SizeConfig.ts(14),
           ),
@@ -254,7 +255,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           decoration: InputDecoration(
             hintText: isHintVisible ? widget.hintText : null,
             hintStyle: TextStyle(
-              color: const Color(0xFF006D04),
+              color: AppColors.primaryColor,
               fontWeight: FontWeight.w600,
               fontSize: SizeConfig.ts(14),
             ),
@@ -266,7 +267,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 ? IconButton(
               icon: Icon(
                 _obscureText ? Icons.visibility_off : Icons.visibility,
-                color: const Color(0xFF006D04),
+                color: AppColors.primaryColor,
               ),
               onPressed: () {
                 setState(() {

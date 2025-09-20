@@ -8,18 +8,18 @@ final ThemeData lightTheme = ThemeData(
   bottomAppBarTheme: BottomAppBarTheme(
     color: AppColors.white,
   ),
-  primaryColor: AppColors.primaryGreen,
+  primaryColor: AppColors.secondaryColor,
   unselectedWidgetColor: AppColors.grey,
   colorScheme: ColorScheme.light(
-    primary: AppColors.primaryGreen,
-    secondary: AppColors.secondaryGreen,
+    primary: AppColors.secondaryColor,
+    secondary: AppColors.primaryColor,
     surface: AppColors.white,
     onPrimary: AppColors.white,
-    onSurface: AppColors.textDark,
+    onSurface: AppColors.titleColor,
   ),
   textTheme: TextTheme(
-    bodyLarge: TextStyle(color: AppColors.textDark),
-    bodyMedium:  TextStyle(color: AppColors.textDark),
+    bodyLarge: TextStyle(color: AppColors.titleColor),
+    bodyMedium:  TextStyle(color: AppColors.titleColor),
   ),
 );
 
@@ -33,7 +33,7 @@ final ThemeData darkTheme = ThemeData(
   unselectedWidgetColor: Colors.grey,
   colorScheme: ColorScheme.dark(
     primary: AppColors.accentGreen,
-    secondary: AppColors.secondaryGreen,
+    secondary: AppColors.primaryColor,
     surface: Colors.black,
     onPrimary: AppColors.white,
     onSurface: AppColors.white,

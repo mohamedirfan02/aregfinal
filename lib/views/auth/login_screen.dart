@@ -242,7 +242,7 @@ class _LoginPageState extends State<LoginPage> {
                                         style: TextStyle(
                                           fontSize: size.width * 0.09,
                                           fontWeight: FontWeight.bold,
-                                          color: const Color(0xFF006D04),
+                                          color: AppColors.secondaryColor,
                                         ),
                                       ),
                                       const SizedBox(height: 8),
@@ -302,9 +302,9 @@ class _LoginPageState extends State<LoginPage> {
                                                   indicatorType: Indicator
                                                       .ballSpinFadeLoader,
                                                   colors: [
-                                                    Colors.green,
-                                                    Colors.white38,
-                                                    Colors.greenAccent
+                                                    AppColors.primaryColor,
+                                                    AppColors.secondaryColor,
+                                                    AppColors.titleColor,
                                                   ],
                                                   strokeWidth: 2,
                                                 ),

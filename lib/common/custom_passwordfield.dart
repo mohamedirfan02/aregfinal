@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_colors.dart';
 
 class CustomPasswordField extends StatefulWidget {
   final String? hintText;
@@ -27,11 +28,11 @@ class CustomPasswordField extends StatefulWidget {
 class _CustomPasswordFieldState extends State<CustomPasswordField> {
   bool _obscureText = true;
 
-  // void _toggleVisibility() {
-  //   setState(() {
-  //     _obscureText = !_obscureText;
-  //   });
-  // }
+  @override
+  void initState() {
+    super.initState();
+    _obscureText = widget.obscureText; // Initialize with widget's obscureText value
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,31 +41,53 @@ class _CustomPasswordFieldState extends State<CustomPasswordField> {
       controller: widget.controller,
       onChanged: widget.onChanged,
       validator: widget.validator,
-      textAlign: TextAlign.center, // ✅ Center the text
+      textAlign: TextAlign.center,
       style: const TextStyle(
-        color: Colors.green, // ✅ Green text
+        color: AppColors.secondaryColor,
         fontWeight: FontWeight.w500,
       ),
       decoration: InputDecoration(
         hintText: widget.hintText,
         hintStyle: const TextStyle(
-          color: Color(0xFF006D04), // Green text color
+          color: AppColors.primaryColor,
           fontWeight: FontWeight.w500,
         ),
         filled: true,
-        fillColor: Colors.white, // ✅ White background
-        contentPadding: const EdgeInsets.symmetric(vertical: 16.0),
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+
+        // Add the eye icon as suffixIcon
+        suffixIcon: IconButton(
+          icon: Icon(
+            _obscureText ? Icons.visibility_off : Icons.visibility,
+            color: AppColors.primaryColor,
+          ),
+          onPressed: () {
+            setState(() {
+              _obscureText = !_obscureText;
+            });
+          },
+        ),
+
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide( color: Color(0xFF006D04),), // ✅ Green border
+          borderSide: const BorderSide(color: AppColors.primaryColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide( color: const Color(0xFF6FA006),), // ✅ Green border
+          borderSide: const BorderSide(color: AppColors.primaryColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide( color: const Color(0xFF6FA006), width: 1.5),
+          borderSide: const BorderSide(color: AppColors.primaryColor, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.red, width: 1.5),
         ),
       ),
     );

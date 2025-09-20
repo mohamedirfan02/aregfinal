@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -113,7 +115,7 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryTextColor = Color(0xFF292E10);
+    const Color primaryTextColor = AppColors.primaryColor;
     return Scaffold(
       appBar: CommonAppbar(title: 'Profile'),
       body: isLoading
@@ -122,51 +124,67 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
               padding: const EdgeInsets.only(bottom: 20),
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 50, bottom: 20),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Profile',
-                          style: TextStyle(
-                            fontSize: 40,
-                            fontWeight: FontWeight.bold,
-                            color: primaryTextColor,
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        width: 1.w,
+                        color: AppColors.greyColor.withOpacity(0.3),
+                      ),
+                      borderRadius: BorderRadius.circular(8.r),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: AppColors.cardGradientColor,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 50, bottom: 20),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Profile',
+                            style: TextStyle(
+                              fontSize: 40,
+                              fontWeight: FontWeight.bold,
+                              color: primaryTextColor,
+                            ),
                           ),
-                        ),
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Colors.grey,
-                          backgroundImage: vendorDetails['profile'] != null && vendorDetails['profile'].isNotEmpty
-                              ? NetworkImage(vendorDetails['profile'])
-                              : const AssetImage('assets/image/profile.jpg') as ImageProvider,
-                        ),
+                          CircleAvatar(
+                            radius: 50,
+                            backgroundColor: Colors.grey,
+                            backgroundImage: vendorDetails['profile'] != null && vendorDetails['profile'].isNotEmpty
+                                ? NetworkImage(vendorDetails['profile'])
+                                : const AssetImage('assets/image/profile.jpg') as ImageProvider,
+                          ),
 
-                        const SizedBox(height: 10),
-                        Text(
-                          vendorDetails['full_name'] ?? 'N/A',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: primaryTextColor,
+                          const SizedBox(height: 10),
+                          Text(
+                            vendorDetails['full_name'] ?? 'N/A',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: primaryTextColor,
+                            ),
                           ),
-                        ),
-                        Text(
-                          vendorDetails['email'] ?? 'N/A',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: primaryTextColor,
+                          Text(
+                            vendorDetails['email'] ?? 'N/A',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: primaryTextColor,
+                            ),
                           ),
-                        ),
-                        Text(
-                          vendorDetails['contact_number'] ?? 'N/A',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: primaryTextColor,
+                          Text(
+                            vendorDetails['contact_number'] ?? 'N/A',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: primaryTextColor,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   Padding(

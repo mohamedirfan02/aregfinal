@@ -96,17 +96,17 @@ class SettingsScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: Colors.grey,
+                    color: AppColors.titleColor,
                   ),
                 ),
                 const SizedBox(height: 10),
                 _buildListTile(
-                    "About Us", Icons.arrow_forward_ios, AppColors.darkGreen,
+                    "About Us", Icons.arrow_forward_ios,AppColors.secondaryColor,
                     onTap: () {}),
                 _buildListTile(
                   "Privacy Policy",
                   Icons.arrow_forward_ios,
-                  AppColors.darkGreen,
+                  AppColors.secondaryColor,
                   onTap: () {
                     Navigator.push(
                       context,
@@ -118,12 +118,12 @@ class SettingsScreen extends StatelessWidget {
                 _buildListTile(
                   "Tap to download contract",
                   Icons.download,
-                  AppColors.darkGreen,
+                  AppColors.secondaryColor,
                   onTap: () => downloadContractPDF(context),
                 ),
 
                 _buildListTile(
-                    "Language", Icons.arrow_forward_ios, AppColors.darkGreen,
+                    "Language", Icons.arrow_forward_ios,AppColors.secondaryColor,
                   onTap: () {
                     Navigator.push(
                       context,
@@ -148,7 +148,7 @@ class SettingsScreen extends StatelessWidget {
                 _buildListTile(
                   "Logout",
                   Icons.logout,
-                  AppColors.darkGreen,
+                  AppColors.secondaryColor,
                   isLogout: true,
                   onTap: () => logout(context), // ✅ Added logout function
                 ),
@@ -189,12 +189,12 @@ class SettingsScreen extends StatelessWidget {
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w500,
-          color: AppColors.darkGreen,
+          color: AppColors.secondaryColor,
         ),
       ),
       trailing: Switch(
         value: value,
-        activeColor: AppColors.primaryGreen,
+        activeColor: AppColors.secondaryColor,
         onChanged: onChanged,
       ),
     );

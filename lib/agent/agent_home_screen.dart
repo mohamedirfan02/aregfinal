@@ -1,3 +1,5 @@
+import 'package:areg_app/common/app_colors.dart';
+import 'package:areg_app/common/floating_chatbot_btn.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -87,7 +89,7 @@ class _AgentHomeScreenState extends State<AgentHomeScreen> {
               height: screenHeight * 0.35,
               width: screenWidth,
               decoration: BoxDecoration(
-                color: const Color(0xFF006D04),
+                color: AppColors.secondaryColor,
                 image: const DecorationImage(
                   image: AssetImage('assets/image/agent_bg1.png'),
                   fit: BoxFit.cover,
@@ -137,7 +139,7 @@ class _AgentHomeScreenState extends State<AgentHomeScreen> {
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF006D04),
+                            backgroundColor: AppColors.secondaryColor,
                             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(9),
@@ -163,6 +165,7 @@ class _AgentHomeScreenState extends State<AgentHomeScreen> {
               ),
             ),
           ),
+          const DraggableChatbotButton(),
         ],
       ),
     );
@@ -194,7 +197,7 @@ class _AgentHomeScreenState extends State<AgentHomeScreen> {
             Container(
               height: 50,
               width: 1,
-              color: const Color(0xFF7FBF08).withOpacity(0.5),
+              color: AppColors.secondaryColor.withOpacity(0.5),
             ),
             _buildStatusButton("Rejected", "assets/icon/mg2.png", () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => FboRejectedList()));
@@ -202,7 +205,7 @@ class _AgentHomeScreenState extends State<AgentHomeScreen> {
             Container(
               height: 50,
               width: 1,
-              color: const Color(0xFF7FBF08).withOpacity(0.5),
+              color: AppColors.secondaryColor.withOpacity(0.5),
             ),
             _buildStatusButton("Agent", "assets/icon/mg3.png", () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => VendorList()));
@@ -222,7 +225,7 @@ class _AgentHomeScreenState extends State<AgentHomeScreen> {
           Container(
             padding: const EdgeInsets.all(15),
             decoration: BoxDecoration(
-              color: isDark ? Colors.grey.shade800 : const Color(0xFF006D04),
+              color: isDark ? Colors.grey.shade800 : AppColors.secondaryColor,
               shape: BoxShape.circle,
             ),
             child: Image.asset(
@@ -238,7 +241,7 @@ class _AgentHomeScreenState extends State<AgentHomeScreen> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white70 : Colors.green.shade800,
+              color: isDark ? Colors.white70 :AppColors.secondaryColor,
             ),
           ),
         ],
@@ -250,18 +253,18 @@ class _AgentHomeScreenState extends State<AgentHomeScreen> {
     return Row(
       children: [
         const Expanded(
-          child: Divider(thickness: 1, endIndent: 15, color: Color(0xFF7FBF08)),
+          child: Divider(thickness: 1, endIndent: 15, color: AppColors.secondaryColor),
         ),
         Text(
           "Service Request",
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white70 : const Color(0xFF006D04),
+            color: isDark ? Colors.white70 :AppColors.secondaryColor,
           ),
         ),
         const Expanded(
-          child: Divider(thickness: 1, indent: 15, color: Color(0xFF7FBF08)),
+          child: Divider(thickness: 1, indent: 15, color:AppColors.secondaryColor),
         ),
       ],
     );

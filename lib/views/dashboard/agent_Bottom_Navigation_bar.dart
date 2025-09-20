@@ -18,9 +18,10 @@ class _AgentBottomNavigationState extends State<AgentBottomNavigation> {
 
   // ✅ Updated List of Pages
   List<Widget> get _pages => [
-    AiChatScreen(),
-    AgentHomeScreen(token: 'token'),
+   // AiChatScreen(),
+
     ProfileScreen(),
+    AgentHomeScreen(token: 'token'),
     AgentSettingsScreen(),
   ];
 

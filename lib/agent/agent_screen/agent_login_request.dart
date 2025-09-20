@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -61,7 +62,6 @@ class _AgentLoginRequestState extends State<AgentLoginRequest> {
         setState(() {
           futureAgents = fetchPendingAgents();
         });
-
       } else {
         print("❌ Failed to $status agent: ${response.body}");
         if (!mounted) return;
@@ -78,11 +78,18 @@ class _AgentLoginRequestState extends State<AgentLoginRequest> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Pending Agent Requests")),
+      appBar: AppBar(
+        title: const Text(
+          "Pending Agent Requests",
+          style: TextStyle(
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: AppColors.secondaryColor,
+      ),
       body: FutureBuilder<List<NewAgent>>(
         future: futureAgents,
         builder: (context, snapshot) {
@@ -101,7 +108,8 @@ class _AgentLoginRequestState extends State<AgentLoginRequest> {
               final agent = agents[index];
               return Card(
                 margin: const EdgeInsets.all(8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 elevation: 4,
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
@@ -119,8 +127,12 @@ class _AgentLoginRequestState extends State<AgentLoginRequest> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(agent.fullName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                Text(agent.email, style: const TextStyle(color: Colors.grey)),
+                                Text(agent.fullName,
+                                    style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold)),
+                                Text(agent.email,
+                                    style: const TextStyle(color: Colors.grey)),
                                 Text("📞 ${agent.contactNumber}"),
                               ],
                             ),
@@ -133,38 +145,47 @@ class _AgentLoginRequestState extends State<AgentLoginRequest> {
                       Text("DOB: ${agent.dob} | Age: ${agent.age}"),
                       Text("Gender: ${agent.gender}"),
                       Text("Pincode: ${agent.pincode}"),
-                  //    Text("🗺 Country Code: ${agent.countryCode}"),
+                      //    Text("🗺 Country Code: ${agent.countryCode}"),
                       const SizedBox(height: 10),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Chip(
-                            label: Text(agent.status, style: const TextStyle(color: Colors.white)),
-                            backgroundColor: agent.status == 'pending' ? Colors.orange : Colors.green,
+                            label: Text(agent.status,
+                                style: const TextStyle(color: Colors.white)),
+                            backgroundColor: agent.status == 'pending'
+                                ? Colors.orange
+                                : Colors.green,
                           ),
                           Row(
                             children: [
                               ElevatedButton(
-                                onPressed: () => approveOrRejectAgent(id: agent.id, status: "approved"),
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                                child: const Text("Approve",style: TextStyle(color: Colors.white),),
+                                onPressed: () => approveOrRejectAgent(
+                                    id: agent.id, status: "approved"),
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green),
+                                child: const Text(
+                                  "Approve",
+                                  style: TextStyle(color: Colors.white),
+                                ),
                               ),
                               const SizedBox(width: 10),
                               ElevatedButton(
-                                onPressed: () => approveOrRejectAgent(id: agent.id, status: "rejected"),
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                child: const Text("Reject",style: TextStyle(color: Colors.white)),
+                                onPressed: () => approveOrRejectAgent(
+                                    id: agent.id, status: "rejected"),
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red),
+                                child: const Text("Reject",
+                                    style: TextStyle(color: Colors.white)),
                               ),
                             ],
                           ),
                         ],
                       ),
-
                     ],
                   ),
                 ),
               );
-
             },
           );
         },
@@ -219,4 +240,3 @@ class NewAgent {
     );
   }
 }
-

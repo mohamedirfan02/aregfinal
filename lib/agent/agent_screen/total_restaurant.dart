@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -76,7 +77,7 @@ class _RestaurantListState extends State<RestaurantList> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).brightness == Brightness.dark
             ? Colors.grey[900]
-            : const Color(0xFF006D04),
+            : AppColors.secondaryColor,
         centerTitle: true,
         elevation: 4,
         title: Text(
@@ -124,11 +125,11 @@ class _RestaurantListState extends State<RestaurantList> {
                       fillColor: isDark ? Colors.grey.shade900 : Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: const Color(0xFF006D04)),
+                        borderSide: BorderSide(color: AppColors.secondaryColor),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: const Color(0xFF006D04)),
+                        borderSide: BorderSide(color: AppColors.secondaryColor),
                       ),
                     ),
                   ),
@@ -162,7 +163,7 @@ class _RestaurantListState extends State<RestaurantList> {
                                 style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF006D04),
+                                  color: AppColors.secondaryColor,
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -260,7 +261,7 @@ class _RestaurantListState extends State<RestaurantList> {
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF006D04),
+                                  backgroundColor: AppColors.secondaryColor,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),

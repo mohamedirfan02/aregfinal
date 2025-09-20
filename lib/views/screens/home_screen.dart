@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:areg_app/common/app_colors.dart';
+import 'package:areg_app/common/floating_chatbot_btn.dart';
 import 'package:areg_app/common/k_linear_gradient_bg.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -11,7 +13,6 @@ import '../../common/custom_appbar.dart';
 import 'package:shimmer/shimmer.dart' as shimmer;
 import '../../config/api_config.dart';
 import '../../fbo_services/oil_sale_service.dart';
-
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -39,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadUserId(); // Load user ID first
   }
+
   // ✅ Load User ID from SharedPreferences
   Future<void> _loadUserId() async {
     final prefs = await SharedPreferences.getInstance();
@@ -59,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-Future <void> _fetchUserData() async {
+  Future<void> _fetchUserData() async {
     final data = await OilSaleService.fetchOilSaleData();
     if (!mounted) return; // 👈 prevents setState if widget is disposed
 
@@ -75,70 +77,71 @@ Future <void> _fetchUserData() async {
       });
     }
   }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: const PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
         child: CustomAppBar(),
       ),
-      body: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return Scrollbar(
-                child: RefreshIndicator(
-                  onRefresh: _onRefresh,
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.only(bottom: screenHeight * 0.05),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          top: -2,
-                          left: -2,
-                          child: Container(
-                            width: constraints.maxWidth,
-                            height: constraints.maxHeight * 0.22, // ~22% of screen height
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? Theme.of(context).colorScheme.surfaceVariant
-                                  :  AppColors.primaryGreen,
-                              border: Border.all(
-                                width: 1.28,
-                                color: Theme.of(context).dividerColor.withOpacity(0.2),
-                              ),
-                            ),
-                          ),
+      body: Stack(
+        children: [
+          KLinearGradientBg(
+            gradientColor: AppColors.GradientColor,
+            child: SafeArea(
+              child: Column(
+                // Change this from SingleChildScrollView to Column
+                children: [
+                  // Top content (not scrollable)
+                  if (isLoading)
+                    _buildShimmerList()
+                  else if (hasError)
+                    const Text(
+                      "Too many attempts, please wait for 5 to 10 sec and switch tab",
+                      style: TextStyle(
+                          color: Colors.red, fontWeight: FontWeight.bold),
+                    )
+                  else
+                    buildUserData(screenWidth, context),
 
-
+                  // Bottom container (scrollable content inside)
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20.r),
+                          topRight: Radius.circular(20.r),
                         ),
-
-                        // Main content
-                        Column(
+                        color: AppColors.white,
+                      ),
+                      child: SingleChildScrollView(
+                        child: Column(
                           children: [
-                            if (isLoading)
-                              _buildShimmerList()
-                            else if (hasError)
-                              const Text("To many attempt please wait for 5 to 10 sec and switch tab", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
-                            else
-                              buildUserData(screenWidth, context ),
+                            const SizedBox(height: 20),
+                            _buildMoneyEarnedSection(screenWidth, context),
                             const SizedBox(height: 10),
-                            //MyWidget(),
-                            _buildReuseOilPickup(screenWidth,context),
+                            _buildReuseOilPickup(screenWidth, context),
                             _buildMonthlyDropdown(screenWidth, context),
                             const SizedBox(height: 10),
-                            buildWeeklyProgress(screenWidth, userData?["weekly"] ?? []),
+                            buildWeeklyProgress(
+                                screenWidth, userData?["weekly"] ?? []),
+                            const SizedBox(height: 20),
                           ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                ],
+              ),
+            ),
           ),
-        ),
+          const DraggableChatbotButton(),
+        ],
+      ),
     );
   }
 
@@ -164,9 +167,11 @@ Future <void> _fetchUserData() async {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(child: _shimmerBox(height: 20, width: 100)), // Fake Online Payment
+              Expanded(child: _shimmerBox(height: 20, width: 100)),
+              // Fake Online Payment
               const SizedBox(width: 10),
-              Expanded(child: _shimmerBox(height: 20, width: 100)), // Fake Cash Payment
+              Expanded(child: _shimmerBox(height: 20, width: 100)),
+              // Fake Cash Payment
             ],
           ),
         ),
@@ -179,7 +184,7 @@ Future <void> _fetchUserData() async {
             child: Row(
               children: List.generate(
                 4,
-                    (index) => Container(
+                (index) => Container(
                   margin: const EdgeInsets.symmetric(horizontal: 8),
                   child: _shimmerBox(height: 100, width: 80), // Fake Week Card
                 ),
@@ -196,6 +201,7 @@ Future <void> _fetchUserData() async {
       ],
     );
   }
+
   /// ✅ Shimmer Box Helper Function
   Widget _shimmerBox({double height = 20, double width = double.infinity}) {
     return shimmer.Shimmer.fromColors(
@@ -212,6 +218,7 @@ Future <void> _fetchUserData() async {
     );
   }
 
+  // Update your buildUserData method to only include the green card:
   Widget buildUserData(double screenWidth, BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final formatter = NumberFormat('#,##0'); // Create number formatter
@@ -225,12 +232,10 @@ Future <void> _fetchUserData() async {
 
     final totalRevenue = userData?["total"]?["revenue"] ?? 0;
     final totalQuantity = userData?["total"]?["quantity"] ?? 0;
-    final onlinePayment = userData?["total_online_payment"] ?? 0;
-    final cashPayment = userData?["total_cash_payment"] ?? 0;
 
     return Column(
       children: [
-        // 💚 Green Card
+        // 💚 Green Card ONLY
         Container(
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -270,7 +275,7 @@ Future <void> _fetchUserData() async {
                       Row(
                         children: [
                           Text(
-                            '₹ ${formatter.format(totalRevenue)}', // Format with commas
+                            '₹ ${formatter.format(totalRevenue)}',
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -311,7 +316,7 @@ Future <void> _fetchUserData() async {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '${formatter.format(totalQuantity)} Kg', // Format with commas
+                            '${formatter.format(totalQuantity)} Kg',
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -358,6 +363,20 @@ Future <void> _fetchUserData() async {
             ],
           ),
         ),
+      ],
+    );
+  }
+
+// Create a new method for the money section that will go inside the white background:
+  Widget _buildMoneyEarnedSection(double screenWidth, BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final formatter = NumberFormat('#,##0');
+
+    final onlinePayment = userData?["total_online_payment"] ?? 0;
+    final cashPayment = userData?["total_cash_payment"] ?? 0;
+
+    return Column(
+      children: [
         Padding(
           padding: EdgeInsets.only(left: screenWidth * 0.05, bottom: 6),
           child: Align(
@@ -367,7 +386,7 @@ Future <void> _fetchUserData() async {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Color(0xFF006D04),
+                color: isDark ? Colors.white : AppColors.titleColor,
               ),
             ),
           ),
@@ -383,7 +402,7 @@ Future <void> _fetchUserData() async {
                   margin: const EdgeInsets.symmetric(horizontal: 6),
                   decoration: BoxDecoration(
                     color: isDark ? const Color(0xFF1F1F1F) : Colors.white,
-                    border: Border.all(color: const Color(0xFF6FA006)),
+                    border: Border.all(color: AppColors.secondaryColor),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -393,7 +412,7 @@ Future <void> _fetchUserData() async {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white70 : Colors.black,
+                          color: isDark ? Colors.white70 : AppColors.titleColor,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -401,13 +420,13 @@ Future <void> _fetchUserData() async {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "₹ ${formatter.format(onlinePayment)}", // Format with commas and add currency symbol
+                            "₹ ${formatter.format(onlinePayment)}",
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: isDark
                                   ? Colors.lightGreenAccent
-                                  : const Color(0xFF006D04),
+                                  : AppColors.primaryGreen,
                             ),
                           ),
                           const SizedBox(width: 4),
@@ -430,7 +449,7 @@ Future <void> _fetchUserData() async {
                   margin: const EdgeInsets.symmetric(horizontal: 6),
                   decoration: BoxDecoration(
                     color: isDark ? const Color(0xFF1F1F1F) : Colors.white,
-                    border: Border.all(color: const Color(0xFF6FA006)),
+                    border: Border.all(color: AppColors.secondaryColor),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -440,7 +459,7 @@ Future <void> _fetchUserData() async {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white70 : Colors.black,
+                          color: isDark ? Colors.white70 : AppColors.titleColor,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -448,13 +467,13 @@ Future <void> _fetchUserData() async {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "₹ ${formatter.format(cashPayment)}", // Format with commas and add currency symbol
+                            "₹ ${formatter.format(cashPayment)}",
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: isDark
                                   ? Colors.lightGreenAccent
-                                  : const Color(0xFF006D04),
+                                  : AppColors.primaryGreen,
                             ),
                           ),
                           const SizedBox(width: 4),
@@ -481,7 +500,7 @@ Future <void> _fetchUserData() async {
 // ✅ Show weekly progress dynamically, ensuring 4 weeks are displayed
   Widget buildWeeklyProgress(double screenWidth, List weeklyData) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDarkMode ? Colors.white : const Color(0xFF006D04);
+    final textColor = isDarkMode ? Colors.white : AppColors.titleColor;
     final subTextColor = isDarkMode ? Colors.white70 : Colors.black;
     final cardBackground = isDarkMode ? const Color(0xFF1E1E1E) : Colors.white;
     final borderColor = isDarkMode ? Colors.white24 : Colors.black12;
@@ -504,7 +523,8 @@ Future <void> _fetchUserData() async {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04, vertical: 8),
+          padding:
+              EdgeInsets.symmetric(horizontal: screenWidth * 0.04, vertical: 8),
           child: Text(
             "Weekly Oil Collection Summary",
             style: TextStyle(
@@ -521,7 +541,9 @@ Future <void> _fetchUserData() async {
             children: defaultWeeks.map<Widget>((week) {
               return _buildWeekCard(
                 "Week ${week["week"]}",
-                week["quantity"] > 0 ? "${week["quantity"]}KG / ${week["revenue"]}₹" : "0 KG / 0 ₹",
+                week["quantity"] > 0
+                    ? "${week["quantity"]}KG / ${week["revenue"]}₹"
+                    : "0 KG / 0 ₹",
                 week["quantity"] > 0 ? week["quantity"] / 100 : 0,
                 screenWidth,
                 textColor,
@@ -551,28 +573,47 @@ Future <void> _fetchUserData() async {
 // ✅ Helper function to get month name
   String _getMonthName(int month) {
     List<String> months = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
     ];
     return months[month - 1];
   }
+
 // Add this method to build Monthly Dropdown and Voucher Button side by side
   Widget _buildMonthlyDropdown(double screenWidth, BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: 10),
+        padding:
+            EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Select Month & View Vouchers",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: isDarkMode ? Colors.white : const Color(0xFF006D04), // 🌓 Text color
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "Select Month & View Vouchers",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: isDarkMode ? Colors.white : AppColors.titleColor,
+                    // 🌓 Text color
+                  ),
+                ),
+                Icon(Icons.event, color: AppColors.titleColor),
+              ],
             ),
             const SizedBox(height: 8),
             Row(
@@ -584,12 +625,16 @@ Future <void> _fetchUserData() async {
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: isDarkMode ? Colors.white38 : Colors.black26),
+                      border: Border.all(
+                          color: isDarkMode
+                              ? Colors.white38
+                              : AppColors.fboColor),
                       color: isDarkMode ? Colors.grey[900] : Colors.white,
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<int>(
-                        dropdownColor: isDarkMode ? Colors.grey[900] : Colors.white,
+                        dropdownColor:
+                            isDarkMode ? Colors.grey[900] : Colors.white,
                         value: 1,
                         items: List.generate(12, (index) {
                           return DropdownMenuItem<int>(
@@ -599,7 +644,9 @@ Future <void> _fetchUserData() async {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
-                                color: isDarkMode ? Colors.white : const Color(0xFF006D04),
+                                color: isDarkMode
+                                    ? Colors.white
+                                    : AppColors.titleColor,
                               ),
                             ),
                           );
@@ -610,7 +657,6 @@ Future <void> _fetchUserData() async {
                               '/monthly-view',
                               extra: {'month': newMonth},
                             );
-
                           }
                         },
                       ),
@@ -620,13 +666,16 @@ Future <void> _fetchUserData() async {
                 const SizedBox(width: 10),
                 // 🎫 Voucher Button
                 GestureDetector(
-                   onTap: () {
-                           context.push('/voucherPage'); // ✅ Go to voucher pa
-                   },
-                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 25),
+                  onTap: () {
+                    context.push('/voucherPage'); // ✅ Go to voucher pa
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 25),
                     decoration: BoxDecoration(
-                      color: isDarkMode ? const Color(0xFF6FA006) : const Color(0xFF699706),
+                      color: isDarkMode
+                          ? const Color(0xFF6FA006)
+                          : AppColors.fboColor,
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
@@ -668,7 +717,15 @@ Future <void> _fetchUserData() async {
     );
   }
 
-  Widget _buildWeekCard(String week, String details, double progress, double screenWidth, Color textColor, Color subTextColor, Color cardBackground, Color borderColor) {
+  Widget _buildWeekCard(
+      String week,
+      String details,
+      double progress,
+      double screenWidth,
+      Color textColor,
+      Color subTextColor,
+      Color cardBackground,
+      Color borderColor) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.03),
       padding: EdgeInsets.all(screenWidth * 0.03),
@@ -686,7 +743,7 @@ Future <void> _fetchUserData() async {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w100,
-              color: Color(0xFF006D04),
+              color: AppColors.primaryGreen,
             ),
           ),
           Text(
@@ -694,7 +751,7 @@ Future <void> _fetchUserData() async {
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w100,
-              color: Color(0xFF006D04),
+              color: AppColors.primaryGreen,
             ),
           ),
           const SizedBox(height: 5),
@@ -702,16 +759,18 @@ Future <void> _fetchUserData() async {
       ),
     );
   }
+
 // ✅ Reuse oil pickup section with separate Voucher button
   Widget _buildReuseOilPickup(double screenWidth, BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: 20),
+      padding:
+          EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: 20),
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF558400) : const Color(0xFF6FA006),
+          color: isDark ? const Color(0xFF558400) : AppColors.fboColor,
           borderRadius: BorderRadius.circular(15),
         ),
         child: Column(
@@ -743,7 +802,8 @@ Future <void> _fetchUserData() async {
                     title: "Acknowledge",
                     context: context,
                     onTap: () {
-                      context.push('/FboAcknowledgmentScreen'); // ✅ Go to voucher pa
+                      context.push(
+                          '/FboAcknowledgmentScreen'); // ✅ Go to voucher pa
                     },
                   ),
                 ),
@@ -808,11 +868,11 @@ Future <void> _fetchUserData() async {
                     title,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
                       color: isDark
                           ? Colors.lightGreenAccent.shade100
-                          : const Color(0xFF006D04),
+                          : AppColors.primaryGreen,
                     ),
                   ),
                 ),
@@ -838,7 +898,7 @@ Future <void> _fetchUserData() async {
                     size: 18,
                     color: isDark
                         ? Colors.lightGreenAccent.shade100
-                        : const Color(0xFF006D04),
+                        : AppColors.primaryGreen,
                   ),
                 ),
               ],
@@ -848,13 +908,13 @@ Future <void> _fetchUserData() async {
       },
     );
   }
-
-
 }
+
 class MyWidget extends StatefulWidget {
   @override
   _MyWidgetState createState() => _MyWidgetState();
 }
+
 class _MyWidgetState extends State<MyWidget> {
   bool isLoading = true;
   bool hasError = false;
@@ -864,6 +924,7 @@ class _MyWidgetState extends State<MyWidget> {
     super.initState();
     fetchRangeData();
   }
+
   Future<void> fetchRangeData() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -915,6 +976,7 @@ class _MyWidgetState extends State<MyWidget> {
       print('Error: $e');
     }
   }
+
   Widget _buildRangeList() {
     print("🔹 UI Rebuilding with rangeDataList: $rangeDataList");
 
@@ -923,7 +985,8 @@ class _MyWidgetState extends State<MyWidget> {
     }
     if (hasError || rangeDataList.isEmpty) {
       return const Center(
-        child: Text("Failed to load price ranges", style: TextStyle(color: Colors.red)),
+        child: Text("Failed to load price ranges",
+            style: TextStyle(color: Colors.red)),
       );
     }
     return Column(
@@ -951,11 +1014,14 @@ class _MyWidgetState extends State<MyWidget> {
               return Container(
                 width: 220,
                 margin: const EdgeInsets.only(right: 12),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: const Color(0x1A87BD23),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0x1A87BD23),),
+                  border: Border.all(
+                    color: const Color(0x1A87BD23),
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.04),
@@ -969,11 +1035,19 @@ class _MyWidgetState extends State<MyWidget> {
                   children: [
                     Text(
                       "From: ${rangeData['from']}Kg",
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700,   color: Color(0xFF006D04),),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF006D04),
+                      ),
                     ),
                     Text(
                       "To: ${rangeData['to']}Kg",
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700,  color: Color(0xFF006D04),),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF006D04),
+                      ),
                     ),
                     Text(
                       "₹${rangeData['price']}",
@@ -992,6 +1066,7 @@ class _MyWidgetState extends State<MyWidget> {
       ],
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return _buildRangeList();

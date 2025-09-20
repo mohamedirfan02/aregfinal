@@ -124,10 +124,8 @@ class _SplashScreenState extends State<SplashScreen>  with SingleTickerProviderS
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //backgroundColor: Colors.white,
-      body: KLinearGradientBg(
-        gradientColor: AppColors.GradientColor,
-        child: Center(
+      backgroundColor: Colors.white,
+      body:Center(
           child: AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
@@ -146,7 +144,6 @@ class _SplashScreenState extends State<SplashScreen>  with SingleTickerProviderS
             ),
           ),
         ),
-      ),
     );
   }
 

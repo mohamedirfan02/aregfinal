@@ -1,3 +1,4 @@
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class ActionButton extends StatelessWidget {
@@ -46,7 +47,7 @@ class ActionButton extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 10, // Smaller size for fitting inside button
                 fontWeight: FontWeight.w900,
-                color: const Color(0xFF006D04),
+                color: AppColors.secondaryColor,
               ),
             ),
           ],

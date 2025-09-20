@@ -1,3 +1,4 @@
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import '../../fbo_services/fbo_notification_service.dart';
 import '../../views/screens/user_notification.dart';
@@ -38,7 +39,7 @@ class _CommonAppbarState extends State<CommonAppbar> {
     final isDarkMode = theme.brightness == Brightness.dark;
 
     // Your existing green color for light mode
-    final lightModeColor = const Color(0xFF006D04);
+    final lightModeColor = AppColors.fboColor;
 
     // Black color for dark mode
     final darkModeColor = Colors.black;
@@ -67,22 +68,6 @@ class _CommonAppbarState extends State<CommonAppbar> {
           ),
           Row(
             children: [
-              // IconButton(
-              //   icon: Image.asset(
-              //     "assets/icon/cart.png",
-              //     width: 24,
-              //     height: 24,
-              //     color: iconTextColor, // tint icons white on dark mode
-              //   ),
-              //   onPressed: () {
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(
-              //         builder: (context) => const FboCartScreen(),
-              //       ),
-              //     );
-              //   },
-              // ),
               Stack(
                 children: [
                   IconButton(

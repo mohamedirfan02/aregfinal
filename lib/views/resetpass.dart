@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:areg_app/common/app_colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -147,7 +148,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     ),
                     const Text(
                       "Forgot Password",
-                      style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold,color: Color(0xFF006D04),),
+                      style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold,color: AppColors.secondaryColor,),
                     ),
                     const SizedBox(height: 18),
 

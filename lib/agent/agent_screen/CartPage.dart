@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:areg_app/common/app_colors.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -315,7 +316,7 @@ class _AgentCartPageState extends State<AgentCartPage> {
         child: Scaffold(
           backgroundColor: isDark ? Colors.black : Colors.white,
           appBar: AppBar(
-            backgroundColor: isDark ? Colors.grey[900] : Color(0xFF006D04),
+            backgroundColor: isDark ? Colors.grey[900] : AppColors.secondaryColor,
             elevation: 0,
             leading: IconButton(
               icon: Image.asset("assets/icon/back.png", width: 24, height: 24),
@@ -330,7 +331,7 @@ class _AgentCartPageState extends State<AgentCartPage> {
             title: Text(
               "Collection Details",
               style: TextStyle(
-                color: isDark ? Colors.white : Colors.black,
+                color: isDark ? Colors.white : Colors.white,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -892,7 +893,7 @@ class _AgentCartPageState extends State<AgentCartPage> {
                   setState(() => isCompleting = false); // ✅ Done
                 },
           style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF006D04)),
+              backgroundColor: AppColors.secondaryColor),
           child: isCompleting
               ? const SizedBox(
                   width: 18,
@@ -1246,7 +1247,7 @@ class _AgentCartPageState extends State<AgentCartPage> {
             },
 
             style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF006D04)),
+                backgroundColor: AppColors.primaryColor),
             child: isSubmitting
                 ? const SizedBox(
                     height: 18,

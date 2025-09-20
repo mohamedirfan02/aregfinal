@@ -1,3 +1,4 @@
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import '../agent_service/assigned_api.dart';
 
@@ -39,7 +40,7 @@ class _AssignAgentState extends State<AssignAgent> with SingleTickerProviderStat
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: const Color(0xFF006D04),
+          backgroundColor: AppColors.secondaryColor,
           elevation: 0,
           title: Text(
             "Assigned Agent",
@@ -183,7 +184,7 @@ class _AssignAgentState extends State<AssignAgent> with SingleTickerProviderStat
   Widget _orderDetailRow(BuildContext context, String label, String? value) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final labelColor = isDark ? Colors.white70 : Colors.black;
-    final valueColor = const Color(0xFF006D04);
+    final valueColor = AppColors.secondaryColor;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),

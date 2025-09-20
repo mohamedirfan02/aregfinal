@@ -1,3 +1,4 @@
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import '../agent_service/history_api.dart';
 
@@ -90,7 +91,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         appBar: AppBar(
           backgroundColor: Theme.of(context).brightness == Brightness.dark
               ? Colors.grey[900]
-              : const Color(0xFF006D04),
+              : AppColors.secondaryColor,
           centerTitle: true,
           elevation: 4,
           title: Text(

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -142,7 +143,7 @@ class _VendorListState extends State<VendorList> {
     return Scaffold(
       backgroundColor: isDark ? Colors.black : const Color(0xFFF2F4F8),
       appBar: AppBar(
-        backgroundColor: isDark ? Colors.grey[900] : const Color(0xFF006D04),
+        backgroundColor: isDark ? Colors.grey[900] : AppColors.secondaryColor,
         centerTitle: true,
         elevation: 4,
         title: Text(
@@ -220,7 +221,7 @@ class _VendorListState extends State<VendorList> {
                                     backgroundImage: v.profile.isNotEmpty
                                         ? NetworkImage(v.profile)
                                         : null,
-                                    backgroundColor: Colors.deepPurple,
+                                    backgroundColor: AppColors.secondaryColor,
                                     child: v.profile.isEmpty
                                         ? const Icon(Icons.person, color: Colors.white)
                                         : null,

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
@@ -26,8 +27,6 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
   List<String> dummyAgents = [];
   bool isLoading = false;
 
-
-
   @override
   void initState() {
     super.initState();
@@ -35,7 +34,6 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
     if (fboRequests.isNotEmpty) {
       fetchNearestAgents(fboRequests[0].address); // preload with first FBO
     }
-
   }
 
   Future<void> fetchNearestAgents(String address) async {
@@ -80,9 +78,6 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
     }
   }
 
-
-
-
   void _showRejectionDialog(BuildContext context, int fboId) {
     final TextEditingController reasonController = TextEditingController();
     final theme = Theme.of(context);
@@ -98,7 +93,8 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
             maxLines: 3,
             decoration: InputDecoration(
               hintText: "Enter reason for rejection",
-              hintStyle: TextStyle(color: isDark ? Colors.white60 : Colors.grey[600]),
+              hintStyle:
+                  TextStyle(color: isDark ? Colors.white60 : Colors.grey[600]),
               focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.red.shade700, width: 2),
               ),
@@ -149,19 +145,19 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
   //   }
   // }
 
-
   void handleStatusUpdate(
-      int id,
-      String status, {
-        String? reason,
-        String? agent,
-        String? amount,
-      }) async {
+    int id,
+    String status, {
+    String? reason,
+    String? agent,
+    String? amount,
+  }) async {
     // ✅ Validate agent and amount only when approving
     if (status == "approved") {
       if (agent == null || agent.isEmpty || amount == null || amount.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please select an agent and enter amount")),
+          const SnackBar(
+              content: Text("Please select an agent and enter amount")),
         );
         return;
       }
@@ -188,17 +184,21 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('FBO ${status == "approved" ? "approved" : "rejected"} successfully')),
+      SnackBar(
+          content: Text(
+              'FBO ${status == "approved" ? "approved" : "rejected"} successfully')),
     );
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('FBO Login Requests')),
+      appBar: AppBar(
+        title: const Text('FBO Login Requests', style: TextStyle(
+          color: Colors.white,
+        ),),
+        backgroundColor: AppColors.secondaryColor,
+      ),
       body: FutureBuilder<List<Fbo>>(
         future: futureFboRequests,
         builder: (context, snapshot) {
@@ -207,7 +207,7 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return  Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -246,13 +246,16 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(fbo.restaurantName,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text('Owner: ${fbo.fullName}', style: const TextStyle(fontSize: 16)),
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('Owner: ${fbo.fullName}',
+                            style: const TextStyle(fontSize: 16)),
                         Text('Status: ${fbo.status}',
-                            style: const TextStyle(fontSize: 16, color: Colors.orange)),
+                            style: const TextStyle(
+                                fontSize: 16, color: Colors.orange)),
                         const SizedBox(height: 10),
-
-                        if (fbo.licenseUrl.isNotEmpty || fbo.restaurantUrl.isNotEmpty)
+                        if (fbo.licenseUrl.isNotEmpty ||
+                            fbo.restaurantUrl.isNotEmpty)
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
@@ -263,7 +266,8 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => FullScreenImage(imageUrl: fbo.licenseUrl),
+                                          builder: (context) => FullScreenImage(
+                                              imageUrl: fbo.licenseUrl),
                                         ),
                                       );
                                     },
@@ -273,8 +277,11 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
                                         fbo.licenseUrl,
                                         height: 150,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) =>
-                                        const Icon(Icons.error, size: 50, color: Colors.red),
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                const Icon(Icons.error,
+                                                    size: 50,
+                                                    color: Colors.red),
                                       ),
                                     ),
                                   ),
@@ -286,7 +293,8 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => FullScreenImage(imageUrl: fbo.restaurantUrl),
+                                          builder: (context) => FullScreenImage(
+                                              imageUrl: fbo.restaurantUrl),
                                         ),
                                       );
                                     },
@@ -296,8 +304,11 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
                                         fbo.restaurantUrl,
                                         height: 150,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) =>
-                                        const Icon(Icons.error, size: 50, color: Colors.red),
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                const Icon(Icons.error,
+                                                    size: 50,
+                                                    color: Colors.red),
                                       ),
                                     ),
                                   ),
@@ -305,49 +316,61 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
                             ],
                           ),
                         const SizedBox(height: 10),
-
-                        Text('📞 Contact: ${fbo.contactNumber}', style: const TextStyle(fontSize: 14)),
-                        Text('📧 Email: ${fbo.email}', style: const TextStyle(fontSize: 14)),
-                        Text('🏠 Address: ${fbo.address}', style: const TextStyle(fontSize: 14)),
+                        Text('📞 Contact: ${fbo.contactNumber}',
+                            style: const TextStyle(fontSize: 14)),
+                        Text('📧 Email: ${fbo.email}',
+                            style: const TextStyle(fontSize: 14)),
+                        Text('🏠 Address: ${fbo.address}',
+                            style: const TextStyle(fontSize: 14)),
                         const SizedBox(height: 15),
                         if (fbo.branches.isNotEmpty) ...[
                           const Text(
                             "Branches Details:",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 5),
                           ...fbo.branches.map((branch) => Padding(
-                            padding: const EdgeInsets.only(bottom: 10.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("🏢hotel name: ${branch.name}", style: const TextStyle(fontWeight: FontWeight.w600)),
-                                Text("📍Branch Address: ${branch.address}", style: const TextStyle(fontSize: 14)),
-                                Text("🧾 FSSAI No: ${branch.fssaiNo}", style: const TextStyle(fontSize: 14)),
-                                const SizedBox(height: 5),
-                                if (branch.license.isNotEmpty)
-                                  GestureDetector(
-                                    onTap: () {
-                                      // Navigate to full-screen image view
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => FullScreenImage(imageUrl: branch.license),
+                                padding: const EdgeInsets.only(bottom: 10.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("🏢hotel name: ${branch.name}",
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w600)),
+                                    Text("📍Branch Address: ${branch.address}",
+                                        style: const TextStyle(fontSize: 14)),
+                                    Text("🧾 FSSAI No: ${branch.fssaiNo}",
+                                        style: const TextStyle(fontSize: 14)),
+                                    const SizedBox(height: 5),
+                                    if (branch.license.isNotEmpty)
+                                      GestureDetector(
+                                        onTap: () {
+                                          // Navigate to full-screen image view
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  FullScreenImage(
+                                                      imageUrl: branch.license),
+                                            ),
+                                          );
+                                        },
+                                        child: Image.network(
+                                          branch.license,
+                                          height: 100,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  const Icon(Icons.broken_image,
+                                                      size: 40,
+                                                      color: Colors.red),
                                         ),
-                                      );
-                                    },
-                                    child: Image.network(
-                                      branch.license,
-                                      height: 100,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(Icons.broken_image, size: 40, color: Colors.red),
-                                    ),
-                                  ),
-                                const Divider(thickness: 1),
-                              ],
-                            ),
-                          )),
+                                      ),
+                                    const Divider(thickness: 1),
+                                  ],
+                                ),
+                              )),
                           const SizedBox(height: 10),
                         ],
                         const SizedBox(height: 10),
@@ -358,26 +381,32 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
                         isLoading
                             ? const Center(child: CircularProgressIndicator())
                             : Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                              onPressed: () => handleStatusUpdate(
-                                fbo.id,
-                                "approved",
-                                agent: selectedAgent,
-                                amount: amountController.text.trim(),
-                              ),
-                              child: const Text("Approve", style: TextStyle(color: Colors.white)),
-                            ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                              onPressed: () => _showRejectionDialog(context, fbo.id),
-                              child: const Text("Reject", style: TextStyle(color: Colors.white)),
-                            ),
-                          ],
-                        )
-
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            AppColors.secondaryColor),
+                                    onPressed: () => handleStatusUpdate(
+                                      fbo.id,
+                                      "approved",
+                                      agent: selectedAgent,
+                                      amount: amountController.text.trim(),
+                                    ),
+                                    child: const Text("Approve",
+                                        style: TextStyle(color: Colors.white)),
+                                  ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red),
+                                    onPressed: () =>
+                                        _showRejectionDialog(context, fbo.id),
+                                    child: const Text("Reject",
+                                        style: TextStyle(color: Colors.white)),
+                                  ),
+                                ],
+                              )
                       ],
                     ),
                   ),
@@ -409,10 +438,12 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
         if (textEditingValue.text.isEmpty) {
           return agentsList;
         }
-        return agentsList.where((agent) =>
-            agent.name.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+        return agentsList.where((agent) => agent.name
+            .toLowerCase()
+            .contains(textEditingValue.text.toLowerCase()));
       },
-      displayStringForOption: (AgentInfo option) => "${option.name} (${option.district})",
+      displayStringForOption: (AgentInfo option) =>
+          "${option.name} (${option.district})",
       onSelected: (AgentInfo selection) {
         setState(() {
           selectedAgent = selection.name;
@@ -437,8 +468,8 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
               await fetchNearestAgents(address);
               setState(() {
                 // Force Autocomplete to rebuild
-                textController.text = " ";  // Trigger rebuild with space
-                textController.clear();     // Then clear to see full list
+                textController.text = " "; // Trigger rebuild with space
+                textController.clear(); // Then clear to see full list
               });
             }
             focusNode.requestFocus();
@@ -471,8 +502,7 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
                     final AgentInfo option = options.elementAt(index);
                     return ListTile(
                       title: Text(option.name),
-                      subtitle:
-                      Text("${option.district} • ${option.distance}"),
+                      subtitle: Text("${option.district} • ${option.distance}"),
                       onTap: () => onSelected(option),
                     );
                   },
@@ -485,12 +515,8 @@ class _FboLoginRequestState extends State<FboLoginRequest> {
       initialValue: TextEditingValue(text: selectedAgent ?? ''),
     );
   }
-
-
-
-
-
 }
+
 class AgentInfo {
   final String name;
   final String district;
@@ -513,7 +539,6 @@ class AgentInfo {
   @override
   String toString() => "$name ($district - $distance)";
 }
-
 
 // Define the FullScreenImage widget
 class FullScreenImage extends StatelessWidget {

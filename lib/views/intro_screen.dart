@@ -1,3 +1,4 @@
+import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -115,7 +116,7 @@ class _IntroScreenState extends State<IntroScreen> {
                               style: TextStyle(
                                 fontSize: fontTitle,
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFF006D04),
+                                color: AppColors.primaryColor,
                               ),
                             ),
                             Text(
@@ -124,7 +125,7 @@ class _IntroScreenState extends State<IntroScreen> {
                               style: TextStyle(
                                 fontSize: fontTitle,
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFF006D04),
+                                color: AppColors.primaryColor,
                               ),
                             ),
                             const SizedBox(height: 10),
@@ -159,7 +160,7 @@ class _IntroScreenState extends State<IntroScreen> {
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: _currentIndex == index
-                                        ? const Color(0xFF6FA006)
+                                        ? AppColors.primaryColor
                                         : Colors.grey.shade300,
                                   ),
                                 ),
@@ -169,7 +170,7 @@ class _IntroScreenState extends State<IntroScreen> {
                             ElevatedButton(
                               onPressed: _onNext,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF6FA006),
+                                backgroundColor: AppColors.primaryColor,
                                 minimumSize:
                                 Size(double.infinity, screenHeight * 0.06),
                                 shape: RoundedRectangleBorder(
