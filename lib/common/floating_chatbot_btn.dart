@@ -3,7 +3,6 @@ import 'package:lottie/lottie.dart';
 import 'package:areg_app/common/app_colors.dart';
 import '../../fbo_services/chatbot_service.dart';
 
-// 1. Draggable Floating Chatbot Button Widget
 class DraggableChatbotButton extends StatefulWidget {
   const DraggableChatbotButton({super.key});
 
@@ -11,74 +10,316 @@ class DraggableChatbotButton extends StatefulWidget {
   _DraggableChatbotButtonState createState() => _DraggableChatbotButtonState();
 }
 
-class _DraggableChatbotButtonState extends State<DraggableChatbotButton> {
-  Offset position = const Offset(20, 100); // Initial position
+class _DraggableChatbotButtonState extends State<DraggableChatbotButton>
+    with TickerProviderStateMixin {
+  Offset position = const Offset(20, 100);
+  bool isDragging = false;
+  static const double buttonSize = 60.0;
+  static const double padding = 16.0;
+
+  late AnimationController _animationController;
+  late Animation<Offset> _animation;
+  AnimationController? _rotationController;
+  Animation<double>? _rotationAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _animation = Tween<Offset>(
+      begin: position,
+      end: position,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.elasticOut,
+    ));
+
+    // Initialize rotation animation
+    try {
+      _rotationController = AnimationController(
+        duration: const Duration(seconds: 8), // 8 seconds for one full rotation
+        vsync: this,
+      )..repeat(); // Continuously repeat the rotation
+
+      _rotationAnimation = Tween<double>(
+        begin: 0.0,
+        end: 2 * 3.14159, // Full 360 degrees in radians
+      ).animate(CurvedAnimation(
+        parent: _rotationController!,
+        curve: Curves.linear,
+      ));
+    } catch (e) {
+      _rotationController = null;
+      _rotationAnimation = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _rotationController?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
+    final safeArea = MediaQuery.of(context).padding;
 
-    return Positioned(
-      left: position.dx,
-      top: position.dy,
-      child: Draggable(
-        feedback: _buildButton(true),
-        childWhenDragging: Container(), // Hide original while dragging
-        onDragEnd: (details) {
-          setState(() {
-            // Keep button within screen bounds
-            double newX = details.offset.dx;
-            double newY = details.offset.dy;
+    // Calculate safe draggable area
+    final double maxX = screenSize.width - (buttonSize + 20) - padding; // Account for ring size
+    final double maxY = screenSize.height - safeArea.bottom - (buttonSize + 20) - padding;
+    final double minX = padding;
+    final double minY = safeArea.top + padding;
 
-            // Ensure button stays within screen bounds
-            newX = newX.clamp(0.0, screenSize.width - 60);
-            newY = newY.clamp(0.0, screenSize.height - 60);
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        final currentPosition = isDragging ? position : _animation.value;
 
-            position = Offset(newX, newY);
-          });
+        return Positioned(
+          left: currentPosition.dx,
+          top: currentPosition.dy,
+          child: GestureDetector(
+            onPanStart: (details) {
+              setState(() {
+                isDragging = true;
+              });
+              _animationController.stop();
+            },
+            onPanUpdate: (details) {
+              setState(() {
+                // Update position in real-time during drag
+                double newX = (position.dx + details.delta.dx).clamp(minX, maxX);
+                double newY = (position.dy + details.delta.dy).clamp(minY, maxY);
+                position = Offset(newX, newY);
+              });
+            },
+            onPanEnd: (details) {
+              setState(() {
+                isDragging = false;
+              });
+
+              // Optional: Add magnetic snap to edges
+              _snapToNearestEdge(screenSize, safeArea);
+            },
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: isDragging ? 0 : 200),
+              transform: Matrix4.identity()..scale(isDragging ? 1.1 : 1.0),
+              child: _buildButton(),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _snapToNearestEdge(Size screenSize, EdgeInsets safeArea) {
+    final double maxX = screenSize.width - (buttonSize + 20) - padding;
+    final double maxY = screenSize.height - safeArea.bottom - (buttonSize + 20) - padding;
+    final double minX = padding;
+    final double minY = safeArea.top + padding;
+
+    // Determine which edge is closest
+    double centerX = position.dx + (buttonSize + 20) / 2;
+    double centerY = position.dy + (buttonSize + 20) / 2;
+
+    Offset targetPosition = position;
+
+    // Snap to left or right edge
+    if (centerX < screenSize.width / 2) {
+      targetPosition = Offset(minX, position.dy);
+    } else {
+      targetPosition = Offset(maxX, position.dy);
+    }
+
+    // Animate to target position
+    _animation = Tween<Offset>(
+      begin: position,
+      end: targetPosition,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.elasticOut,
+    ));
+
+    position = targetPosition;
+    _animationController.reset();
+    _animationController.forward();
+  }
+
+  Widget _buildButton() {
+    // If rotation animation is available, use it; otherwise, show static button
+    if (_rotationAnimation != null) {
+      return AnimatedBuilder(
+        animation: _rotationAnimation!,
+        builder: (context, child) {
+          return _buildButtonWithRing(_rotationAnimation!.value);
         },
-        child: _buildButton(false),
+      );
+    } else {
+      // Fallback to static button without rotation
+      return _buildButtonWithRing(0.0);
+    }
+  }
+
+  Widget _buildButtonWithRing(double rotationAngle) {
+    return SizedBox(
+      width: buttonSize + 20, // Extra space for the ring
+      height: buttonSize + 40, // Extra height for text below
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              // Rotating ring (only if rotation is available)
+              if (_rotationAnimation != null)
+                Transform.rotate(
+                  angle: rotationAngle,
+                  child: Container(
+                    width: buttonSize + 16,
+                    height: buttonSize + 16,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        width: 2,
+                        color: AppColors.primaryColor.withOpacity(0.6),
+                      ),
+                    ),
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          top: 2,
+                          left: (buttonSize + 16) / 2 - 3,
+                          child: Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.primaryColor,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primaryColor.withOpacity(0.5),
+                                  blurRadius: 4,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 2,
+                          right: (buttonSize + 16) / 2 - 3,
+                          child: Container(
+                            width: 4,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.primaryColor.withOpacity(0.7),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primaryColor.withOpacity(0.3),
+                                  blurRadius: 3,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: 2,
+                          top: (buttonSize + 16) / 2 - 2,
+                          child: Container(
+                            width: 4,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.primaryColor.withOpacity(0.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primaryColor.withOpacity(0.2),
+                                  blurRadius: 2,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              // Main button (center/sun)
+              Material(
+                elevation: isDragging ? 8 : 4,
+                shape: const CircleBorder(),
+                child: Container(
+                  width: buttonSize,
+                  height: buttonSize,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: isDragging
+                          ? [AppColors.primaryColor.withOpacity(0.8), AppColors.primaryColor]
+                          : [AppColors.white, AppColors.white],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primaryColor.withOpacity(isDragging ? 0.5 : 0.3),
+                        blurRadius: isDragging ? 12 : 8,
+                        offset: Offset(0, isDragging ? 6 : 4),
+                      ),
+                    ],
+                  ),
+                  child: InkWell(
+                    onTap: isDragging ? null : _showChatbotPopup,
+                    borderRadius: BorderRadius.circular(30),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/icon/enzopik.png',
+                        width: 28,
+                        height: 28,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(
+                            Icons.chat_bubble_outline,
+                            color: isDragging ? Colors.white : AppColors.primaryColor,
+                            size: 28,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Chat Bot',
+            style: TextStyle(
+              color:AppColors.primaryGreen,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withOpacity(0.3),
+                  offset: const Offset(2, 2),
+                  blurRadius: 4,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildButton(bool isDragging) {
-    return Material(
-      elevation: isDragging ? 8 : 4,
-      shape: const CircleBorder(),
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const LinearGradient(
-            colors: [AppColors.white, AppColors.white],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryColor.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: InkWell(
-          onTap: isDragging ? null : _showChatbotPopup,
-          borderRadius: BorderRadius.circular(30),
-          child: ClipOval(
-            child: Image.asset(
-              'assets/icon/enzopik.png', // Replace with your image path
-              width: 28,
-              height: 28,
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   void _showChatbotPopup() {
     showDialog(
@@ -393,4 +634,3 @@ class _ChatbotPopupState extends State<ChatbotPopup> {
     super.dispose();
   }
 }
-

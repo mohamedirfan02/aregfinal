@@ -126,14 +126,14 @@ class BottomNavigation extends StatefulWidget {
 
 class _BottomNavigationState extends State<BottomNavigation> {
   int _selectedIndex = 1; // Changed to 0 since Home is now first
-  late PageController _pageController;
+ // late PageController _pageController;
   late List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
     print("📦 Received in BottomNavigation: ${widget.userDetails}");
-    _pageController = PageController(initialPage: _selectedIndex);
+  // _pageController = PageController(initialPage: _selectedIndex);
     _pages = [
 
       ProfileScreen(),
@@ -143,11 +143,11 @@ class _BottomNavigationState extends State<BottomNavigation> {
   }
 
   void _onNavItemTapped(int index) {
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    // _pageController.animateToPage(
+    //   index,
+    //   duration: const Duration(milliseconds: 300),
+    //   curve: Curves.easeInOut,
+    // );
     setState(() {
       _selectedIndex = index;
     });
@@ -161,7 +161,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
 
   @override
   void dispose() {
-    _pageController.dispose();
+    //_pageController.dispose();
     super.dispose();
   }
 
@@ -177,9 +177,8 @@ class _BottomNavigationState extends State<BottomNavigation> {
         }
       },
       child: Scaffold(
-        body: PageView(
-          controller: _pageController,
-          onPageChanged: _onPageChanged,
+        body: IndexedStack(
+          index: _selectedIndex, // ✅ Keeps state of each screen
           children: _pages,
         ),
         bottomNavigationBar: CustomBottomNavBar(
@@ -187,6 +186,19 @@ class _BottomNavigationState extends State<BottomNavigation> {
           onTap: _onNavItemTapped,
         ),
       ),
+
+      /// for page swap effect
+      // child: Scaffold(
+      //   body: PageView(
+      //     controller: _pageController,
+      //     onPageChanged: _onPageChanged,
+      //     children: _pages,
+      //   ),
+      //   bottomNavigationBar: CustomBottomNavBar(
+      //     currentIndex: _selectedIndex,
+      //     onTap: _onNavItemTapped,
+      //   ),
+      // ),
     );
   }
 

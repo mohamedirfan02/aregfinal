@@ -26,6 +26,7 @@ class AppColors {
     Colors.white,
   ];
 
+  static const Color transparentColor = Colors.transparent;
 
 // auth TextField Colors
   static const Color authTextFieldSuffixIconColor = Color(0xFFC1B1B1);

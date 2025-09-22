@@ -186,162 +186,168 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: Stack(
-          children: [
-            LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom,
-                  ),
-                  child: ConstrainedBox(
-                    constraints:
-                        BoxConstraints(minHeight: constraints.maxHeight),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: padding,
-                        vertical: size.height * 0.07,
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 40),
-                            Center(
-                              child: SizedBox(
-                                width: 200,
-                                height: 200,
-                                child: Lottie.asset(
-                                  'assets/animations/zz.json',
-                                  fit: BoxFit.contain,
-                                ),
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: padding,
+                      vertical: size.height * 0.07,
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 40),
+                          Center(
+                            child: SizedBox(
+                              width: 200,
+                              height: 200,
+                              child: Lottie.asset(
+                                'assets/animations/zz.json',
+                                fit: BoxFit.contain,
                               ),
                             ),
-                            const SizedBox(height: 20),
-                            Stack(
-                              children: [
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(20),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 20),
+                          ),
+                          const SizedBox(height: 20),
+                          Stack(
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 20),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Log in',
+                                      style: TextStyle(
+                                        fontSize: size.width * 0.09,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.secondaryColor,
                                       ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Log in',
-                                        style: TextStyle(
-                                          fontSize: size.width * 0.09,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.secondaryColor,
-                                        ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Login to your account',
+                                      style: TextStyle(
+                                        fontSize: size.width * 0.05,
+                                        color: Colors.black,
                                       ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Login to your account',
-                                        style: TextStyle(
-                                          fontSize: size.width * 0.05,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 20),
-                                      CustomTextFormField(
-                                        controller: _emailController,
-                                        hintText: 'Email Address',
-                                        iconData: Icons.mail_outline_rounded,
-                                        keyboardType:
-                                            TextInputType.emailAddress,
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return 'Please enter a valid email';
-                                          }
-                                          return null;
+                                    ),
+                                    const SizedBox(height: 20),
+                                    CustomTextFormField(
+                                      controller: _emailController,
+                                      hintText: 'Email Address',
+                                      iconData: Icons.mail_outline_rounded,
+                                      keyboardType: TextInputType.emailAddress,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Please enter a valid email';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                    const SizedBox(height: 16),
+                                    CustomTextFormField(
+                                      controller: _passwordController,
+                                      hintText: 'Password',
+                                      iconData: Icons.lock_outline_rounded,
+                                      keyboardType:
+                                          TextInputType.visiblePassword,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Please enter your password';
+                                        }
+                                        return null;
+                                      },
+                                      isPassword: true,
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: CustomForgotPasswordButton(
+                                        text: 'Forgot Password?',
+                                        onPressed: () {
+                                          context.push('/reset-password');
                                         },
                                       ),
-                                      const SizedBox(height: 16),
-                                      CustomTextFormField(
-                                        controller: _passwordController,
-                                        hintText: 'Password',
-                                        iconData: Icons.lock_outline_rounded,
-                                        keyboardType:
-                                            TextInputType.visiblePassword,
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return 'Please enter your password';
-                                          }
-                                          return null;
-                                        },
-                                        isPassword: true,
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Align(
-                                        alignment: Alignment.centerRight,
-                                        child: CustomForgotPasswordButton(
-                                          text: 'Forgot Password?',
-                                          onPressed: () {
-                                            context.push('/reset-password');
-                                          },
-                                        ),
-                                      ),
-                                      const SizedBox(height: 20),
-                                      _isLoading
-                                          ? Center(
-                                              child: const SizedBox(
-                                                height: 50,
-                                                width: 50,
-                                                child: LoadingIndicator(
-                                                  indicatorType: Indicator
-                                                      .ballSpinFadeLoader,
-                                                  colors: [
-                                                    AppColors.primaryColor,
-                                                    AppColors.secondaryColor,
-                                                    AppColors.titleColor,
-                                                  ],
-                                                  strokeWidth: 2,
-                                                ),
-                                              ),
-                                            )
-                                          : Center(
-                                              // ✅ Centered the button
-                                              child: CustomSubmitButton(
-                                                buttonText: 'Log in',
-                                                onPressed: _login,
+                                    ),
+                                    const SizedBox(height: 20),
+                                    _isLoading
+                                        ? Center(
+                                            child: const SizedBox(
+                                              height: 50,
+                                              width: 50,
+                                              child: LoadingIndicator(
+                                                indicatorType: Indicator
+                                                    .ballSpinFadeLoader,
+                                                colors: [
+                                                  AppColors.primaryColor,
+                                                  AppColors.secondaryColor,
+                                                  AppColors.titleColor,
+                                                ],
+                                                strokeWidth: 2,
                                               ),
                                             ),
-                                      const SizedBox(height: 20),
-                                    ],
-                                  ),
+                                          )
+                                        : Center(
+                                            // ✅ Centered the button
+                                            child: CustomSubmitButton(
+                                              buttonText: 'Log in',
+                                              onPressed: _login,
+                                            ),
+                                          ),
+                                    const SizedBox(height: 20),
+                                    Center(
+                                      child: Text(
+                                        "@ Powered By Thikse Software Solutions",
+                                        textAlign: TextAlign.end,
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    )
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ],
-                        ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                );
+                ),
+              );
+            },
+          ),
+          Positioned(
+            top: 40,
+            left: 10,
+            child: CustomBackButton(
+              onPressed: () {
+                context.go('/start');
               },
             ),
-            Positioned(
-              top: 40,
-              left: 10,
-              child: CustomBackButton(
-                onPressed: () {
-                  context.go('/start');
-                },
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
+      ),
     );
   }
 }

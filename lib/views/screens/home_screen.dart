@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:ui';
 import 'package:areg_app/common/app_colors.dart';
 import 'package:areg_app/common/floating_chatbot_btn.dart';
 import 'package:areg_app/common/k_linear_gradient_bg.dart';
+import 'package:areg_app/views/screens/widgets/RequirementStatsCard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -25,6 +27,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Map<String, dynamic>? userData;
   bool isLoading = true;
   bool hasError = false;
+
+  String _selectedDataCategory = 'Total';
+  dynamic _selectedData = {};
 
   Future<void> _onRefresh() async {
     setState(() {
@@ -106,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.red, fontWeight: FontWeight.bold),
                     )
                   else
-                    buildUserData(screenWidth, context),
+                    buildUserData(context),
 
                   // Bottom container (scrollable content inside)
                   Expanded(
@@ -219,9 +224,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Update your buildUserData method to only include the green card:
-  Widget buildUserData(double screenWidth, BuildContext context) {
+
+  // Add this state variable to your main class
+
+  Widget buildUserData(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final formatter = NumberFormat('#,##0'); // Create number formatter
+    final formatter = NumberFormat('#,##0');
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     if (userData == null) {
       return const Text(
@@ -230,141 +241,306 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    final totalRevenue = userData?["total"]?["revenue"] ?? 0;
-    final totalQuantity = userData?["total"]?["quantity"] ?? 0;
+    // Relative sizing factors
+    double horizontalPadding = screenWidth * 0.04; // 4% of screen width
+    double verticalPadding = screenHeight * 0.02; // 2% of screen height
+    double fontSizeSubtitle = screenWidth * 0.045;
+    double fontSizeAmount = screenWidth * 0.05;
 
     return Column(
       children: [
-        // 💚 Green Card ONLY
-        Container(
-          margin: const EdgeInsets.all(16),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          decoration: BoxDecoration(
-            image: const DecorationImage(
-              image: AssetImage("assets/image/cover.png"),
-              fit: BoxFit.cover,
-            ),
-            color: isDark ? const Color(0xFF2F4F1F) : const Color(0xFF6FA006),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-            children: [
-              Text(
-                'Year 2025',
-                style: TextStyle(
-                  color: isDark ? Colors.white : Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22,
-                ),
+
+        // Card Container
+        ClipRRect(
+          borderRadius: BorderRadius.circular(screenWidth * 0.05),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: Container(
+              margin: EdgeInsets.all(horizontalPadding),
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: verticalPadding,
               ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Column(
-                    children: [
-                      Text(
-                        'Total Amount',
-                        style: TextStyle(
-                          color: isDark ? Colors.white70 : Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Text(
-                            '₹ ${formatter.format(totalRevenue)}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 22,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Lottie.asset(
-                            'assets/animations/money.json',
-                            width: 30,
-                            height: 30,
-                            repeat: true,
-                            fit: BoxFit.cover,
-                          ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [
+                          Colors.white.withOpacity(0.05),
+                          Colors.white.withOpacity(0.15),
+                        ]
+                      : [
+                          Colors.white.withOpacity(0.15),
+                          Colors.white.withOpacity(0.3),
                         ],
-                      ),
-                    ],
+                ),
+                image: DecorationImage(
+                  image: AssetImage('assets/image/fbo_bg.png'),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withOpacity(0.5),
+                    // adjust opacity here (0.0 to 1.0)
+                    BlendMode.dstATop,
                   ),
-                  Column(
-                    children: [
-                      Text(
-                        'Total Oil KG',
-                        style: TextStyle(
-                          color: isDark ? Colors.white70 : Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Lottie.asset(
-                            'assets/animations/fuelnew.json',
-                            width: 30,
-                            height: 30,
-                            repeat: true,
-                            fit: BoxFit.cover,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${formatter.format(totalQuantity)} Kg',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 22,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                ),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.25),
+                    blurRadius: 20,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 10),
+                  ),
+                  BoxShadow(
+                    color: Colors.white.withOpacity(0.15),
+                    blurRadius: 10,
+                    spreadRadius: 0,
+                    offset: const Offset(-5, -5),
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    spreadRadius: -5,
+                    offset: const Offset(0, 5),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+              child: Row(
                 children: [
-                  Lottie.asset(
-                    'assets/animations/hand.json',
-                    width: 50,
-                    height: 50,
-                    repeat: true,
-                    fit: BoxFit.cover,
-                  ),
-                  const SizedBox(width: 8),
+                  // Left Column
                   Expanded(
-                    child: LinearProgressIndicator(
-                      value: (totalQuantity / 1000).clamp(0.0, 1.0),
-                      backgroundColor: isDark ? Colors.white10 : Colors.white30,
-                      color: Colors.white,
-                      minHeight: 8,
-                      borderRadius: BorderRadius.circular(4),
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _getDisplayTitle(),
+                          style: TextStyle(
+                            color: isDark ? Colors.white :AppColors.darkestGreen,
+                            fontWeight: FontWeight.bold,
+                            fontSize: fontSizeSubtitle,
+                          ),
+                        ),
+                        SizedBox(height: verticalPadding),
+                        // Amount Section
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _getAmountLabel(),
+                              style: TextStyle(
+                                color: isDark ? Colors.white70 : Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: fontSizeSubtitle,
+                              ),
+                            ),
+                            SizedBox(height: verticalPadding / 2),
+                            Row(
+                              children: [
+                                Text(
+                                  '₹ ${formatter.format(_getDisplayAmount())}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: fontSizeAmount,
+                                  ),
+                                ),
+                                SizedBox(width: horizontalPadding / 2),
+                                Lottie.asset(
+                                  'assets/animations/money.json',
+                                  width: screenWidth * 0.07,
+                                  height: screenWidth * 0.07,
+                                  repeat: true,
+                                  fit: BoxFit.cover,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: verticalPadding),
+                        // Quantity Section
+                        if (_getDisplayQuantity() != null)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _getQuantityLabel(),
+                                style: TextStyle(
+                                  color: isDark ? Colors.white70 : Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: fontSizeSubtitle,
+                                ),
+                              ),
+                              SizedBox(height: verticalPadding / 2),
+                              Row(
+                                children: [
+                                  Text(
+                                    '${formatter.format(_getDisplayQuantity())} Kg',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: fontSizeAmount,
+                                    ),
+                                  ),
+                                  SizedBox(width: horizontalPadding / 2),
+                                  Lottie.asset(
+                                    'assets/animations/fuelnew.json',
+                                    width: screenWidth * 0.07,
+                                    height: screenWidth * 0.07,
+                                    repeat: true,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Lottie.asset(
-                    'assets/animations/hand.json',
-                    width: 50,
-                    height: 50,
-                    repeat: true,
-                    fit: BoxFit.cover,
+
+                  SizedBox(width: horizontalPadding),
+
+                  // Right Column - Pie Chart
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      children: [
+                        InteractiveWheelPieChart(
+                          userData: userData!,
+                          onCategorySelected: (category, data) {
+                            setState(() {
+                              _selectedDataCategory = category;
+                              _selectedData = data;
+                            });
+                          },
+                        ),
+                      //  SizedBox(height: verticalPadding),
+                        // Legend
+                        Container(
+                          padding: EdgeInsets.all(horizontalPadding / 2),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? Colors.white.withOpacity(0.1)
+                                : Colors.white.withOpacity(0.3),
+                            borderRadius:
+                                BorderRadius.circular(screenWidth * 0.03),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.2),
+                              width: 1,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                'Rotate to Explore',
+                                style: TextStyle(
+                                  color:
+                                      isDark ? Colors.white70 : Colors.black87,
+                                  fontSize: fontSizeSubtitle * 0.6,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(height: verticalPadding / 4),
+                              Text(
+                                _selectedDataCategory,
+                                style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black,
+                                  fontSize: fontSizeSubtitle * 0.7,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ],
     );
+  }
+
+// Helper methods for dynamic display
+  String _getDisplayTitle() {
+    switch (_selectedDataCategory) {
+      case 'Online Payment':
+        return 'Online Payments';
+      case 'Cash Payment':
+        return 'Cash Payments';
+      case 'Total Revenue':
+        return 'Total Revenue';
+      case 'Oil Quantity':
+        return 'Oil Quantity';
+      case 'Month 9':
+        return 'September 2025';
+      case 'Week 1':
+        return 'Week 1';
+      case 'Week 2':
+        return 'Week 2';
+      default:
+        return 'Year 2025';
+    }
+  }
+
+  String _getAmountLabel() {
+    switch (_selectedDataCategory) {
+      case 'Online Payment':
+      case 'Cash Payment':
+        return 'Payment Amount';
+      case 'Oil Quantity':
+        return 'Quantity Value';
+      default:
+        return 'Total Amount';
+    }
+  }
+
+  int _getDisplayAmount() {
+    if (_selectedData.isNotEmpty && _selectedData['amount'] != null) {
+      return _selectedData['amount'];
+    }
+    if (_selectedData.isNotEmpty && _selectedData['revenue'] != null) {
+      return _selectedData['revenue'];
+    }
+    if (_selectedDataCategory == 'Oil Quantity' &&
+        _selectedData['quantity'] != null) {
+      return _selectedData['quantity'] * 50; // Assuming 50 rupees per kg
+    }
+    return userData?["total"]?["revenue"] ?? 0;
+  }
+
+  String _getQuantityLabel() {
+    switch (_selectedDataCategory) {
+      case 'Online Payment':
+      case 'Cash Payment':
+        return 'Related Oil KG';
+      case 'Oil Quantity':
+        return 'Total Oil KG';
+      default:
+        return 'Total Oil KG';
+    }
+  }
+
+  int? _getDisplayQuantity() {
+    if (_selectedDataCategory == 'Oil Quantity') {
+      return _selectedData['quantity'] ?? userData?["total"]?["quantity"] ?? 0;
+    }
+    if (_selectedDataCategory == 'Online Payment' ||
+        _selectedDataCategory == 'Cash Payment') {
+      return null; // Don't show quantity for payment categories
+    }
+    if (_selectedData.isNotEmpty && _selectedData['quantity'] != null) {
+      return _selectedData['quantity'];
+    }
+    return userData?["total"]?["quantity"] ?? 0;
   }
 
 // Create a new method for the money section that will go inside the white background:
@@ -626,9 +802,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                          color: isDarkMode
-                              ? Colors.white38
-                              : AppColors.fboColor),
+                          color:
+                              isDarkMode ? Colors.white38 : AppColors.fboColor),
                       color: isDarkMode ? Colors.grey[900] : Colors.white,
                     ),
                     child: DropdownButtonHideUnderline(
