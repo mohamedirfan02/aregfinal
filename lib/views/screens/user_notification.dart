@@ -183,8 +183,8 @@ class _FboNotificationScreenState extends State<FboNotificationScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Notifications"),
-        backgroundColor: theme.appBarTheme.backgroundColor,
+        title: const Text("Notifications",style: TextStyle(color: Colors.white),),
+        backgroundColor: AppColors.fboColor,
         foregroundColor: theme.appBarTheme.foregroundColor,
       ),
       backgroundColor: theme.scaffoldBackgroundColor,

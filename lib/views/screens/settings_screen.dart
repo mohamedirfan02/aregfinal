@@ -88,25 +88,25 @@ class SettingsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 10),
-                CustomHeadline(text: "Settings"), // ✅ Centered headline
-                const SizedBox(height: 10),
+                const SizedBox(height: 40),
+                // CustomHeadline(text: "Settings"), // ✅ Centered headline
+                // const SizedBox(height: 10),
                 const Text(
                   "Account Settings",
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.titleColor,
                   ),
                 ),
                 const SizedBox(height: 10),
                 _buildListTile(
-                    "About Us", Icons.arrow_forward_ios,AppColors.secondaryColor,
+                    "About Us", Icons.arrow_forward_ios,AppColors.greyColor,
                     onTap: () {}),
                 _buildListTile(
                   "Privacy Policy",
                   Icons.arrow_forward_ios,
-                  AppColors.secondaryColor,
+                  AppColors.greyColor,
                   onTap: () {
                     Navigator.push(
                       context,
@@ -118,12 +118,12 @@ class SettingsScreen extends StatelessWidget {
                 _buildListTile(
                   "Tap to download contract",
                   Icons.download,
-                  AppColors.secondaryColor,
+                  AppColors.greyColor,
                   onTap: () => downloadContractPDF(context),
                 ),
 
                 _buildListTile(
-                    "Language", Icons.arrow_forward_ios,AppColors.secondaryColor,
+                    "Language", Icons.arrow_forward_ios,AppColors.greyColor,
                   onTap: () {
                     Navigator.push(
                       context,
@@ -148,7 +148,7 @@ class SettingsScreen extends StatelessWidget {
                 _buildListTile(
                   "Logout",
                   Icons.logout,
-                  AppColors.secondaryColor,
+                  AppColors.greyColor,
                   isLogout: true,
                   onTap: () => logout(context), // ✅ Added logout function
                 ),

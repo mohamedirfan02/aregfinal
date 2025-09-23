@@ -12,7 +12,7 @@ class DraggableChatbotButton extends StatefulWidget {
 
 class _DraggableChatbotButtonState extends State<DraggableChatbotButton>
     with TickerProviderStateMixin {
-  Offset position = const Offset(20, 100);
+  Offset? position; // Make it nullable to calculate default position
   bool isDragging = false;
   static const double buttonSize = 60.0;
   static const double padding = 16.0;
@@ -29,13 +29,6 @@ class _DraggableChatbotButtonState extends State<DraggableChatbotButton>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _animation = Tween<Offset>(
-      begin: position,
-      end: position,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.elasticOut,
-    ));
 
     // Initialize rotation animation
     try {
@@ -57,6 +50,14 @@ class _DraggableChatbotButtonState extends State<DraggableChatbotButton>
     }
   }
 
+  // Calculate default bottom-right position
+  Offset _getDefaultPosition(Size screenSize, EdgeInsets safeArea) {
+    final double maxX = screenSize.width - (buttonSize + 20) - padding;
+    // Use total screen height minus app bar height and some bottom padding
+    final double maxY = screenSize.height - kToolbarHeight - (buttonSize + 40) - 80; // Extra padding from bottom
+    return Offset(maxX, maxY);
+  }
+
   @override
   void dispose() {
     _animationController.dispose();
@@ -69,76 +70,90 @@ class _DraggableChatbotButtonState extends State<DraggableChatbotButton>
     final screenSize = MediaQuery.of(context).size;
     final safeArea = MediaQuery.of(context).padding;
 
+    // Set default position if not already set
+    position ??= _getDefaultPosition(screenSize, safeArea);
+
+    // Initialize animation with current position
+    _animation = Tween<Offset>(
+      begin: position!,
+      end: position!,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.elasticOut,
+    ));
+
     // Calculate safe draggable area
     final double maxX = screenSize.width - (buttonSize + 20) - padding; // Account for ring size
-    final double maxY = screenSize.height - safeArea.bottom - (buttonSize + 20) - padding;
+    final double maxY = screenSize.height - kToolbarHeight - (buttonSize + 40) - 80; // Account for app bar and extra padding
     final double minX = padding;
-    final double minY = safeArea.top + padding;
+    final double minY = kToolbarHeight + padding; // Start below app bar
 
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        final currentPosition = isDragging ? position : _animation.value;
+    return Positioned.fill(
+      child: AnimatedBuilder(
+        animation: _animation,
+        builder: (context, child) {
+          final currentPosition = isDragging ? position! : _animation.value;
 
-        return Positioned(
-          left: currentPosition.dx,
-          top: currentPosition.dy,
-          child: GestureDetector(
-            onPanStart: (details) {
-              setState(() {
-                isDragging = true;
-              });
-              _animationController.stop();
-            },
-            onPanUpdate: (details) {
-              setState(() {
-                // Update position in real-time during drag
-                double newX = (position.dx + details.delta.dx).clamp(minX, maxX);
-                double newY = (position.dy + details.delta.dy).clamp(minY, maxY);
-                position = Offset(newX, newY);
-              });
-            },
-            onPanEnd: (details) {
-              setState(() {
-                isDragging = false;
-              });
+          return Positioned(
+            left: currentPosition.dx,
+            top: currentPosition.dy,
+            child: GestureDetector(
+              onPanStart: (details) {
+                setState(() {
+                  isDragging = true;
+                });
+                _animationController.stop();
+              },
+              onPanUpdate: (details) {
+                setState(() {
+                  // Update position in real-time during drag
+                  double newX = (position!.dx + details.delta.dx).clamp(minX, maxX);
+                  double newY = (position!.dy + details.delta.dy).clamp(minY, maxY);
+                  position = Offset(newX, newY);
+                });
+              },
+              onPanEnd: (details) {
+                setState(() {
+                  isDragging = false;
+                });
 
-              // Optional: Add magnetic snap to edges
-              _snapToNearestEdge(screenSize, safeArea);
-            },
-            child: AnimatedContainer(
-              duration: Duration(milliseconds: isDragging ? 0 : 200),
-              transform: Matrix4.identity()..scale(isDragging ? 1.1 : 1.0),
-              child: _buildButton(),
+                // Optional: Add magnetic snap to edges
+                _snapToNearestEdge(screenSize, safeArea);
+              },
+              child: AnimatedContainer(
+                duration: Duration(milliseconds: isDragging ? 0 : 200),
+                transform: Matrix4.identity()..scale(isDragging ? 1.1 : 1.0),
+                child: _buildButton(),
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
   void _snapToNearestEdge(Size screenSize, EdgeInsets safeArea) {
     final double maxX = screenSize.width - (buttonSize + 20) - padding;
-    final double maxY = screenSize.height - safeArea.bottom - (buttonSize + 20) - padding;
+    final double maxY = screenSize.height - kToolbarHeight - (buttonSize + 40) - 80;
     final double minX = padding;
-    final double minY = safeArea.top + padding;
+    final double minY = kToolbarHeight + padding;
 
     // Determine which edge is closest
-    double centerX = position.dx + (buttonSize + 20) / 2;
-    double centerY = position.dy + (buttonSize + 20) / 2;
+    double centerX = position!.dx + (buttonSize + 20) / 2;
+    double centerY = position!.dy + (buttonSize + 40) / 2;
 
-    Offset targetPosition = position;
+    Offset targetPosition = position!;
 
     // Snap to left or right edge
     if (centerX < screenSize.width / 2) {
-      targetPosition = Offset(minX, position.dy);
+      targetPosition = Offset(minX, position!.dy);
     } else {
-      targetPosition = Offset(maxX, position.dy);
+      targetPosition = Offset(maxX, position!.dy);
     }
 
     // Animate to target position
     _animation = Tween<Offset>(
-      begin: position,
+      begin: position!,
       end: targetPosition,
     ).animate(CurvedAnimation(
       parent: _animationController,
@@ -303,7 +318,7 @@ class _DraggableChatbotButtonState extends State<DraggableChatbotButton>
           Text(
             'Chat Bot',
             style: TextStyle(
-              color:AppColors.primaryGreen,
+              color: AppColors.primaryGreen,
               fontWeight: FontWeight.bold,
               fontSize: 12,
               shadows: [
@@ -319,7 +334,6 @@ class _DraggableChatbotButtonState extends State<DraggableChatbotButton>
       ),
     );
   }
-
 
   void _showChatbotPopup() {
     showDialog(
@@ -408,7 +422,7 @@ class _ChatbotPopupState extends State<ChatbotPopup> {
           children: [
             // Header
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(5),
               decoration: BoxDecoration(
                 color: AppColors.secondaryColor,
                 borderRadius: const BorderRadius.only(

@@ -11,7 +11,7 @@ class CustomHomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor:AppColors.secondaryColor,
+      backgroundColor:AppColors.fboColor,
       elevation: 0,
       leading: Padding(
         padding: EdgeInsets.only(left: screenWidth * 0.04), // ✅ Add spacing

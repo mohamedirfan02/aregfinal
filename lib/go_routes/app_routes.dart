@@ -11,7 +11,7 @@ import '../views/dashboard/edit_profile_screen.dart';
 import '../views/intro_screen.dart';
 import '../views/screens/chatbot_screen.dart';
 import '../views/screens/fbo_voucher.dart';
-import '../views/screens/monthly_view_screen.dart';
+import '../views/screens/monthly_screen/monthly_view_screen.dart';
 import '../views/screens/oil_place_screen.dart';
 import '../views/screens/user_notification.dart';
 import '../views/start_screen.dart';

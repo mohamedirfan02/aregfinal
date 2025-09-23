@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:areg_app/common/k_linear_gradient_bg.dart';
+import 'package:areg_app/views/screens/widgets/k_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'common/app_colors.dart';
+import 'core/storage/app_assets_constant.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -137,10 +139,11 @@ class _SplashScreenState extends State<SplashScreen>  with SingleTickerProviderS
                 ),
               );
             },
-            child: Image.asset(
-              'assets/icon/enzopik.png',
-              width: 250.w,
+            child:  KSvg(
+              svgPath: AppAssetsConstants.splashLogo,
               height: 250.h,
+              width: 250.w,
+              boxFit: BoxFit.cover,
             ),
           ),
         ),
