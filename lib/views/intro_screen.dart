@@ -1,6 +1,7 @@
 import 'package:areg_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class IntroScreen extends StatefulWidget {
   const IntroScreen({Key? key}) : super(key: key);
@@ -10,6 +11,16 @@ class IntroScreen extends StatefulWidget {
 }
 
 class _IntroScreenState extends State<IntroScreen> {
+
+  Future<void> _completeIntro() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('intro_completed', true);
+
+    if (mounted) {
+      context.go('/turnOnNotification');
+    }
+  }
+
   int _currentIndex = 0;
 
   final List<Map<String, String>> _slides = [
@@ -39,7 +50,8 @@ class _IntroScreenState extends State<IntroScreen> {
         _currentIndex++;
       });
     } else {
-      context.go('/start');
+      // When finishing the last slide
+      _completeIntro();
     }
   }
 
@@ -189,7 +201,7 @@ class _IntroScreenState extends State<IntroScreen> {
                               ),
                             ),
                             TextButton(
-                              onPressed: () => context.go('/start'),
+                              onPressed: _completeIntro, // Changed from inline navigation
                               child: Text(
                                 "Skip",
                                 style: TextStyle(

@@ -314,63 +314,38 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Row(
                 children: [
                   // Left Column
-                  Expanded(
-                    flex: 2,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _getDisplayTitle(),
-                          style: TextStyle(
-                            color: isDark ? Colors.white :AppColors.darkestGreen,
-                            fontWeight: FontWeight.bold,
-                            fontSize: fontSizeSubtitle,
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withOpacity(0.1)
+                          : Colors.white.withOpacity(0.3),
+                      borderRadius:
+                      BorderRadius.circular(screenWidth * 0.03),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Expanded(
+                      flex: 2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _getDisplayTitle(),
+                            style: TextStyle(
+                              color: isDark ? Colors.white :AppColors.darkestGreen,
+                              fontWeight: FontWeight.bold,
+                              fontSize: fontSizeSubtitle,
+                            ),
                           ),
-                        ),
-                        SizedBox(height: verticalPadding),
-                        // Amount Section
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _getAmountLabel(),
-                              style: TextStyle(
-                                color: isDark ? Colors.white70 : Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: fontSizeSubtitle,
-                              ),
-                            ),
-                            SizedBox(height: verticalPadding / 2),
-                            Row(
-                              children: [
-                                Text(
-                                  '₹ ${formatter.format(_getDisplayAmount())}',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: fontSizeAmount,
-                                  ),
-                                ),
-                                SizedBox(width: horizontalPadding / 2),
-                                Lottie.asset(
-                                  'assets/animations/money.json',
-                                  width: screenWidth * 0.07,
-                                  height: screenWidth * 0.07,
-                                  repeat: true,
-                                  fit: BoxFit.cover,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: verticalPadding),
-                        // Quantity Section
-                        if (_getDisplayQuantity() != null)
+                          SizedBox(height: verticalPadding),
+                          // Amount Section
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                _getQuantityLabel(),
+                                _getAmountLabel(),
                                 style: TextStyle(
                                   color: isDark ? Colors.white70 : Colors.black,
                                   fontWeight: FontWeight.bold,
@@ -381,7 +356,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Row(
                                 children: [
                                   Text(
-                                    '${formatter.format(_getDisplayQuantity())} Kg',
+                                    '₹ ${formatter.format(_getDisplayAmount())}',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
@@ -390,7 +365,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   SizedBox(width: horizontalPadding / 2),
                                   Lottie.asset(
-                                    'assets/animations/fuelnew.json',
+                                    'assets/animations/money.json',
                                     width: screenWidth * 0.07,
                                     height: screenWidth * 0.07,
                                     repeat: true,
@@ -400,7 +375,45 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ],
                           ),
-                      ],
+                          SizedBox(height: verticalPadding),
+                          // Quantity Section
+                          if (_getDisplayQuantity() != null)
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _getQuantityLabel(),
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white70 : Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: fontSizeSubtitle,
+                                  ),
+                                ),
+                                SizedBox(height: verticalPadding / 2),
+                                Row(
+                                  children: [
+                                    Text(
+                                      '${formatter.format(_getDisplayQuantity())} Kg',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: fontSizeAmount,
+                                      ),
+                                    ),
+                                    SizedBox(width: horizontalPadding / 2),
+                                    Lottie.asset(
+                                      'assets/animations/fuelnew.json',
+                                      width: screenWidth * 0.07,
+                                      height: screenWidth * 0.07,
+                                      repeat: true,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
                     ),
                   ),
 

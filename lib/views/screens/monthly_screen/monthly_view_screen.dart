@@ -1,6 +1,10 @@
 // monthly_view_page.dart
+import 'package:areg_app/agent/common/common_appbar.dart';
+import 'package:areg_app/common/app_colors.dart';
 import 'package:areg_app/common/custom_appbar.dart';
+import 'package:areg_app/core/storage/app_assets_constant.dart';
 import 'package:areg_app/fbo_services/monthly_sale_service.dart';
+import 'package:areg_app/views/screens/widgets/k_svg.dart';
 import 'package:flutter/material.dart';
 import 'widgets/weekly_revenue_chart.dart';
 import 'widgets/week_summary_card.dart';
@@ -57,9 +61,27 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: CustomAppBar(),
+      appBar: const PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: CommonAppbar(title: "Monthly History"),
+      ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CircularProgressIndicator(
+            strokeWidth: 3,
+            valueColor: AlwaysStoppedAnimation<Color>(
+                AppColors.fboColor), // ✅ custom color
+          ),
+          KSvg(
+            svgPath: AppAssetsConstants.splashLogo,
+            height: 30,
+            width: 30,
+            boxFit: BoxFit.cover,
+          ),
+        ],
+      ),)
           : hasError
           ? Center(
         child: Text(

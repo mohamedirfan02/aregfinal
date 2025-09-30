@@ -16,14 +16,11 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>  with SingleTickerProviderStateMixin {
-
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _opacityAnimation;
   late Animation<double> _scaleAnimation;
 
- // Timer? _timer;
-  String? userId;
   @override
   void initState() {
     super.initState();
@@ -45,14 +42,13 @@ class _SplashScreenState extends State<SplashScreen>  with SingleTickerProviderS
 
     _controller.forward();
 
-    Timer(const Duration(seconds: 3), () {
-      if (!mounted) return; // ✅ prevent use after dispose
-      context.go('/intro');
+    // Wait for animation to complete, then check navigation
+    Timer(const Duration(seconds: 2), () {
+      if (!mounted) return;
+      _determineRoute();
     });
-    _checkLoginStatus();
-    _loadData();
-    _fetchUserData();
   }
+
   @override
   void setState(fn) {
     if (mounted) {
@@ -66,46 +62,22 @@ class _SplashScreenState extends State<SplashScreen>  with SingleTickerProviderS
     super.dispose();
   }
 
-  Future<void> _loadData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('userId');
-    if (!mounted) return; // Check if the widget is still mounted
-    setState(() {
-      this.userId = userId;
-    });
-  }
-  Future<bool> isUserLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('userId');
-    final token = prefs.getString('token');
-    return userId != null && token != null;
-  }
-  Future<void> _fetchUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('userId');
-    if (!mounted) return; // Check if the widget is still mounted
-    setState(() {
-      this.userId = userId;
-    });
-  }
+  Future<void> _determineRoute() async {
+    if (!mounted) return;
 
-
-
-  Future<void> _checkLoginStatus() async {
-    print('Checking login status...');
     final prefs = await SharedPreferences.getInstance();
+
     final token = prefs.getString('token');
     final role = prefs.getString('role');
     final userId = prefs.getString('userId');
-    print("🔍 Retrieved Token: $token");
-    print("🔍 Retrieved Role: $role");
-    print("🔍 Retrieved User ID: $userId");
-    await Future.delayed(const Duration(seconds: 2)); // Optional splash delay
+    final hasCompletedIntro = prefs.getBool('intro_completed') ?? false;
+    final hasSeenNotificationPrompt = prefs.getBool('notification_prompt_shown') ?? false;
+    final hasSeenLocationPrompt = prefs.getBool('location_prompt_shown') ?? false;
 
     if (!mounted) return;
 
     if (token != null && role != null && userId != null) {
-      print("✅ Login found. Navigating to respective home page...");
+      // User logged in
       if (role == 'vendor') {
         context.go('/VendorPage');
       } else if (role == 'user') {
@@ -113,41 +85,46 @@ class _SplashScreenState extends State<SplashScreen>  with SingleTickerProviderS
       } else if (role == 'agent') {
         context.go('/AgentPage');
       } else {
-        context.go('/login');
+        context.go('/start');
       }
     } else {
-      // ❌ No login found
-      print("🚫 Token or User ID is null. Redirecting to intro screen.");
-      context.go('/intro'); // Or '/login' if not first-time
+      // User not logged in - check onboarding flow
+      if (!hasCompletedIntro) {
+        context.go('/intro');
+      } else if (!hasSeenNotificationPrompt) {
+        context.go('/turnOnNotification');
+      } else if (!hasSeenLocationPrompt) {
+        context.go('/location-permission');
+      } else {
+        context.go('/start');
+      }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body:Center(
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return Opacity(
-                opacity: _opacityAnimation.value,
-                child: Transform.scale(
-                  scale: _scaleAnimation.value,
-                  child: child,
-                ),
-              );
-            },
-            child:  KSvg(
-              svgPath: AppAssetsConstants.splashLogo,
-              height: 250.h,
-              width: 250.w,
-              boxFit: BoxFit.cover,
-            ),
+      body: Center(
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Opacity(
+              opacity: _opacityAnimation.value,
+              child: Transform.scale(
+                scale: _scaleAnimation.value,
+                child: child,
+              ),
+            );
+          },
+          child: KSvg(
+            svgPath: AppAssetsConstants.splashLogo,
+            height: 250.h,
+            width: 250.w,
+            boxFit: BoxFit.cover,
           ),
         ),
+      ),
     );
   }
-
 }

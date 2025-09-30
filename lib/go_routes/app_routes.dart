@@ -1,3 +1,5 @@
+import 'package:areg_app/views/screens/suggetion_screens/location_suggestion_screen.dart';
+import 'package:areg_app/views/screens/suggetion_screens/notification_suggestion_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import '../splash_screen.dart';
@@ -36,6 +38,14 @@ final GoRouter appRouter = GoRouter(
   routes: [
     GoRoute(path: '/', pageBuilder: (context, state) => slideTransition(const SplashScreen(), state)),
     GoRoute(path: '/intro', pageBuilder: (context, state) => slideTransition(const IntroScreen(), state)),
+    GoRoute(path: '/turnOnNotification', pageBuilder: (context, state) => slideTransition(const NotificationSuggestionScreen(), state)),
+    GoRoute(
+        path: '/location-permission',
+        pageBuilder: (context, state) => slideTransition(
+            const LocationPermissionScreen(),
+            state
+        )
+    ),
     GoRoute(path: '/start', pageBuilder: (context, state) => slideTransition(StartScreen(), state)),
     GoRoute(path: '/login', pageBuilder: (context, state) => slideTransition(const LoginPage(), state)),
     GoRoute(
@@ -151,6 +161,7 @@ final GoRouter appRouter = GoRouter(
     ),
 
     GoRoute(path: '/VendorCartPage', pageBuilder: (context, state) => slideTransition(const VendorCartPage(), state)),
+
   ],
 );
 
