@@ -639,7 +639,7 @@ class _AgentCartPageState extends State<AgentCartPage> {
           _buildDetailRow("Total Amount", "₹${order["amount"] ?? "N/A"}",
               isDark: isDark),
           _buildDetailRow("Status", order["status"] ?? "N/A", isDark: isDark),
-          _buildDetailRow("Status", order["timeline"] ?? "N/A", isDark: isDark),
+       //   _buildDetailRow("Status", order["timeline"] ?? "N/A", isDark: isDark),
           _buildDetailRow("Date", date, isDark: isDark),
           _buildDetailRow("Time", time, isDark: isDark),
           _buildDetailRow("Address", order['registered_address'] ?? "N/A",

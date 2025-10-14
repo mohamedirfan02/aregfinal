@@ -247,9 +247,9 @@ class _InteractiveWheelPieChartState extends State<InteractiveWheelPieChart>
     final screenHeight = MediaQuery.of(context).size.height;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Sizes relative to screen
-    final chartSize = screenWidth * 0.6; // pie chart container
-    final centerCircleSize = chartSize * 0.4; // center circle
+    // Reduced sizes relative to screen
+    final chartSize = screenWidth * 0.45; // Reduced from 0.6
+    final centerCircleSize = chartSize * 0.35; // Reduced from 0.4
 
     return Container(
       width: chartSize,
@@ -300,14 +300,14 @@ class _InteractiveWheelPieChartState extends State<InteractiveWheelPieChart>
                 Icon(
                   _getSelectedIcon(),
                   color: _getSelectedColor(),
-                  size: centerCircleSize * 0.3, // responsive icon
+                  size: centerCircleSize * 0.28, // Slightly reduced from 0.3
                 ),
                 SizedBox(height: centerCircleSize * 0.05),
                 Text(
                   _getSelectedLabel(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: centerCircleSize * 0.12, // responsive font
+                    fontSize: centerCircleSize * 0.11, // Slightly reduced from 0.12
                     fontWeight: FontWeight.bold,
                     color: isDark ? Colors.white : Colors.black,
                   ),
@@ -394,14 +394,21 @@ class WheelPieChartPainter extends CustomPainter {
     if (data.isEmpty) return;
 
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 10;
-    final thickness = 20.0; // depth of 3D slice
+    final outerRadius = size.width / 2 - 5; // Outer edge of the ring
+    final innerRadius = outerRadius * 0.65; // Inner edge - creates thinner ring (was 0 before)
+    final thickness = 6.0; // Reduced depth of 3D slice from 10.0
     double startAngle = -math.pi / 2;
 
     final sectionAngle = (math.pi * 2) / data.length;
 
     for (int i = 0; i < data.length; i++) {
       final item = data[i];
+
+      // Adjust radius for selected item
+      final itemOuterRadius = item.category == selectedCategory
+          ? outerRadius + 8 * animationValue
+          : outerRadius;
+      final itemInnerRadius = innerRadius;
 
       // --- Draw bottom shadow layer for depth ---
       final bottomPaint = Paint()
@@ -412,22 +419,34 @@ class WheelPieChartPainter extends CustomPainter {
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-        ).createShader(Rect.fromCircle(center: center.translate(0, thickness), radius: radius))
+        ).createShader(Rect.fromCircle(
+            center: center.translate(0, thickness),
+            radius: itemOuterRadius))
         ..style = PaintingStyle.fill;
 
       final bottomPath = Path()
         ..moveTo(center.dx, center.dy + thickness)
         ..arcTo(
-          Rect.fromCircle(center: center.translate(0, thickness), radius: radius),
+          Rect.fromCircle(
+              center: center.translate(0, thickness),
+              radius: itemOuterRadius),
           startAngle,
           sectionAngle,
+          false,
+        )
+        ..arcTo(
+          Rect.fromCircle(
+              center: center.translate(0, thickness),
+              radius: itemInnerRadius),
+          startAngle + sectionAngle,
+          -sectionAngle,
           false,
         )
         ..close();
 
       canvas.drawPath(bottomPath, bottomPaint);
 
-      // --- Top slice with gradient ---
+      // --- Top slice with gradient (ring shape) ---
       final paint = Paint()
         ..shader = RadialGradient(
           colors: [
@@ -436,16 +455,22 @@ class WheelPieChartPainter extends CustomPainter {
           ],
           center: Alignment.center,
           radius: 0.8,
-        ).createShader(Rect.fromCircle(center: center, radius: radius))
+        ).createShader(Rect.fromCircle(center: center, radius: itemOuterRadius))
         ..style = PaintingStyle.fill;
 
-      // Slightly pop out if selected
-      final sliceRadius =
-      item.category == selectedCategory ? radius + 10 * animationValue : radius;
-
       final path = Path()
-        ..moveTo(center.dx, center.dy)
-        ..arcTo(Rect.fromCircle(center: center, radius: sliceRadius), startAngle, sectionAngle, false)
+        ..arcTo(
+          Rect.fromCircle(center: center, radius: itemOuterRadius),
+          startAngle,
+          sectionAngle,
+          false,
+        )
+        ..arcTo(
+          Rect.fromCircle(center: center, radius: itemInnerRadius),
+          startAngle + sectionAngle,
+          -sectionAngle,
+          false,
+        )
         ..close();
 
       canvas.drawPath(path, paint);
@@ -454,7 +479,7 @@ class WheelPieChartPainter extends CustomPainter {
       final borderPaint = Paint()
         ..color = Colors.white
         ..style = PaintingStyle.stroke
-        ..strokeWidth = item.category == selectedCategory ? 3 : 1;
+        ..strokeWidth = item.category == selectedCategory ? 2.5 : 1;
 
       canvas.drawPath(path, borderPaint);
 

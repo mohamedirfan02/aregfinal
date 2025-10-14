@@ -242,47 +242,46 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    // Relative sizing factors
-    double horizontalPadding = screenWidth * 0.04; // 4% of screen width
-    double verticalPadding = screenHeight * 0.02; // 2% of screen height
-    double fontSizeSubtitle = screenWidth * 0.045;
-    double fontSizeAmount = screenWidth * 0.05;
+    // Reduced sizing factors
+    double horizontalPadding = screenWidth * 0.03; // Reduced from 0.04
+    double verticalPadding = screenHeight * 0.015; // Reduced from 0.02
+    double fontSizeSubtitle = screenWidth * 0.035; // Reduced from 0.045
+    double fontSizeAmount = screenWidth * 0.04; // Reduced from 0.05
 
     return Column(
       children: [
 
         // Card Container
         ClipRRect(
-          borderRadius: BorderRadius.circular(screenWidth * 0.05),
+          borderRadius: BorderRadius.circular(screenWidth * 0.04), // Reduced from 0.05
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
             child: Container(
-              margin: EdgeInsets.all(horizontalPadding),
+              margin: EdgeInsets.all(horizontalPadding * 0.8), // Reduced margin
               padding: EdgeInsets.symmetric(
                 horizontal: horizontalPadding,
                 vertical: verticalPadding,
               ),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                borderRadius: BorderRadius.circular(screenWidth * 0.04),
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: isDark
                       ? [
-                          Colors.white.withOpacity(0.05),
-                          Colors.white.withOpacity(0.15),
-                        ]
+                    Colors.white.withOpacity(0.05),
+                    Colors.white.withOpacity(0.15),
+                  ]
                       : [
-                          Colors.white.withOpacity(0.15),
-                          Colors.white.withOpacity(0.3),
-                        ],
+                    Colors.white.withOpacity(0.15),
+                    Colors.white.withOpacity(0.3),
+                  ],
                 ),
                 image: DecorationImage(
                   image: AssetImage('assets/image/fbo_bg.png'),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
                     Colors.black.withOpacity(0.5),
-                    // adjust opacity here (0.0 to 1.0)
                     BlendMode.dstATop,
                   ),
                 ),
@@ -320,7 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ? Colors.white.withOpacity(0.1)
                           : Colors.white.withOpacity(0.3),
                       borderRadius:
-                      BorderRadius.circular(screenWidth * 0.03),
+                      BorderRadius.circular(screenWidth * 0.025), // Reduced from 0.03
                       border: Border.all(
                         color: Colors.white.withOpacity(0.2),
                         width: 1,
@@ -366,8 +365,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   SizedBox(width: horizontalPadding / 2),
                                   Lottie.asset(
                                     'assets/animations/money.json',
-                                    width: screenWidth * 0.07,
-                                    height: screenWidth * 0.07,
+                                    width: screenWidth * 0.055, // Reduced from 0.07
+                                    height: screenWidth * 0.055,
                                     repeat: true,
                                     fit: BoxFit.cover,
                                   ),
@@ -403,8 +402,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     SizedBox(width: horizontalPadding / 2),
                                     Lottie.asset(
                                       'assets/animations/fuelnew.json',
-                                      width: screenWidth * 0.07,
-                                      height: screenWidth * 0.07,
+                                      width: screenWidth * 0.055, // Reduced from 0.07
+                                      height: screenWidth * 0.055,
                                       repeat: true,
                                       fit: BoxFit.cover,
                                     ),
@@ -433,7 +432,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             });
                           },
                         ),
-                      //  SizedBox(height: verticalPadding),
                         // Legend
                         Container(
                           padding: EdgeInsets.all(horizontalPadding / 2),
@@ -442,7 +440,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ? Colors.white.withOpacity(0.1)
                                 : Colors.white.withOpacity(0.3),
                             borderRadius:
-                                BorderRadius.circular(screenWidth * 0.03),
+                            BorderRadius.circular(screenWidth * 0.025), // Reduced from 0.03
                             border: Border.all(
                               color: Colors.white.withOpacity(0.2),
                               width: 1,
@@ -454,7 +452,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 'Rotate to Explore',
                                 style: TextStyle(
                                   color:
-                                      isDark ? Colors.white70 : Colors.black87,
+                                  isDark ? Colors.white70 : Colors.black87,
                                   fontSize: fontSizeSubtitle * 0.6,
                                   fontWeight: FontWeight.w500,
                                 ),

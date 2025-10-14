@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId "com.thikse.enzopik"
-        minSdkVersion 23  // ✅ Ensure this is correctly set
+        minSdkVersion flutter.minSdkVersion  // ✅ Ensure this is correctly set
         targetSdkVersion 35
         versionCode 15
         versionName "1.0.2"
@@ -34,7 +34,8 @@ android {
         release {
             keyAlias 'enzo_key'          // e.g. enzo
             keyPassword 'thikse@2025'
-            storeFile file('C:/Users/Thikse/enzo.jks')
+          //  storeFile file('C:/Users/Thikse/enzo.jks')
+            storeFile file('C:/Users/moham/enzo.jks')
             storePassword 'thikse@2025'
         }
     }
