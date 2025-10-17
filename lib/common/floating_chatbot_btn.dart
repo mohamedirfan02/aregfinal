@@ -424,7 +424,7 @@ class _ChatbotPopupState extends State<ChatbotPopup> {
             Container(
               padding: const EdgeInsets.all(5),
               decoration: BoxDecoration(
-                color: AppColors.secondaryColor,
+                color: AppColors.fboColor,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),

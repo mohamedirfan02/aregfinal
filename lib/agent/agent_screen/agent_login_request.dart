@@ -88,7 +88,7 @@ class _AgentLoginRequestState extends State<AgentLoginRequest> {
             color: Colors.white,
           ),
         ),
-        backgroundColor: AppColors.secondaryColor,
+        backgroundColor: AppColors.fboColor,
       ),
       body: FutureBuilder<List<NewAgent>>(
         future: futureAgents,

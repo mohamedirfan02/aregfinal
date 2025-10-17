@@ -9,57 +9,98 @@ class HistoryScreen extends StatefulWidget {
   _HistoryScreenState createState() => _HistoryScreenState();
 }
 
-class _HistoryScreenState extends State<HistoryScreen> {
+class _HistoryScreenState extends State<HistoryScreen>
+    with SingleTickerProviderStateMixin {
   late Future<List<Order>> _ordersFuture;
   final OrderApi _orderApi = OrderApi();
   List<Order> _allOrders = [];
   List<Order> _filteredOrders = [];
   String _selectedStatus = 'All';
+  late AnimationController _animationController;
 
-  final List<String> _statusOptions = [
-    'All',
-    'Pending',
-    'Accepted',
-    'Assigned',
-    'Completed',
-    'acknowledged',
-    'Confirmed',
-    'Declined'
+  final List<Map<String, dynamic>> _statusOptions = [
+    {'label': 'All', 'icon': Icons.grid_view_rounded},
+    {'label': 'Pending', 'icon': Icons.schedule},
+    {'label': 'Accepted', 'icon': Icons.check_circle_outline},
+    {'label': 'Assigned', 'icon': Icons.person_add},
+    {'label': 'Completed', 'icon': Icons.task_alt},
+    {'label': 'acknowledged', 'icon': Icons.verified},
+    {'label': 'Confirmed', 'icon': Icons.done_all},
+    {'label': 'Declined', 'icon': Icons.cancel_outlined},
   ];
 
   @override
   void initState() {
     super.initState();
     _ordersFuture = fetchOrders();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   Color _getStatusColor(String? status, bool isDark) {
     switch (status?.toLowerCase()) {
       case 'pending':
-        return isDark ? Colors.orange.shade900 : Colors.orange.shade100;
+        return isDark ? AppColors.darkestGreen : AppColors.lightGreen;
+
       case 'accepted':
-        return isDark ? Colors.green.shade900 : Colors.green.shade100;
+        return isDark ? AppColors.secondaryColor : AppColors.primaryColor;
+
       case 'declined':
-        return isDark ? Colors.red.shade900 : Colors.red.shade100;
+        return isDark ? AppColors.softRed : Colors.redAccent;
+
       case 'acknowledged':
-        return isDark ? Colors.blue.shade900 : Colors.blue.shade100;
+        return isDark ? AppColors.darkGreen : AppColors.fboColor;
+
       case 'assigned':
-        return isDark ? Colors.pink.shade900 : Colors.pink.shade100;
+        return isDark ? AppColors.darkestGreen : AppColors.loginColor;
+
       case 'completed':
-        return isDark ? Colors.purple.shade900 : Colors.purple.shade100;
+        return isDark ? AppColors.secondaryColor : AppColors.lightGreen;
+
       case 'confirmed':
-        return isDark ? Colors.teal.shade900 : Colors.tealAccent.shade100;
+        return isDark ? AppColors.darkGreen : AppColors.primaryGreen;
+
       default:
-        return isDark ? Colors.grey.shade800 : Colors.grey.shade200;
+        return isDark ? AppColors.greyColor : AppColors.greyColor.withOpacity(0.6);
     }
   }
 
+
+  IconData _getStatusIcon(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+        return Icons.schedule;
+      case 'accepted':
+        return Icons.check_circle_outline;
+      case 'declined':
+        return Icons.cancel_outlined;
+      case 'acknowledged':
+        return Icons.verified;
+      case 'assigned':
+        return Icons.person_add;
+      case 'completed':
+        return Icons.task_alt;
+      case 'confirmed':
+        return Icons.done_all;
+      default:
+        return Icons.help_outline;
+    }
+  }
 
   Future<List<Order>> fetchOrders() async {
     try {
       List<dynamic> ordersJson = await _orderApi.fetchOrders();
       List<Order> orders =
-          ordersJson.map((json) => Order.fromJson(json)).toList();
+      ordersJson.map((json) => Order.fromJson(json)).toList();
       _allOrders = orders;
       _applyFilter();
       return orders;
@@ -76,207 +117,627 @@ class _HistoryScreenState extends State<HistoryScreen> {
       } else {
         _filteredOrders = _allOrders
             .where((order) =>
-                order.status?.toLowerCase() == _selectedStatus.toLowerCase())
+        order.status?.toLowerCase() == _selectedStatus.toLowerCase())
             .toList();
       }
     });
+    _animationController.reset();
+    _animationController.forward();
+  }
+
+  void _showOrderDetails(Order order) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: isDark ? Colors.grey[900] : Colors.white,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(25),
+              topRight: Radius.circular(25),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 50,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              // Header
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      _getStatusColor(order.status, isDark),
+                      _getStatusColor(order.status, isDark).withOpacity(0.7),
+                    ],
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        _getStatusIcon(order.status),
+                        color: Colors.white,
+                        size: 32,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Order #${order.orderId ?? 'N/A'}",
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            order.type ?? 'Unknown',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        order.status ?? 'N/A',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Content
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    if (order.oilImage != null) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.network(
+                          order.oilImage!,
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                    _buildDetailSection(
+                      'Order Information',
+                      [
+                        _buildDetailRow(Icons.shopping_cart, 'Quantity',
+                            order.quantity ?? 'N/A', textColor),
+                        _buildDetailRow(Icons.water_drop, 'Oil Quality',
+                            order.oilQuality ?? 'N/A', textColor),
+                        _buildDetailRow(Icons.attach_money, 'Amount',
+                            order.amount ?? 'N/A', textColor),
+                      ],
+                      textColor,
+                      isDark,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildDetailSection(
+                      'Customer Details',
+                      [
+                        _buildDetailRow(Icons.person, 'Name',
+                            order.userName ?? 'N/A', textColor),
+                        _buildDetailRow(Icons.phone, 'Contact',
+                            order.userContact ?? 'N/A', textColor),
+                        _buildDetailRow(Icons.location_on, 'Address',
+                            order.registeredAddress ?? 'N/A', textColor),
+                      ],
+                      textColor,
+                      isDark,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildDetailSection(
+                      'Delivery Information',
+                      [
+                        _buildDetailRow(Icons.calendar_today, 'Date',
+                            order.date ?? 'N/A', textColor),
+                        _buildDetailRow(Icons.access_time, 'Time',
+                            order.time ?? 'N/A', textColor),
+                        _buildDetailRow(Icons.timeline, 'Timeline',
+                            order.timeline ?? 'N/A', textColor),
+                        _buildDetailRow(Icons.location_pin, 'Pickup Location',
+                            order.pickupLocation ?? 'N/A', textColor),
+                        _buildDetailRow(Icons.local_shipping, 'Agent Status',
+                            order.Vendorstatus ?? 'Not Assigned', textColor),
+                      ],
+                      textColor,
+                      isDark,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailSection(String title, List<Widget> children,
+      Color textColor, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.grey[850] : Colors.grey[100],
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(
+      IconData icon, String label, String value, Color textColor) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: textColor.withOpacity(0.7)),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: textColor.withOpacity(0.7),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 14,
+                color: textColor,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.right,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white70 : Colors.black;
+    final textColor = isDark ? Colors.white : Colors.black87;
 
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).brightness == Brightness.dark
-              ? Colors.grey[900]
-              : AppColors.secondaryColor,
-          centerTitle: true,
-          elevation: 4,
-          title: Text(
-            'Order History',
-            style: TextStyle(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.white, // Keep white for consistency
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        body: Container(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Row(
-                  children: [
-                    Text(
-                      "Filter by status: ",
-                      style: TextStyle(fontSize: 16, color: textColor),
-                    ),
-                    const SizedBox(width: 8),
-                    DropdownButton<String>(
-                      value: _selectedStatus,
-                      dropdownColor: Theme.of(context).cardColor,
-                      style: TextStyle(color: textColor),
-                      items: _statusOptions
-                          .map((status) => DropdownMenuItem(
-                                value: status,
-                                child: Text(status),
-                              ))
-                          .toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          _selectedStatus = value;
-                          _applyFilter();
-                        }
-                      },
-                    ),
-                  ],
+      backgroundColor: isDark ? Colors.black : Colors.grey[50],
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 120,
+            floating: false,
+            pinned: true,
+            backgroundColor: isDark ? Colors.grey[900] : AppColors.fboColor,
+            flexibleSpace: FlexibleSpaceBar(
+              title: const Text(
+                'Order History',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
                 ),
               ),
-              Expanded(
-                child: FutureBuilder<List<Order>>(
-                  future: _ordersFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.error,
-                                color: Colors.red, size: 50),
-                            const SizedBox(height: 10),
-                            Text(
-                              "Error: ${snapshot.error}",
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                  color: Colors.red, fontSize: 16),
-                            ),
-                          ],
+              centerTitle: true,
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: isDark
+                        ? [Colors.grey[900]!, Colors.grey[800]!]
+                        : [AppColors.fboColor, AppColors.fboColor.withOpacity(0.8)],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Container(
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey[850] : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: _statusOptions.map((status) {
+                    final isSelected = _selectedStatus == status['label'];
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            _selectedStatus = status['label'];
+                            _applyFilter();
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            gradient: isSelected
+                                ? LinearGradient(
+                              colors: [
+                                _getStatusColor(status['label'], isDark),
+                                _getStatusColor(status['label'], isDark)
+                                    .withOpacity(0.7),
+                              ],
+                            )
+                                : null,
+                            color: isSelected
+                                ? null
+                                : isDark
+                                ? Colors.grey[800]
+                                : Colors.grey[200],
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: isSelected
+                                ? [
+                              BoxShadow(
+                                color: _getStatusColor(
+                                    status['label'], isDark)
+                                    .withOpacity(0.4),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ]
+                                : null,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                status['icon'],
+                                size: 20,
+                                color: isSelected
+                                    ? Colors.white
+                                    : textColor.withOpacity(0.7),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                status['label'],
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.w500,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : textColor.withOpacity(0.7),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      );
-                    } else if (_filteredOrders.isEmpty) {
-                      return Center(
-                        child: Text(
-                          "No orders found",
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ),
+          FutureBuilder<List<Order>>(
+            future: _ordersFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              } else if (snapshot.hasError) {
+                return SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.error_outline,
+                            color: Colors.red, size: 64),
+                        const SizedBox(height: 16),
+                        Text(
+                          "Oops! Something went wrong",
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: textColor,
                           ),
                         ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 12),
-                      itemCount: _filteredOrders.length,
-                      itemBuilder: (context, index) {
-                        final order = _filteredOrders[index];
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 500),
-                          curve: Curves.easeInOut,
-                          decoration: BoxDecoration(
-                            color: _getStatusColor(order.status, isDark),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: isDark ? Colors.black26 : Colors.black12,
-                                blurRadius: 6,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
+                        const SizedBox(height: 8),
+                        Text(
+                          "Please try again later",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: textColor.withOpacity(0.7),
                           ),
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.all(16),
-                            title: Text(
-                              "Order #${order.orderId ?? 'N/A'} - ${order.type ?? 'Unknown'}",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: textColor,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              } else if (_filteredOrders.isEmpty) {
+                return SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.inbox_outlined,
+                            size: 80, color: Colors.grey[400]),
+                        const SizedBox(height: 16),
+                        Text(
+                          "No orders found",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Try changing the filter",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: textColor.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              return SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                      final order = _filteredOrders[index];
+                      return FadeTransition(
+                        opacity: Tween<double>(begin: 0, end: 1).animate(
+                          CurvedAnimation(
+                            parent: _animationController,
+                            curve: Interval(
+                              (index / _filteredOrders.length) * 0.5,
+                              1.0,
+                              curve: Curves.easeOut,
+                            ),
+                          ),
+                        ),
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0.3, 0),
+                            end: Offset.zero,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: _animationController,
+                              curve: Interval(
+                                (index / _filteredOrders.length) * 0.5,
+                                1.0,
+                                curve: Curves.easeOut,
                               ),
                             ),
-                            subtitle: Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                      "Quantity: ${order.quantity ?? 'N/A'}",
-                                      style: TextStyle(color: textColor)),
-                                  Text("Status: ${order.status ?? 'N/A'}",
-                                      style: TextStyle(color: textColor)),
-                                  Text(
-                                      "Agent Status: ${order.Vendorstatus ?? 'Not Assigned'}",
-                                      style: TextStyle(color: textColor)),
-                                  Text("User: ${order.userName ?? 'N/A'}",
-                                      style: TextStyle(color: textColor)),
-                                  Text(
-                                      "Contact: ${order.userContact ?? 'N/A'}",
-                                      style: TextStyle(color: textColor)),
-                                  Text(
-                                      "Address: ${order.registeredAddress ?? 'N/A'}",
-                                      style: TextStyle(color: textColor)),
-                                  Text("Date: ${order.date ?? 'N/A'}",
-                                      style: TextStyle(color: textColor)),
-                                  Text("Time: ${order.time ?? 'N/A'}",
-                                      style: TextStyle(color: textColor)),
-                                  // Text(
-                                  //     "Proposed Price: ${order.proposedUnitPrice ?? 'N/A'}",
-                                  //     style: TextStyle(color: textColor)),
-                                  // Text(
-                                  //     "Counter Price: ${order.counterUnitPrice ?? 'N/A'}",
-                                  //     style: TextStyle(color: textColor)),
-                                  Text("Amount: ${order.amount ?? 'N/A'}",
-                                      style: TextStyle(color: textColor)),
-                                  Text(
-                                      "Oil Quality: ${order.oilQuality ?? 'N/A'}",
-                                      style: TextStyle(color: textColor)),
-                                  Text(
-                                      "Timeline: ${order.timeline ?? 'N/A'}",
-                                      style: TextStyle(color: textColor)),
-                                  Text(
-                                      "Pickup Location: ${order.pickupLocation ?? 'N/A'}",
-                                      style: TextStyle(color: textColor)),
-                                  if (order.oilImage != null)
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8.0),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Image.network(
-                                          order.oilImage!,
-                                          height: 120,
-                                          width: double.infinity,
-                                          fit: BoxFit.cover,
+                          ),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: isDark ? Colors.grey[850] : Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: () => _showOrderDetails(order),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              _getStatusColor(
+                                                  order.status, isDark),
+                                              _getStatusColor(
+                                                  order.status, isDark)
+                                                  .withOpacity(0.7),
+                                            ],
+                                          ),
+                                          borderRadius:
+                                          BorderRadius.circular(12),
+                                        ),
+                                        child: Icon(
+                                          _getStatusIcon(order.status),
+                                          color: Colors.white,
+                                          size: 28,
                                         ),
                                       ),
-                                    ),
-                                ],
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "Order #${order.orderId ?? 'N/A'}",
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color: textColor,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              "${order.type ?? 'Unknown'} • ${order.quantity ?? 'N/A'}",
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color:
+                                                textColor.withOpacity(0.7),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Row(
+                                              children: [
+                                                Icon(Icons.person,
+                                                    size: 14,
+                                                    color: textColor
+                                                        .withOpacity(0.5)),
+                                                const SizedBox(width: 4),
+                                                Expanded(
+                                                  child: Text(
+                                                    order.userName ?? 'N/A',
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: textColor
+                                                          .withOpacity(0.6),
+                                                    ),
+                                                    overflow:
+                                                    TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment.end,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: _getStatusColor(
+                                                  order.status, isDark)
+                                                  .withOpacity(0.2),
+                                              borderRadius:
+                                              BorderRadius.circular(20),
+                                            ),
+                                            child: Text(
+                                              order.status ?? 'N/A',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: _getStatusColor(
+                                                    order.status, isDark),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Icon(
+                                            Icons.chevron_right,
+                                            color: textColor.withOpacity(0.3),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
-                            trailing: order.status?.toLowerCase() == "declined"
-                                ? const Icon(Icons.cancel, color: Colors.red)
-                                : const Icon(Icons.check_circle,
-                                    color: Colors.green),
                           ),
-                        );
-                      },
-                    );
-                  },
+                        ),
+                      );
+                    },
+                    childCount: _filteredOrders.length,
+                  ),
                 ),
-              ),
-            ],
+              );
+            },
           ),
-        ));
+        ],
+      ),
+    );
   }
 }
 

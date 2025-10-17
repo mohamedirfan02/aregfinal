@@ -186,10 +186,14 @@ class _AgentNotificationPageState extends State<AgentNotificationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.secondaryColor,
+        backgroundColor: AppColors.fboColor,
         elevation: 0,
         leading: IconButton(
-          icon: Image.asset("assets/icon/back.png", width: 24, height: 24),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+            size: 22,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(

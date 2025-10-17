@@ -42,7 +42,7 @@ class _AgentAppBarState extends State<AgentAppBar> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     // final textColor = isDarkMode ? Colors.white : Colors.black;
     // final iconColor = isDarkMode ? Colors.white : Colors.black;
-    final backgroundColor = isDarkMode ? Colors.grey[900] : AppColors.secondaryColor;
+    final backgroundColor = isDarkMode ? Colors.grey[900] : AppColors.fboColor;
 
     return AppBar(
       backgroundColor: backgroundColor,

@@ -14,7 +14,7 @@ class FboRejectedList extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Theme.of(context).brightness == Brightness.dark
             ? Colors.grey[900]
-            : AppColors.secondaryColor,
+            : AppColors.fboColor,
         centerTitle: true,
         elevation: 4,
         title: Text(

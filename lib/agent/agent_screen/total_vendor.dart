@@ -143,7 +143,7 @@ class _VendorListState extends State<VendorList> {
     return Scaffold(
       backgroundColor: isDark ? Colors.black : const Color(0xFFF2F4F8),
       appBar: AppBar(
-        backgroundColor: isDark ? Colors.grey[900] : AppColors.secondaryColor,
+        backgroundColor: isDark ? Colors.grey[900] : AppColors.fboColor,
         centerTitle: true,
         elevation: 4,
         title: Text(

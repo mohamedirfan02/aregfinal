@@ -306,13 +306,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           : ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         children: [
-          const SizedBox(height: 30),
+
           Center(
             child: Column(
               children: [
 
-
-                const SizedBox(height: 20),
 
                 // ✅ Name - Centered without label
                 Container(
@@ -358,13 +356,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             radius: 50,
                             backgroundImage: details['restaurant_url'] != null
                                 ? NetworkImage(details['restaurant_url'])
-                                : const AssetImage('assets/image/profile.png') as ImageProvider,
+                                : const AssetImage('assets/image/profile.jpg') as ImageProvider,
                             onBackgroundImageError: (exception, stackTrace) {
                               print("Image Load Error: $exception");
                             },
                           ),
                         ),
                       ),
+                      SizedBox(height: 16.h),
                       Text(
                         role == 'user'
                             ? (details['restaurant_name'] ?? 'Restaurant Name')

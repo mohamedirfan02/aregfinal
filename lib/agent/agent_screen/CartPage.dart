@@ -316,22 +316,20 @@ class _AgentCartPageState extends State<AgentCartPage> {
         child: Scaffold(
           backgroundColor: isDark ? Colors.black : Colors.white,
           appBar: AppBar(
-            backgroundColor: isDark ? Colors.grey[900] : AppColors.secondaryColor,
+            backgroundColor: isDark ? Colors.grey[900] : AppColors.fboColor,
             elevation: 0,
             leading: IconButton(
-              icon: Image.asset("assets/icon/back.png", width: 24, height: 24),
-              onPressed: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go('/AgentPage');
-                }
-              },
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 22,
+              ),
+              onPressed: () => Navigator.pop(context),
             ),
-            title: Text(
+            title: const Text(
               "Collection Details",
               style: TextStyle(
-                color: isDark ? Colors.white : Colors.white,
+                color: Colors.white,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -362,12 +360,12 @@ class _AgentCartPageState extends State<AgentCartPage> {
                     ),
                   ),
                   // 📌 Tabs
-                  TabBar(
+                  const TabBar(
                     labelColor: Colors.white,
-                    unselectedLabelColor: isDark ? Colors.grey[400] : Colors.white38,
-                    indicatorColor: Colors.white54,
-                    labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                    tabs: const [
+                    unselectedLabelColor: Colors.white70,
+                    indicatorColor: Colors.white,
+                    labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                    tabs: [
                       Tab(text: "Pending"),
                       Tab(text: "Completed"),
                       Tab(text: "Self Collection"),
@@ -377,6 +375,7 @@ class _AgentCartPageState extends State<AgentCartPage> {
               ),
             ),
           ),
+
           body: isLoading
               ? _buildShimmerList()
               : TabBarView(
@@ -442,7 +441,7 @@ class _AgentCartPageState extends State<AgentCartPage> {
               label: const Text("Nearest Pickup",
                   style: TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF006D04),
+                backgroundColor: AppColors.primaryColor,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
@@ -864,7 +863,7 @@ class _AgentCartPageState extends State<AgentCartPage> {
               label:
                   const Text("Capture", style: TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF006D04),
+                backgroundColor: AppColors.primaryColor,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
               ),
@@ -893,7 +892,7 @@ class _AgentCartPageState extends State<AgentCartPage> {
                   setState(() => isCompleting = false); // ✅ Done
                 },
           style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.secondaryColor),
+              backgroundColor: AppColors.fboColor),
           child: isCompleting
               ? const SizedBox(
                   width: 18,

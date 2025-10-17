@@ -179,20 +179,20 @@ class _NotificationSuggestionScreenState
               const SizedBox(height: 16),
 
               // Skip button
-              TextButton(
-                onPressed: _isLoading
-                    ? null
-                    : () {
-                  Navigator.of(context).pop();
-                },
-                child: Text(
-                  'Maybe Later',
-                  style: TextStyle(
-                    color: theme.textTheme.bodyLarge?.color?.withOpacity(0.6),
-                    fontSize: 14,
-                  ),
-                ),
-              ),
+              // TextButton(
+              //   onPressed: _isLoading
+              //       ? null
+              //       : () {
+              //     Navigator.of(context).pop();
+              //   },
+              //   child: Text(
+              //     'Maybe Later',
+              //     style: TextStyle(
+              //       color: theme.textTheme.bodyLarge?.color?.withOpacity(0.6),
+              //       fontSize: 14,
+              //     ),
+              //   ),
+              // ),
 
               const SizedBox(height: 40),
             ],

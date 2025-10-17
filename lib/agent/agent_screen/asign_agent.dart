@@ -40,7 +40,7 @@ class _AssignAgentState extends State<AssignAgent> with SingleTickerProviderStat
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: AppColors.secondaryColor,
+          backgroundColor: AppColors.fboColor,
           elevation: 0,
           title: Text(
             "Assigned Agent",
