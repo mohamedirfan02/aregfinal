@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:areg_app/common/app_colors.dart';
+import 'package:areg_app/core/storage/app_assets_constant.dart';
+import 'package:areg_app/views/screens/widgets/k_svg.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -29,12 +31,13 @@ class _VendorCartPageState extends State<VendorCartPage>
   Map<int, String?> selectedOilQuality = {};
   Map<int, String?> selectedRemarks = {};
   Map<int, bool> isPaymentDone = {};
-  Map<int, File?> capturedImages = {}; // Declare globally to store images per order
+  Map<int, File?> capturedImages =
+      {}; // Declare globally to store images per order
 
   String searchQuery = "";
 
-
-  late TabController _tabController; // ✅ Tab controller for Pending and Approved tabs
+  late TabController
+      _tabController; // ✅ Tab controller for Pending and Approved tabs
 
   @override
   void initState() {
@@ -234,7 +237,6 @@ class _VendorCartPageState extends State<VendorCartPage>
 
   /// ✅ Submit Order (Update Vendor Status via API)
   Future<void> _submitOrder(int orderId) async {
-
     if (selectedOilQuality[orderId] == null) {
       AwesomeDialog(
         context: context,
@@ -272,7 +274,8 @@ class _VendorCartPageState extends State<VendorCartPage>
 
       final url = Uri.parse(ApiConfig.updateOilSale(orderId));
       final imageFile = capturedImages[orderId];
-      debugPrint("🟡 Is this the compressed image? ${imageFile?.path.contains('compressed')}");
+      debugPrint(
+          "🟡 Is this the compressed image? ${imageFile?.path.contains('compressed')}");
       final oilQuality = selectedOilQuality[orderId];
       final remarks = selectedRemarks[orderId] ?? "";
 
@@ -295,7 +298,8 @@ class _VendorCartPageState extends State<VendorCartPage>
 
       if (imageFile != null) {
         debugPrint("⛔ File exists: ${File(imageFile.path).existsSync()}");
-        debugPrint("⛔ File length: ${await File(imageFile.path).length()} bytes");
+        debugPrint(
+            "⛔ File length: ${await File(imageFile.path).length()} bytes");
 
         request.files.add(
           await http.MultipartFile.fromPath('oil_image', imageFile.path),
@@ -318,7 +322,8 @@ class _VendorCartPageState extends State<VendorCartPage>
           desc: "Order Updated Successfully!",
           btnOkOnPress: () {
             setState(() {
-              approvedOrders.removeWhere((order) => order["order_id"] == orderId);
+              approvedOrders
+                  .removeWhere((order) => order["order_id"] == orderId);
             });
           },
         ).show();
@@ -349,7 +354,11 @@ class _VendorCartPageState extends State<VendorCartPage>
           elevation: 0,
           title: const Text(
             "Order Assigned",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color:  Colors.white,),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
         ),
         body: Column(
@@ -373,7 +382,8 @@ class _VendorCartPageState extends State<VendorCartPage>
               child: TextField(
                 onChanged: (value) {
                   setState(() {
-                    searchQuery = value.toLowerCase(); // store lowercase for easy search
+                    searchQuery =
+                        value.toLowerCase(); // store lowercase for easy search
                   });
                 },
                 decoration: InputDecoration(
@@ -403,13 +413,12 @@ class _VendorCartPageState extends State<VendorCartPage>
     );
   }
 
-
   /// ✅ Build Order List (for Pending and Approved tabs)
   Widget _buildOrderList(
-      List<dynamic> orders, {
-        required bool isPending,
-        // bool isCompleted = false
-      }) {
+    List<dynamic> orders, {
+    required bool isPending,
+    // bool isCompleted = false
+  }) {
     // 🔎 Apply search filter
     final filteredOrders = orders.where((order) {
       final orderId = order['order_id'].toString().toLowerCase();
@@ -421,26 +430,35 @@ class _VendorCartPageState extends State<VendorCartPage>
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : filteredOrders.isEmpty
           ? const Center(
-        child: Text(
-          "No matching orders found",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-      )
-          : ListView.builder(
-        itemCount: filteredOrders.length,
-        itemBuilder: (context, index) {
-          return _buildMessageCard(
-            filteredOrders[index],
-            isPending: isPending,
-          );
-        },
-      ),
+              child: const Column(
+                children: [
+                  CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.fboColor), // ✅ custom color
+                  ),
+                ],
+              ),
+            )
+          : filteredOrders.isEmpty
+              ? const Center(
+                  child: Text(
+                    "No matching orders found",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: filteredOrders.length,
+                  itemBuilder: (context, index) {
+                    return _buildMessageCard(
+                      filteredOrders[index],
+                      isPending: isPending,
+                    );
+                  },
+                ),
     );
   }
-
 
   void _showDeclineDialog(int orderId) {
     TextEditingController reasonController = TextEditingController();
@@ -491,10 +509,10 @@ class _VendorCartPageState extends State<VendorCartPage>
 
   /// ✅ Message Card UI (for each order)
   Widget _buildMessageCard(
-      Map<String, dynamic> order, {
-        required bool isPending,
-        // bool isCompleted = false,
-      }) {
+    Map<String, dynamic> order, {
+    required bool isPending,
+    // bool isCompleted = false,
+  }) {
     final int orderId = order["order_id"];
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -531,26 +549,27 @@ class _VendorCartPageState extends State<VendorCartPage>
             ),
           ),
           const SizedBox(height: 12),
-          Divider(thickness: 1.2, color: isDark ? Colors.white24 : Colors.black26),
+          Divider(
+              thickness: 1.2, color: isDark ? Colors.white24 : Colors.black26),
           const SizedBox(height: 12),
           _buildDetailColumn([
             _buildDetailRow("Restaurant Name", "${order["restaurant_name"]}"),
             _buildDetailRow("Oil Type", order["type"]),
             _buildDetailRow("Quantity", "${order["quantity"]} KG"),
             _buildDetailRow("Customer", order["user_name"]),
-            _buildDetailRow("Phone", order["user_contact"], isPhoneNumber: true),
+            _buildDetailRow("Phone", order["user_contact"],
+                isPhoneNumber: true),
             _buildDetailRow("Address", order["registered_address"]),
             _buildDetailRow("Date", order["date"]),
             _buildDetailRow("Time", order["time"]),
-            _buildDetailRow("Pickup Location", order["pickup_location"], isAddress: true),
+            _buildDetailRow("Pickup Location", order["pickup_location"],
+                isAddress: true),
             _buildDetailRow("Pickup Date", order["timeline"]),
             _buildDetailRow("Per Kg Price", order["agreed_price"]),
             _buildDetailRow("Total Price", order["amount"]),
           ]),
           const SizedBox(height: 16),
-
-          if (isPending) _buildActionButtons(orderId,order),
-
+          if (isPending) _buildActionButtons(orderId, order),
           if (!isPending) ...[
             Text("Oil Quality",
                 style: TextStyle(
@@ -561,23 +580,30 @@ class _VendorCartPageState extends State<VendorCartPage>
             const SizedBox(height: 8),
             ...["Excellent", "Good", "Poor"].map((quality) {
               return RadioListTile<String>(
-                title: Text(quality, style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+                title: Text(quality,
+                    style:
+                        TextStyle(color: isDark ? Colors.white : Colors.black)),
                 value: quality,
                 groupValue: selectedOilQuality[orderId],
-                onChanged: (value) => setState(() => selectedOilQuality[orderId] = value),
+                onChanged: (value) =>
+                    setState(() => selectedOilQuality[orderId] = value),
                 contentPadding: EdgeInsets.zero,
                 visualDensity: VisualDensity.compact,
               );
             }).toList(),
             const SizedBox(height: 16),
             TextField(
-              onChanged: (value) => setState(() => selectedRemarks[orderId] = value),
+              onChanged: (value) =>
+                  setState(() => selectedRemarks[orderId] = value),
               style: TextStyle(color: isDark ? Colors.white : Colors.black),
               decoration: InputDecoration(
                 labelText: "Remarks (Optional)",
-                labelStyle: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                labelStyle:
+                    TextStyle(color: isDark ? Colors.white70 : Colors.black87),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 filled: true,
                 fillColor: isDark ? Colors.grey[800] : Colors.white,
               ),
@@ -587,9 +613,12 @@ class _VendorCartPageState extends State<VendorCartPage>
               children: [
                 Checkbox(
                   value: isPaymentDone[orderId] ?? false,
-                  onChanged: (value) => setState(() => isPaymentDone[orderId] = value ?? false),
+                  onChanged: (value) =>
+                      setState(() => isPaymentDone[orderId] = value ?? false),
                 ),
-                Text("Payment Done", style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+                Text("Payment Done",
+                    style:
+                        TextStyle(color: isDark ? Colors.white : Colors.black)),
               ],
             ),
             const SizedBox(height: 14),
@@ -600,10 +629,14 @@ class _VendorCartPageState extends State<VendorCartPage>
                 onPressed: () => _submitOrder(orderId),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryColor,
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text("Submit", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                child: const Text("Submit",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.white)),
               ),
             ),
           ],
@@ -612,19 +645,17 @@ class _VendorCartPageState extends State<VendorCartPage>
     );
   }
 
-
   Widget _buildDetailColumn(List<Widget> children) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: children
           .map((widget) => Padding(
-        padding: const EdgeInsets.only(bottom: 8.0),
-        child: widget,
-      ))
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: widget,
+              ))
           .toList(),
     );
   }
-
 
   Widget _buildActionButtons(int orderId, Map<String, dynamic> order) {
     final pickupDate = order["timeline"]; // 🟡 Adjust if nested
@@ -636,66 +667,77 @@ class _VendorCartPageState extends State<VendorCartPage>
             onPressed: isAccepting[orderId] == true
                 ? null
                 : () async {
-              // ✅ Show confirmation dialog before accepting
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text("Confirm Accept"),
-                  content: Text(
-                    "Are you sure you want to accept this order?\n\nPickup Date: ${pickupDate ?? "N/A"}",
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text("Cancel"),
-                    ),
-                    ElevatedButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: const Text("Accept"),
-                    ),
-                  ],
-                ),
-              );
+                    // ✅ Show confirmation dialog before accepting
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text("Confirm Accept"),
+                        content: Text(
+                          "Are you sure you want to accept this order?\n\nPickup Date: ${pickupDate ?? "N/A"}",
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text("Cancel"),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text("Accept"),
+                          ),
+                        ],
+                      ),
+                    );
 
-              if (confirmed != true) return; // Cancelled
+                    if (confirmed != true) return; // Cancelled
 
-              setState(() {
-                isAccepting[orderId] = true;
-              });
+                    setState(() {
+                      isAccepting[orderId] = true;
+                    });
 
-              await _acceptOrder(orderId);
+                    await _acceptOrder(orderId);
 
-              setState(() {
-                isAccepting[orderId] = false;
-              });
-            },
+                    setState(() {
+                      isAccepting[orderId] = false;
+                    });
+                  },
             icon: isAccepting[orderId] == true
                 ? const SizedBox(
-              height: 18,
-              width: 18,
-              child: CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2,
-              ),
-            )
+                    height: 18,
+                    width: 18,
+                    child: const Column(
+                      children: [
+                        CircularProgressIndicator(
+                          strokeWidth: 3,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.fboColor), // ✅ custom color
+                        ),
+                        KSvg(
+                          svgPath: AppAssetsConstants.splashLogo,
+                          height: 30,
+                          width: 30,
+                          boxFit: BoxFit.cover,
+                        ),
+                      ],
+                    ),
+                  )
                 : const Icon(Icons.check_circle_outline, color: Colors.white),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green[600],
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             label: const Text("Accept", style: TextStyle(color: Colors.white)),
           ),
         ),
-
         const SizedBox(width: 12),
-
         Expanded(
           child: ElevatedButton.icon(
             onPressed: () => _showDeclineDialog(orderId),
             icon: const Icon(Icons.cancel_outlined, color: Colors.white),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red[600],
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             label: const Text("Decline", style: TextStyle(color: Colors.white)),
           ),
@@ -704,17 +746,19 @@ class _VendorCartPageState extends State<VendorCartPage>
     );
   }
 
-
   Widget _buildCaptureSection(int orderId) {
     return Row(
       children: [
         ElevatedButton.icon(
           onPressed: () => _captureImage(orderId),
-          icon: const Icon(Icons.camera_alt_outlined,color: Colors.white),
-          label: const Text("Capture",style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+          icon: const Icon(Icons.camera_alt_outlined, color: Colors.white),
+          label: const Text("Capture",
+              style:
+                  TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryColor,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         ),
         const SizedBox(width: 10),
@@ -732,7 +776,6 @@ class _VendorCartPageState extends State<VendorCartPage>
     );
   }
 
-
   /// ✅ Image Picker for camera
   Future<void> _captureImage(int orderId) async {
     final ImagePicker picker = ImagePicker();
@@ -741,11 +784,13 @@ class _VendorCartPageState extends State<VendorCartPage>
     if (image != null) {
       final File originalFile = File(image.path);
 
-      debugPrint("📸 Original image size: ${(await originalFile.length()) / (1024 * 1024)} MB");
+      debugPrint(
+          "📸 Original image size: ${(await originalFile.length()) / (1024 * 1024)} MB");
 
       final File compressedFile = await _compressImage(originalFile);
 
-      debugPrint("📉 Compressed image size: ${(await compressedFile.length()) / (1024 * 1024)} MB");
+      debugPrint(
+          "📉 Compressed image size: ${(await compressedFile.length()) / (1024 * 1024)} MB");
       debugPrint("📂 Compressed path: ${compressedFile.path}");
 
       // ✅ Assign compressed image to the map
@@ -757,8 +802,6 @@ class _VendorCartPageState extends State<VendorCartPage>
     }
   }
 
-
-
   Future<File> _compressImage(File file) async {
     final imageBytes = await file.readAsBytes();
     final decodedImage = img.decodeImage(imageBytes);
@@ -767,7 +810,8 @@ class _VendorCartPageState extends State<VendorCartPage>
       throw Exception("Image decoding failed.");
     }
 
-    final resized = img.copyResize(decodedImage, width: 800); // Resize for compression
+    final resized =
+        img.copyResize(decodedImage, width: 800); // Resize for compression
 
     int quality = 70;
     List<int> compressedBytes = img.encodeJpg(resized, quality: quality);
@@ -778,20 +822,19 @@ class _VendorCartPageState extends State<VendorCartPage>
     }
 
     final dir = await getTemporaryDirectory();
-    final newPath = "${dir.path}/compressed_${DateTime.now().millisecondsSinceEpoch}.jpg";
+    final newPath =
+        "${dir.path}/compressed_${DateTime.now().millisecondsSinceEpoch}.jpg";
 
     final compressedFile = File(newPath)..writeAsBytesSync(compressedBytes);
     return compressedFile;
   }
 
-
-
   Widget _buildDetailRow(
-      String title,
-      String? value, {
-        bool isPhoneNumber = false,
-        bool isAddress = false,
-      }) {
+    String title,
+    String? value, {
+    bool isPhoneNumber = false,
+    bool isAddress = false,
+  }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
@@ -811,26 +854,29 @@ class _VendorCartPageState extends State<VendorCartPage>
               behavior: HitTestBehavior.opaque,
               onTap: isAddress
                   ? () async {
-                final String query = Uri.encodeComponent(value!);
-                Uri mapUri;
+                      final String query = Uri.encodeComponent(value!);
+                      Uri mapUri;
 
-                if (Platform.isAndroid) {
-                  mapUri = Uri.parse("geo:0,0?q=$query");
-                } else if (Platform.isIOS) {
-                  mapUri = Uri.parse("comgooglemaps://?q=$query");
-                  if (!await canLaunchUrl(mapUri)) {
-                    mapUri = Uri.parse("https://www.google.com/maps/search/?q=$query");
-                  }
-                } else {
-                  mapUri = Uri.parse("https://www.google.com/maps/search/?q=$query");
-                }
+                      if (Platform.isAndroid) {
+                        mapUri = Uri.parse("geo:0,0?q=$query");
+                      } else if (Platform.isIOS) {
+                        mapUri = Uri.parse("comgooglemaps://?q=$query");
+                        if (!await canLaunchUrl(mapUri)) {
+                          mapUri = Uri.parse(
+                              "https://www.google.com/maps/search/?q=$query");
+                        }
+                      } else {
+                        mapUri = Uri.parse(
+                            "https://www.google.com/maps/search/?q=$query");
+                      }
 
-                if (await canLaunchUrl(mapUri)) {
-                  await launchUrl(mapUri, mode: LaunchMode.externalApplication);
-                } else {
-                  debugPrint("❌ Unable to launch Google Maps.");
-                }
-              }
+                      if (await canLaunchUrl(mapUri)) {
+                        await launchUrl(mapUri,
+                            mode: LaunchMode.externalApplication);
+                      } else {
+                        debugPrint("❌ Unable to launch Google Maps.");
+                      }
+                    }
                   : null,
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 2),
@@ -842,7 +888,9 @@ class _VendorCartPageState extends State<VendorCartPage>
                     color: isAddress
                         ? (isDark ? Colors.lightBlue[200] : Colors.blue)
                         : (isDark ? Colors.white : Colors.black),
-                    decoration: isAddress ? TextDecoration.underline : TextDecoration.none,
+                    decoration: isAddress
+                        ? TextDecoration.underline
+                        : TextDecoration.none,
                   ),
                 ),
               ),
@@ -863,11 +911,14 @@ class _VendorCartPageState extends State<VendorCartPage>
                   phoneNumber = "91$phoneNumber";
                 }
 
-                final Uri whatsappUri = Uri.parse("whatsapp://send?phone=$phoneNumber");
+                final Uri whatsappUri =
+                    Uri.parse("whatsapp://send?phone=$phoneNumber");
                 if (await canLaunchUrl(whatsappUri)) {
-                  await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+                  await launchUrl(whatsappUri,
+                      mode: LaunchMode.externalApplication);
                 } else {
-                  debugPrint("❌ WhatsApp is not installed or cannot be launched.");
+                  debugPrint(
+                      "❌ WhatsApp is not installed or cannot be launched.");
                 }
               },
             ),
@@ -875,5 +926,4 @@ class _VendorCartPageState extends State<VendorCartPage>
       ),
     );
   }
-
 }

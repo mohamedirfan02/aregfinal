@@ -1,4 +1,6 @@
 import 'package:areg_app/common/app_colors.dart';
+import 'package:areg_app/core/storage/app_assets_constant.dart';
+import 'package:areg_app/views/screens/widgets/k_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../agent/common/common_appbar.dart';
@@ -111,7 +113,23 @@ class _VendorAcknowledgeState extends State<VendorAcknowledge> {
         title: 'Acknowledge Orders',
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                  AppColors.fboColor), // ✅ custom color
+            ),
+            KSvg(
+              svgPath: AppAssetsConstants.splashLogo,
+              height: 30,
+              width: 30,
+              boxFit: BoxFit.cover,
+            ),
+          ],
+        ),)
           : hasError
               ? const Center(child: Text("Failed to load completed orders"))
               : ListView.builder(

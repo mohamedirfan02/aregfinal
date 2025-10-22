@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:areg_app/common/app_colors.dart';
+import 'package:areg_app/core/storage/app_assets_constant.dart';
+import 'package:areg_app/views/screens/widgets/k_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -85,7 +87,23 @@ class _CompletedOrdersScreenState extends State<CompletedOrdersScreen> {
         ),
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                  AppColors.fboColor), // ✅ custom color
+            ),
+            KSvg(
+              svgPath: AppAssetsConstants.splashLogo,
+              height: 30,
+              width: 30,
+              boxFit: BoxFit.cover,
+            ),
+          ],
+        ),)
           : completedOrders.isEmpty
           ? Center(
         child: Text(

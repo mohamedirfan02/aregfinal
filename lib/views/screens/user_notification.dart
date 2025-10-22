@@ -191,7 +191,8 @@ class _FboNotificationScreenState extends State<FboNotificationScreen> {
       ),
       backgroundColor: theme.scaffoldBackgroundColor,
       body: isLoading
-          ? const Center(child: Stack(
+          ? const Center(
+        child: Stack(
         alignment: Alignment.center,
         children: [
           CircularProgressIndicator(
