@@ -16,6 +16,7 @@ class AgentLoginRequest extends StatefulWidget {
 
 class _AgentLoginRequestState extends State<AgentLoginRequest> {
   late Future<List<NewAgent>> futureAgents;
+  Map<int, String?> loadingStates = {}; // Track loading state per agent
 
   @override
   void initState() {
@@ -30,6 +31,11 @@ class _AgentLoginRequestState extends State<AgentLoginRequest> {
     final url = ApiConfig.vendorApproval(id);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
+
+    // Set loading state
+    setState(() {
+      loadingStates[id] = status;
+    });
 
     print("📤 Sending Approval Request...");
     print("📍 URL: $url");
@@ -61,6 +67,7 @@ class _AgentLoginRequestState extends State<AgentLoginRequest> {
         // Reload pending agents
         setState(() {
           futureAgents = fetchPendingAgents();
+          loadingStates.remove(id);
         });
       } else {
         print("❌ Failed to $status agent: ${response.body}");
@@ -68,6 +75,9 @@ class _AgentLoginRequestState extends State<AgentLoginRequest> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Failed to $status agent")),
         );
+        setState(() {
+          loadingStates.remove(id);
+        });
       }
     } catch (e) {
       print("❌ Exception during $status: $e");
@@ -75,6 +85,9 @@ class _AgentLoginRequestState extends State<AgentLoginRequest> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
       );
+      setState(() {
+        loadingStates.remove(id);
+      });
     }
   }
 
@@ -106,6 +119,9 @@ class _AgentLoginRequestState extends State<AgentLoginRequest> {
             itemCount: agents.length,
             itemBuilder: (context, index) {
               final agent = agents[index];
+              final isLoading = loadingStates[agent.id] != null;
+              final loadingStatus = loadingStates[agent.id];
+
               return Card(
                 margin: const EdgeInsets.all(8),
                 shape: RoundedRectangleBorder(
@@ -119,7 +135,12 @@ class _AgentLoginRequestState extends State<AgentLoginRequest> {
                       Row(
                         children: [
                           CircleAvatar(
-                            backgroundImage: NetworkImage(agent.profile),
+                            backgroundImage: agent.profile != null
+                                ? NetworkImage(agent.profile!)
+                                : null,
+                            child: agent.profile == null
+                                ? const Icon(Icons.person, size: 30)
+                                : null,
                             radius: 30,
                           ),
                           const SizedBox(width: 16),
@@ -127,55 +148,78 @@ class _AgentLoginRequestState extends State<AgentLoginRequest> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(agent.fullName,
+                                Text(agent.fullName ?? 'N/A',
                                     style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold)),
-                                Text(agent.email,
+                                Text(agent.email ?? 'N/A',
                                     style: const TextStyle(color: Colors.grey)),
-                                Text("📞 ${agent.contactNumber}"),
+                                Text("📞 ${agent.contactNumber ?? 'N/A'}"),
                               ],
                             ),
                           ),
                         ],
                       ),
                       const Divider(height: 20),
-                      Text("Address: ${agent.address}"),
-                      Text("License Number: ${agent.licenseNumber}"),
-                      Text("DOB: ${agent.dob} | Age: ${agent.age}"),
-                      Text("Gender: ${agent.gender}"),
-                      Text("Pincode: ${agent.pincode}"),
-                      //    Text("🗺 Country Code: ${agent.countryCode}"),
+                      Text("Address: ${agent.address ?? 'N/A'}"),
+                      Text("License Number: ${agent.licenseNumber ?? 'N/A'}"),
+                      Text("DOB: ${agent.dob ?? 'N/A'} | Age: ${agent.age ?? 'N/A'}"),
+                      Text("Gender: ${agent.gender ?? 'N/A'}"),
+                      Text("Pincode: ${agent.pincode ?? 'N/A'}"),
                       const SizedBox(height: 10),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Chip(
-                            label: Text(agent.status,
+                            label: Text(agent.status ?? 'unknown',
                                 style: const TextStyle(color: Colors.white)),
-                            backgroundColor: agent.status == 'pending'
+                            backgroundColor: (agent.status == 'pending' || agent.status == null)
                                 ? Colors.orange
                                 : Colors.green,
                           ),
                           Row(
                             children: [
                               ElevatedButton(
-                                onPressed: () => approveOrRejectAgent(
-                                    id: agent.id, status: "approved"),
+                                onPressed: isLoading
+                                    ? null
+                                    : () => approveOrRejectAgent(
+                                    id: agent.id ?? 0, status: "approved"),
                                 style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.green),
-                                child: const Text(
+                                child: isLoading && loadingStatus == "approved"
+                                    ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
+                                    : const Text(
                                   "Approve",
                                   style: TextStyle(color: Colors.white),
                                 ),
                               ),
                               const SizedBox(width: 10),
                               ElevatedButton(
-                                onPressed: () => approveOrRejectAgent(
-                                    id: agent.id, status: "rejected"),
+                                onPressed: isLoading
+                                    ? null
+                                    : () => approveOrRejectAgent(
+                                    id: agent.id ?? 0, status: "rejected"),
                                 style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.red),
-                                child: const Text("Reject",
+                                child: isLoading && loadingStatus == "rejected"
+                                    ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
+                                    : const Text("Reject",
                                     style: TextStyle(color: Colors.white)),
                               ),
                             ],
@@ -195,32 +239,32 @@ class _AgentLoginRequestState extends State<AgentLoginRequest> {
 }
 
 class NewAgent {
-  final int id;
-  final String fullName;
-  final String email;
-  final String address;
-  final String contactNumber;
-  final String profile;
-  final String dob;
-  final String age;
-  final String gender;
-  final String licenseNumber;
-  final String pincode;
-  final String status;
+  final int? id;
+  final String? fullName;
+  final String? email;
+  final String? address;
+  final String? contactNumber;
+  final String? profile;
+  final String? dob;
+  final String? age;
+  final String? gender;
+  final String? licenseNumber;
+  final String? pincode;
+  final String? status;
 
   NewAgent({
-    required this.id,
-    required this.fullName,
-    required this.email,
-    required this.address,
-    required this.contactNumber,
-    required this.profile,
-    required this.dob,
-    required this.age,
-    required this.gender,
-    required this.licenseNumber,
-    required this.pincode,
-    required this.status,
+    this.id,
+    this.fullName,
+    this.email,
+    this.address,
+    this.contactNumber,
+    this.profile,
+    this.dob,
+    this.age,
+    this.gender,
+    this.licenseNumber,
+    this.pincode,
+    this.status,
   });
 
   factory NewAgent.fromJson(Map<String, dynamic> json) {

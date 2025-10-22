@@ -19,7 +19,7 @@ class VendorAppBar extends StatelessWidget implements PreferredSizeWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppBar(
-      backgroundColor: isDark ? Colors.black : AppColors.secondaryColor,
+      backgroundColor: isDark ? Colors.black : AppColors.fboColor,
       elevation: 0,
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -73,7 +73,7 @@ class _CompletedOrdersScreenState extends State<CompletedOrdersScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: isDark ? Colors.grey[900] : AppColors.primaryColor,
+        backgroundColor: isDark ? Colors.grey[900] : AppColors.fboColor,
         centerTitle: true,
         elevation: 4,
         title: Text(

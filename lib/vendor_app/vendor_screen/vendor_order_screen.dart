@@ -345,7 +345,7 @@ class _VendorCartPageState extends State<VendorCartPage>
       length: 2, // Use 3 if adding "Completed" tab
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: AppColors.primaryColor,
+          backgroundColor: AppColors.fboColor,
           elevation: 0,
           title: const Text(
             "Order Assigned",
@@ -355,7 +355,7 @@ class _VendorCartPageState extends State<VendorCartPage>
         body: Column(
           children: [
             Container(
-              color: AppColors.primaryColor, // Same color as AppBar
+              color: AppColors.fboColor, // Same color as AppBar
               child: TabBar(
                 controller: _tabController,
                 indicatorColor: Colors.white,
