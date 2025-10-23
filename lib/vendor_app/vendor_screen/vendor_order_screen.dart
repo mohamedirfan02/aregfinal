@@ -701,25 +701,7 @@ class _VendorCartPageState extends State<VendorCartPage>
                     });
                   },
             icon: isAccepting[orderId] == true
-                ? const SizedBox(
-                    height: 18,
-                    width: 18,
-                    child: const Column(
-                      children: [
-                        CircularProgressIndicator(
-                          strokeWidth: 3,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                              AppColors.fboColor), // ✅ custom color
-                        ),
-                        KSvg(
-                          svgPath: AppAssetsConstants.splashLogo,
-                          height: 30,
-                          width: 30,
-                          boxFit: BoxFit.cover,
-                        ),
-                      ],
-                    ),
-                  )
+                ?      CircularProgressIndicator()
                 : const Icon(Icons.check_circle_outline, color: Colors.white),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green[600],

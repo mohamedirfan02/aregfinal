@@ -51,11 +51,42 @@ class _DraggableChatbotButtonState extends State<DraggableChatbotButton>
   }
 
   // Calculate default bottom-right position
+  // ✅ 1. Change the default starting position to bottom-left
   Offset _getDefaultPosition(Size screenSize, EdgeInsets safeArea) {
+    final double minX = padding;
+    final double maxY = screenSize.height - kToolbarHeight - (buttonSize + 40) - 80;
+    return Offset(minX, maxY);
+  }
+
+  void _snapToNearestEdge(Size screenSize, EdgeInsets safeArea) {
     final double maxX = screenSize.width - (buttonSize + 20) - padding;
-    // Use total screen height minus app bar height and some bottom padding
-    final double maxY = screenSize.height - kToolbarHeight - (buttonSize + 40) - 80; // Extra padding from bottom
-    return Offset(maxX, maxY);
+    final double maxY = screenSize.height - kToolbarHeight - (buttonSize + 40) - 80;
+    final double minX = padding;
+    final double minY = kToolbarHeight + padding;
+
+    double centerX = position!.dx + (buttonSize + 20) / 2;
+    double centerY = position!.dy + (buttonSize + 40) / 2;
+
+    Offset targetPosition = position!;
+
+    // Snap to left or right edge (keep same logic)
+    if (centerX < screenSize.width / 2) {
+      targetPosition = Offset(minX, position!.dy);
+    } else {
+      targetPosition = Offset(maxX, position!.dy);
+    }
+
+    _animation = Tween<Offset>(
+      begin: position!,
+      end: targetPosition,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.elasticOut,
+    ));
+
+    position = targetPosition;
+    _animationController.reset();
+    _animationController.forward();
   }
 
   @override
@@ -132,38 +163,7 @@ class _DraggableChatbotButtonState extends State<DraggableChatbotButton>
     );
   }
 
-  void _snapToNearestEdge(Size screenSize, EdgeInsets safeArea) {
-    final double maxX = screenSize.width - (buttonSize + 20) - padding;
-    final double maxY = screenSize.height - kToolbarHeight - (buttonSize + 40) - 80;
-    final double minX = padding;
-    final double minY = kToolbarHeight + padding;
 
-    // Determine which edge is closest
-    double centerX = position!.dx + (buttonSize + 20) / 2;
-    double centerY = position!.dy + (buttonSize + 40) / 2;
-
-    Offset targetPosition = position!;
-
-    // Snap to left or right edge
-    if (centerX < screenSize.width / 2) {
-      targetPosition = Offset(minX, position!.dy);
-    } else {
-      targetPosition = Offset(maxX, position!.dy);
-    }
-
-    // Animate to target position
-    _animation = Tween<Offset>(
-      begin: position!,
-      end: targetPosition,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.elasticOut,
-    ));
-
-    position = targetPosition;
-    _animationController.reset();
-    _animationController.forward();
-  }
 
   Widget _buildButton() {
     // If rotation animation is available, use it; otherwise, show static button

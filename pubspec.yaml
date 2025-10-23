@@ -66,12 +66,33 @@ dependencies:
   pie_chart: ^5.4.0
   flutter_vector_icons: ^2.0.0
   flutter_svg: ^2.2.0
+  #google_maps_flutter:
+  google_maps_flutter: ^2.12.3
+
+  #geocoding:
+  geocoding: ^4.0.0
+
+  #envied:
+  envied: ^1.1.1
+
+  #location:
+  location: ^8.0.1
+
+  #flutter_polyline_points:
+  flutter_polyline_points: ^2.1.0
+
+  #logger:
+  logger: ^2.6.0
+
+  rive_common: ^0.4.15
 
 
 
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1
+  envied_generator: ^1.1.1
+  build_runner: ^2.5.4
 
 flutter_icons:
   android: "launcher_icon"

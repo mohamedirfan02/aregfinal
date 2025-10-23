@@ -3,8 +3,10 @@ import 'package:areg_app/common/app_colors.dart';
 import 'package:areg_app/common/floating_chatbot_btn.dart';
 import 'package:areg_app/config/api_config.dart';
 import 'package:areg_app/core/storage/app_assets_constant.dart';
+import 'package:areg_app/map/map_screen.dart';
 import 'package:areg_app/vendor_app/comman/vendor_appbar.dart';
 import 'package:areg_app/vendor_app/vendor_screen/vendor_order_screen.dart';
+import 'package:areg_app/views/dashboard/FBO_cartpage.dart';
 import 'package:areg_app/views/screens/fbo_voucher.dart';
 import 'package:areg_app/views/screens/widgets/k_svg.dart';
 import 'package:flutter/material.dart';
@@ -23,8 +25,6 @@ class VendorHomeScreen extends StatefulWidget {
 }
 
 class _VendorHomeScreenState extends State<VendorHomeScreen> {
-  String totalBalance = "₹290,500";
-  String percentageIncrease = "85%";
   List<Map<String, dynamic>> pendingOrders = [];
   List<Map<String, dynamic>> approvedOrders = [];
   bool _isLoading = true;
@@ -39,6 +39,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
     _fetchAssignedOrders();
     fetchVendorData();
   }
+
   String formatIndianCurrency(String amount) {
     double value = double.tryParse(amount) ?? 0;
     final formatter = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
@@ -96,15 +97,13 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
     }
   }
 
-
-
   /// ✅ Fetch all assigned orders from API
   Future<void> _fetchAssignedOrders() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
     String? vendorIdString = prefs.getString('vendor_id');
     int? vendorId =
-    vendorIdString != null ? int.tryParse(vendorIdString) : null;
+        vendorIdString != null ? int.tryParse(vendorIdString) : null;
 
     if (token == null || vendorId == null) {
       debugPrint("❌ No token or vendor ID found. User must log in again.");
@@ -134,13 +133,13 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
         if (jsonData["status"] == "success") {
           setState(() {
             pendingOrders = (jsonData["pendingData"] as List<dynamic>?)
-                ?.map((e) => e as Map<String, dynamic>)
-                .toList() ??
+                    ?.map((e) => e as Map<String, dynamic>)
+                    .toList() ??
                 [];
 
             approvedOrders = (jsonData["approvedData"] as List<dynamic>?)
-                ?.map((e) => e as Map<String, dynamic>)
-                .toList() ??
+                    ?.map((e) => e as Map<String, dynamic>)
+                    .toList() ??
                 [];
 
             _isLoading = false;
@@ -178,160 +177,185 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
         child: VendorAppBar(title: 'Welcome'),
       ),
       body: RefreshIndicator(
-        onRefresh: _refreshOrders,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 14),
-                const Text(
-                  'Get Start Your Journey !',
-                  style: TextStyle(
-                    color: AppColors.titleColor,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                // Card Section
-                _buildVendorCardSection(
-                  totalAmount: totalAmount,
-                  totalQuantity: totalQuantity,
-                  currentDate: currentDate,
-                  todayCount: todayCount,
-                ),
-                const SizedBox(height: 24),
-                Text("See Your Activity",
-                    style: TextStyle(
-                        color: AppColors.lightGreen,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600)),
-                const SizedBox(height: 16),
-
-                // Action Buttons
-                _buildActionButtons(context),
-                const SizedBox(height: 24),
-
-                // Promotional Section
-                _buildPromoSection(context),
-                const SizedBox(height: 32),
-
-                // Recent Orders Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Assigned Orders',
-                          style: TextStyle(
-                            color: AppColors.titleColor,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${pendingOrders.length} pending',
-                          style: const TextStyle(
-                            color: AppColors.titleColor,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                    GestureDetector(
-                      onTap: _refreshOrders,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryColor.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: AppColors.primaryColor.withOpacity(0.3),
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.refresh,
-                          color: AppColors.primaryColor,
-                          size: 20,
+          onRefresh: _refreshOrders,
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 14),
+                      const Text(
+                        'Get Start Your Journey !',
+                        style: TextStyle(
+                          color: AppColors.titleColor,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                      const SizedBox(height: 24),
+                      // Card Section
+                      _buildVendorCardSection(
+                        totalAmount: totalAmount,
+                        totalQuantity: totalQuantity,
+                        currentDate: currentDate,
+                        todayCount: todayCount,
+                      ),
+                      const SizedBox(height: 24),
+                      Text("See Your Activity",
+                          style: TextStyle(
+                              color: AppColors.lightGreen,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 16),
 
-                // Recent Orders List
-                if (_isLoading)
-                  Container(
-                    padding: const EdgeInsets.all(40),
-                    child: const Column(
-                      children: [
-                        CircularProgressIndicator(
-                          strokeWidth: 3,
-                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.fboColor),
-                        ),
-                        KSvg(
-                          svgPath: AppAssetsConstants.splashLogo,
-                          height: 30,
-                          width: 30,
-                          boxFit: BoxFit.cover,
-                        ),
-                      ],
-                    ),
-                  )
-                else if (pendingOrders.isEmpty)
-                  Container(
-                    padding: const EdgeInsets.all(40),
-                    child: Column(
-                      children: const [
-                        Icon(Icons.inbox, color: AppColors.white24, size: 56),
-                        SizedBox(height: 16),
-                        Text(
-                          'No assigned orders',
-                          style: TextStyle(
-                            color: AppColors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
+                      // Action Buttons
+                      _buildActionButtons(context),
+                      const SizedBox(height: 24),
+
+                      // Promotional Section
+                      _buildPromoSection(context),
+                      const SizedBox(height: 32),
+
+                      // Recent Orders Header
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Assigned Orders',
+                                style: TextStyle(
+                                  color: AppColors.titleColor,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${pendingOrders.length} pending',
+                                style: const TextStyle(
+                                  color: AppColors.titleColor,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Orders will appear here when assigned',
-                          style: TextStyle(
-                            color: AppColors.white24,
-                            fontSize: 12,
+                          GestureDetector(
+                            onTap: _refreshOrders,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryColor.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color:
+                                      AppColors.primaryColor.withOpacity(0.3),
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.refresh,
+                                color: AppColors.primaryColor,
+                                size: 20,
+                              ),
+                            ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Recent Orders List
+                      if (_isLoading)
+                        Container(
+                          padding: const EdgeInsets.all(40),
+                          child: const Column(
+                            children: [
+                              CircularProgressIndicator(
+                                strokeWidth: 3,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppColors.fboColor),
+                              ),
+                              KSvg(
+                                svgPath: AppAssetsConstants.splashLogo,
+                                height: 30,
+                                width: 30,
+                                boxFit: BoxFit.cover,
+                              ),
+                            ],
+                          ),
+                        )
+                      else if (pendingOrders.isEmpty)
+                        Container(
+                          padding: const EdgeInsets.all(40),
+                          child: Column(
+                            children: const [
+                              Icon(Icons.inbox,
+                                  color: AppColors.white24, size: 56),
+                              SizedBox(height: 16),
+                              Text(
+                                'No assigned orders',
+                                style: TextStyle(
+                                  color: AppColors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Orders will appear here when assigned',
+                                style: TextStyle(
+                                  color: AppColors.white24,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: pendingOrders.length,
+                          itemBuilder: (context, index) {
+                            return _buildOrderCard(pendingOrders[index]);
+                          },
                         ),
-                      ],
-                    ),
-                  )
-                else
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: pendingOrders.length,
-                    itemBuilder: (context, index) {
-                      return _buildOrderCard(pendingOrders[index]);
-                    },
+                      const SizedBox(height: 20),
+                    ],
                   ),
-                const SizedBox(height: 20),
-              ],
-            ),
+                ),
+              ),
+              // ✅ Draggable Map Button
+              DraggableChatbotButton(),
+            ],
+          )),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => MapScreen()),
+          );
+        },
+        backgroundColor: AppColors.secondaryColor,
+        icon: const Icon(Icons.map, color: Colors.white),
+        label: const Text(
+          'Map',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
           ),
         ),
+        tooltip: 'Open Map',
       ),
-      // Add the DraggableChatbotButton here using a Stack
-      floatingActionButton: DraggableChatbotButton(),
+
+
     );
   }
-
-
-
 
   Widget _buildVendorCardSection({
     required String totalAmount,
@@ -374,13 +398,23 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Total Amount', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                    Text('Total Amount',
+                        style: TextStyle(color: Colors.white70, fontSize: 12)),
                     SizedBox(height: 4),
-                    Text(formatIndianCurrency(totalAmount), style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                    Text(formatIndianCurrency(totalAmount),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600)),
                     SizedBox(height: 12),
-                    Text('Total Quantity', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                    Text('Total Quantity',
+                        style: TextStyle(color: Colors.white70, fontSize: 12)),
                     SizedBox(height: 4),
-                    Text(totalQuantity, style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                    Text(totalQuantity,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600)),
                   ],
                 ),
 
@@ -392,7 +426,8 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Today Count', style: TextStyle(color: Colors.white70, fontSize: 18)),
+                    Text('Today Count',
+                        style: TextStyle(color: Colors.white70, fontSize: 18)),
                     SizedBox(height: 4),
                     Text(
                       todayCount.toString(),
@@ -423,11 +458,11 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
 
 // ✅ Updated Action Buttons
   Widget _buildActionButton(
-      BuildContext context,
-      String label,
-      IconData icon,
-      Widget targetPage,
-      ) {
+    BuildContext context,
+    String label,
+    IconData icon,
+    Widget targetPage,
+  ) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -501,7 +536,6 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
       ],
     );
   }
-
 
   Widget _buildPromoSection(BuildContext context) {
     return Container(
@@ -577,7 +611,6 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
       ),
     );
   }
-
 
 // ✅ Updated Order Card
   Widget _buildOrderCard(Map<String, dynamic> order) {
@@ -724,7 +757,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
                 const SizedBox(height: 6),
                 Container(
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(6),
@@ -850,7 +883,8 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const VendorCartPage()),
+                          MaterialPageRoute(
+                              builder: (context) => const VendorCartPage()),
                         );
                       },
                       style: ElevatedButton.styleFrom(
