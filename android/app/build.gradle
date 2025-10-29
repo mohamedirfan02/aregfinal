@@ -9,7 +9,7 @@ plugins {
 android {
     namespace = "com.thikse.enzopik"
     compileSdkVersion 35
-    ndkVersion  "29.0.13113456"
+    ndkVersion  "29.0.14206865"
 
     defaultConfig {
         applicationId "com.thikse.enzopik"
@@ -18,7 +18,7 @@ android {
         versionCode 15
         versionName "1.0.2"
     }
-    ndkVersion  "29.0.13113456"
+    ndkVersion  "29.0.14206865"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21

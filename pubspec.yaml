@@ -84,10 +84,6 @@ dependencies:
   #logger:
   logger: ^2.6.0
 
-  rive_common: ^0.4.15
-
-  rive: ^0.13.0  # or latest version
-
 
 
 
