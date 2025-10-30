@@ -185,76 +185,190 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      body: Stack(
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF6A9600),
+              Color(0xFF7FBF08),
+              Color(0xFF2D8E11),
+            ],
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Animated background circles
+            Positioned(
+              top: -100,
+              right: -100,
+              child: Container(
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      Color(0xFFC3E029).withOpacity(0.15),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: padding,
-                      vertical: size.height * 0.07,
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 40),
-                          Center(
-                            child: SizedBox(
-                              width: 200,
-                              height: 200,
-                              child: Lottie.asset(
-                                'assets/animations/zz.json',
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Stack(
-                            children: [
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(20),
+              ),
+            ),
+            Positioned(
+              bottom: -50,
+              left: -50,
+              child: Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      Color(0xFF8BC34A).withOpacity(0.15),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: size.height * 0.3,
+              right: -80,
+              child: Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.05),
+                ),
+              ),
+            ),
+
+            // Main content
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: padding,
+                        vertical: size.height * 0.05,
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(height: size.height * 0.08),
+
+                            // Logo section with glow effect
+                            Hero(
+                              tag: 'app_logo',
+                              child: Container(
+                                padding: EdgeInsets.all(20),
                                 decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 20),
+                                      color: Colors.white.withOpacity(0.3),
+                                      blurRadius: 30,
+                                      spreadRadius: 10,
+                                    ),
+                                    BoxShadow(
+                                      color: AppColors.primaryColor.withOpacity(0.4),
+                                      blurRadius: 40,
+                                      spreadRadius: 5,
                                     ),
                                   ],
                                 ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Log in',
-                                      style: TextStyle(
-                                        fontSize: size.width * 0.09,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.secondaryColor,
+                                child: Image.asset(
+                                  'assets/icon/enzopik.png',
+                                  width: size.width * 0.25,
+                                  height: size.width * 0.25,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(height: 24),
+
+                            // Welcome text
+                            Text(
+                              'Welcome Back',
+                              style: TextStyle(
+                                fontSize: size.width * 0.08,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                letterSpacing: 0.5,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    offset: Offset(0, 2),
+                                    blurRadius: 4,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Sign in to continue your journey',
+                              style: TextStyle(
+                                fontSize: size.width * 0.04,
+                                color: Colors.white.withOpacity(0.95),
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+
+                            SizedBox(height: 40),
+
+                            // Login form card with glassmorphism
+                            Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.all(28),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.98),
+                                borderRadius: BorderRadius.circular(24),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.15),
+                                    blurRadius: 30,
+                                    offset: Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Email field with modern design
+                                  Text(
+                                    'Email Address',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.secondaryColor,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[50],
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: AppColors.primaryColor.withOpacity(0.2),
+                                        width: 1.5,
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Login to your account',
-                                      style: TextStyle(
-                                        fontSize: size.width * 0.05,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    CustomTextFormField(
+                                    child: CustomTextFormField(
                                       controller: _emailController,
-                                      hintText: 'Email Address',
+                                      hintText: 'Enter your email',
                                       iconData: Icons.mail_outline_rounded,
                                       keyboardType: TextInputType.emailAddress,
                                       validator: (value) {
@@ -264,13 +378,34 @@ class _LoginPageState extends State<LoginPage> {
                                         return null;
                                       },
                                     ),
-                                    const SizedBox(height: 16),
-                                    CustomTextFormField(
+                                  ),
+
+                                  SizedBox(height: 20),
+
+                                  // Password field
+                                  Text(
+                                    'Password',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.secondaryColor,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[50],
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: AppColors.primaryColor.withOpacity(0.2),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: CustomTextFormField(
                                       controller: _passwordController,
-                                      hintText: 'Password',
+                                      hintText: 'Enter your password',
                                       iconData: Icons.lock_outline_rounded,
-                                      keyboardType:
-                                          TextInputType.visiblePassword,
+                                      keyboardType: TextInputType.visiblePassword,
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
                                           return 'Please enter your password';
@@ -279,74 +414,249 @@ class _LoginPageState extends State<LoginPage> {
                                       },
                                       isPassword: true,
                                     ),
-                                    const SizedBox(height: 10),
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: CustomForgotPasswordButton(
-                                        text: 'Forgot Password?',
-                                        onPressed: () {
-                                          context.push('/reset-password');
-                                        },
+                                  ),
+
+                                  SizedBox(height: 12),
+
+                                  // Forgot password
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: TextButton(
+                                      onPressed: () {
+                                        context.push('/reset-password');
+                                      },
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: AppColors.primaryColor,
+                                        padding: EdgeInsets.symmetric(horizontal: 8),
                                       ),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    _isLoading
-                                        ? Center(
-                                            child: const SizedBox(
-                                              height: 50,
-                                              width: 50,
-                                              child: LoadingIndicator(
-                                                indicatorType: Indicator
-                                                    .ballSpinFadeLoader,
-                                                colors: [
-                                                  AppColors.primaryColor,
-                                                  AppColors.secondaryColor,
-                                                  AppColors.titleColor,
-                                                ],
-                                                strokeWidth: 2,
-                                              ),
-                                            ),
-                                          )
-                                        : Center(
-                                            // ✅ Centered the button
-                                            child: CustomSubmitButton(
-                                              buttonText: 'Log in',
-                                              onPressed: _login,
-                                            ),
-                                          ),
-                                    const SizedBox(height: 20),
-                                    Center(
                                       child: Text(
-                                        "@ Powered By Thikse Software Solutions",
-                                        textAlign: TextAlign.end,
+                                        'Forgot Password?',
                                         style: TextStyle(
-                                          color: Colors.grey[600],
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
-                                    )
-                                  ],
+                                    ),
+                                  ),
+
+                                  SizedBox(height: 24),
+
+                                  // Login button with app gradient
+                                  _isLoading
+                                      ? Center(
+                                    child: Container(
+                                      height: 56,
+                                      width: 56,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            AppColors.primaryColor.withOpacity(0.2),
+                                            AppColors.secondaryColor.withOpacity(0.2),
+                                          ],
+                                        ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Center(
+                                        child: SizedBox(
+                                          height: 30,
+                                          width: 30,
+                                          child: LoadingIndicator(
+                                            indicatorType: Indicator.ballSpinFadeLoader,
+                                            colors: [
+                                              AppColors.primaryColor,
+                                              AppColors.secondaryColor,
+                                              AppColors.fboColor,
+                                            ],
+                                            strokeWidth: 2,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                      : Container(
+                                    width: double.infinity,
+                                    height: 56,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          AppColors.primaryColor,
+                                          AppColors.loginColor,
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.primaryColor.withOpacity(0.4),
+                                          blurRadius: 20,
+                                          offset: Offset(0, 8),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: _login,
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: Center(
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                'Log in',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                              SizedBox(width: 8),
+                                              Icon(
+                                                Icons.arrow_forward_rounded,
+                                                color: Colors.white,
+                                                size: 22,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  SizedBox(height: 16),
+
+                                  // Alternative login divider (optional)
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Container(
+                                          height: 1,
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                Colors.transparent,
+                                                Colors.grey.shade300,
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 16),
+                                        child: Text(
+                                          'Secure Login',
+                                          style: TextStyle(
+                                            color: Colors.grey.shade500,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Container(
+                                          height: 1,
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                Colors.grey.shade300,
+                                                Colors.transparent,
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            SizedBox(height: 40),
+
+                            // Powered by text with app colors
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(30),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                  width: 1,
                                 ),
                               ),
-                            ],
-                          ),
-                        ],
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.copyright_rounded,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Powered By Thikse Software Solutions',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            SizedBox(height: 20),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            // Back button with app theme colors
+            Positioned(
+              top: 45,
+              left: 16,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.3),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      context.go('/start');
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: EdgeInsets.all(12),
+                      child: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white,
+                        size: 20,
                       ),
                     ),
                   ),
                 ),
-              );
-            },
-          ),
-          Positioned(
-            top: 40,
-            left: 10,
-            child: CustomBackButton(
-              onPressed: () {
-                context.go('/start');
-              },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

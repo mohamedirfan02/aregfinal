@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:areg_app/agent/agent_screen/history.dart';
 import 'package:areg_app/common/app_colors.dart';
 import 'package:areg_app/common/floating_chatbot_btn.dart';
 import 'package:areg_app/config/api_config.dart';
@@ -203,6 +204,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
                         totalQuantity: totalQuantity,
                         currentDate: currentDate,
                         todayCount: todayCount,
+                        context: context,
                       ),
                       const SizedBox(height: 24),
                       Text("See Your Activity",
@@ -362,9 +364,10 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
     required String totalQuantity,
     required String currentDate,
     required int todayCount,
+    required BuildContext context, // ✅ Add context for navigation
   }) {
     return Container(
-      height: 200,
+      height: 240, // slightly increased to fit the new button
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -418,13 +421,12 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
                   ],
                 ),
 
-                Spacer(), // pushes Today Count to the right
+                Spacer(),
 
-                // Right: Today Count (bigger)
+                // Right: Today Count and History Button
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text('Today Count',
                         style: TextStyle(color: Colors.white70, fontSize: 18)),
@@ -433,8 +435,37 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
                       todayCount.toString(),
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 45, // big font
+                        fontSize: 45,
                         fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white.withOpacity(0.9),
+                        foregroundColor: AppColors.primaryColor,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HistoryScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        "View History",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ],
@@ -455,6 +486,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
       ),
     );
   }
+
 
 // ✅ Updated Action Buttons
   Widget _buildActionButton(
